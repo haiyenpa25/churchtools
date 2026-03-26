@@ -1,0 +1,81 @@
+{
+    "_comment": "Coordinates measured directly from thanh_ca_teal.pptx shapes via python-pptx. All ratios in 0.0-1.0 normalized space.",
+    "_measured": {
+        "Rectangle1_banner": "top=5303520 h=1280160 => top_ratio=0.773 h_ratio=0.187",
+        "Rectangle2_strip": "top=6355080 h=228600  => top_ratio=0.927 h_ratio=0.033",
+        "Oval3_logo": "left=731520 top=4846320 w=h=1645920 => left_ratio=0.060 top_ratio=0.707 h_ratio=0.240"
+    },
+    "template_id": "teal_bottom_banner_v3",
+    "slide": {
+        "w_emu": 12192000,
+        "h_emu": 6858000,
+        "ratio": "16:9"
+    },
+    "safe_area": {
+        "left": 0.015,
+        "right": 0.015,
+        "top": 0.015,
+        "bottom": 0.015
+    },
+    "elements": [
+        {
+            "id": "banner",
+            "type": "rect",
+            "anchor_to": "slide",
+            "anchor_point": "bottom_left",
+            "x_ratio": 0,
+            "y_ratio": 0,
+            "w_ratio": 1,
+            "h_ratio": 0.1481,
+            "bottom_offset_ratio": 0.03,
+            "_note": "bottom_offset_ratio=0.04: Rectangle2 dark strip at bottom occupies ~3-4% so we leave room for it",
+            "fill_color": "004D40",
+            "border_color": null,
+            "z_index": 1
+        },
+        {
+            "id": "logo",
+            "type": "image",
+            "anchor_to": "banner",
+            "anchor_point": "left_center",
+            "dx_ratio_w": 0.0593,
+            "size_ratio_h": 0.215,
+            "overlap_ratio": 0.28,
+            "z_index": 3,
+            "border_color": "FFD700",
+            "bg_color": "004D40"
+        },
+        {
+            "id": "banner_text",
+            "type": "text",
+            "anchor_to": "banner",
+            "anchor_point": "top_left",
+            "content_box_mode": "after_logo",
+            "padding_right_ratio_w": 0.005,
+            "padding_top_ratio_h": 0,
+            "padding_bottom_ratio_h": 0.028,
+            "vertical_align": "middle",
+            "text_align": "center",
+            "internal_margin_left_pt": 0,
+            "internal_margin_right_pt": 0,
+            "internal_margin_top_pt": 0,
+            "internal_margin_bottom_pt": 0,
+            "z_index": 5,
+            "font": {
+                "family": "Georgia",
+                "weight": "bold",
+                "preferred_size_pt": 25,
+                "min_size_pt": 16,
+                "max_size_pt": 44,
+                "line_height": 1.1,
+                "paragraph_spacing_before_pt": 0,
+                "paragraph_spacing_after_pt": 0,
+                "color_hex": "FFD700",
+                "shadow": true,
+                "stroke": true
+            },
+            "logo_gap_ratio": 0.006
+        }
+    ],
+    "_accent_color": "002800"
+}
