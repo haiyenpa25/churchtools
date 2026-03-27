@@ -11,6 +11,14 @@ class GraphParserService
 
     public function __construct()
     {
+        $path = storage_path('app/bible_gemini_key.txt');
+        if (\Illuminate\Support\Facades\File::exists($path)) {
+            $key = trim(\Illuminate\Support\Facades\File::get($path));
+            if (!empty($key)) {
+                $this->apiKey = $key;
+                return;
+            }
+        }
         $this->apiKey = env('GEMINI_API_KEY', 'AIzaSyBYnWx6PJprTFX6GxWAiQZ8YT8vjcOH1BA');
     }
 

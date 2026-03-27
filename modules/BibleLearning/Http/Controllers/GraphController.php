@@ -323,4 +323,34 @@ class GraphController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * API: Lưu Gemini API Key vào Local Storage An Toàn
+     */
+    public function adminSaveKey(Request $request)
+    {
+        $request->validate(['key' => 'required|string|min:20|max:100']);
+        File::put(storage_path('app/bible_gemini_key.txt'), trim($request->input('key')));
+
+        return response()->json(['message' => 'Đã thiết lập API Key thành công. Cỗ máy đã sẵn sàng!']);
+    }
+
+    /**
+     * API: Lấy thông tin Key hiện tại (Masked)
+     */
+    public function adminGetKey()
+    {
+        $path = storage_path('app/bible_gemini_key.txt');
+        $key = File::exists($path) ? trim(File::get($path)) : '';
+
+        $masked = '';
+        if ($key) {
+            $masked = substr($key, 0, 6) . '...' . substr($key, -4);
+        }
+
+        return response()->json([
+            'masked_key' => $masked,
+            'has_key' => !empty($key)
+        ]);
+    }
 }

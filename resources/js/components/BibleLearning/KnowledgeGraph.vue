@@ -222,11 +222,12 @@
             <button @click="showSettings = false" class="close-btn">✕</button>
           </div>
 
-          <!-- ADMIN TABS -->
           <div class="admin-tabs">
             <button :class="['admin-tab', { active: adminTab === 'files' }]" @click="adminTab = 'files'">📁 Quản Lý File Đầu Vào (Ingestion)</button>
             <button :class="['admin-tab', { active: adminTab === 'portability' }]" @click="adminTab = 'portability'">🔄 Di Chuyển Dữ Liệu (Dump & Restore)</button>
+            <button :class="['admin-tab', { active: adminTab === 'settings' }]" @click="adminTab = 'settings'">🔑 Cấu Hình API Key</button>
           </div>
+
 
           <div v-if="adminMsg" :class="['admin-msg', { 'error': adminError }]">
             {{ adminMsg }}
@@ -249,6 +250,26 @@
                 <h3>🔄 Format Xóa Rỗng CSDL (Reset)</h3>
                 <p>Xóa sạch Bảng <code>bl_nodes</code> và <code>bl_edges</code> làm lại từ đầu. Thận trọng khi dùng lệnh này!</p>
                 <button @click="runAdminAction('reset')" :disabled="adminLoading" class="admin-btn btn-red">Xóa Trắng Database</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: API KEY SETTINGS -->
+          <div v-if="adminTab === 'settings'" class="admin-scroll-area">
+            <div class="admin-card" style="grid-column: 1 / -1;">
+              <h3 style="font-size: 16px; margin-bottom: 5px;">🔑 Thiết Lập Gemini API Key</h3>
+              <p style="font-size: 13px;">Khóa (Key) ở cấp độ Server này sẽ Ghi Đè (Override) lên mọi cấu hình mặc định (Mỗi ngày Google cấp <span style="color:#6ee7b7">1500 Requests Miễn phí</span> cho một tài khoản cá nhân). Bạn có thể lấy Key miễn phí tại <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #60a5fa; text-decoration: underline;">aistudio.google.com</a>.</p>
+              
+              <div style="display:flex; gap:10px; margin-top:20px; align-items:center; flex-wrap:wrap">
+                <input v-model="geminiApiKeyInput" type="text" placeholder="Dán chuỗi khóa bí mật bắt đầu bằng AIzaSy... của bạn vào đây" class="fm-select" style="flex:1; min-width: 250px; font-family: monospace;" />
+                <button @click="saveApiKey" :disabled="adminLoading" class="admin-btn btn-purple">💾 Lưu Khóa Lên Server</button>
+              </div>
+
+              <div style="margin-top:20px; font-size:13px; color:#cbd5e1;" v-if="currentMaskedKey">
+                ✅ Máy chủ hiện đang vận hành bằng Key: <code style="font-size: 15px; background: rgba(168,85,247,0.2); padding: 4px 8px; border-radius: 6px; color: #d8b4fe; border: 1px solid rgba(168,85,247,0.3);">{{ currentMaskedKey }}</code>
+              </div>
+              <div style="margin-top:20px; font-size:13px; color:#f87171;" v-else>
+                ⚠️ <strong>Máy chủ đang dùng Key nội bộ!</strong> Nếu nó hết hạn, hệ thống phân tích sẽ tê liệt. Hãy nhập Key riêng của bạn để làm chủ tốc độ.
               </div>
             </div>
           </div>
@@ -365,7 +386,6 @@ const neighbors        = ref({})
 const totalNeighbors   = ref(0)
 const loadingNeighbors = ref(false)
 
-// Bible tabs state
 const panelTab         = ref('links')
 const bibleBook        = ref('')
 const bibleChapter     = ref(1)
@@ -377,6 +397,10 @@ const commentaryData   = ref(null)
 const commentaryError  = ref('')
 const commentaryPage   = ref(1)
 const loadingCommentary = ref(false)
+
+// API Key Setting
+const geminiApiKeyInput = ref('')
+const currentMaskedKey  = ref('')
 
 let networkInstance = null
 let nodesDataset    = null
@@ -688,9 +712,13 @@ watch(showSettings, (val) => {
   if (val && adminTab.value === 'files') {
     fetchIngestionStatus()
   }
+  if (val && adminTab.value === 'settings') {
+    fetchApiKey()
+  }
 })
 watch(adminTab, (val) => {
   if (val === 'files') fetchIngestionStatus()
+  if (val === 'settings') fetchApiKey()
 })
 
 // Switch panel tab and auto-populate book name from node

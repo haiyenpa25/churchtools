@@ -38,6 +38,8 @@ Route::middleware([])->group(function () {
     Route::get('/api/graph/admin/ingestion-status', [GraphController::class, 'adminGetIngestionStatus']);
     Route::post('/api/graph/admin/ingest-single', [GraphController::class, 'adminIngestSingleFile']);
     Route::any('/api/graph/admin/work-queue', [GraphController::class, 'adminWorkQueue']);
+    Route::get('/api/graph/admin/get-key', [GraphController::class, 'adminGetKey']);
+    Route::post('/api/graph/admin/save-key', [GraphController::class, 'adminSaveKey']);
 
     // BIBLE TEXT & COMMENTARY (Local files)
     Route::get('/api/bible/text', [GraphController::class, 'getBibleText']);
