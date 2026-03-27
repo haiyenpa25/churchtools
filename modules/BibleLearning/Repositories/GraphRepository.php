@@ -2,8 +2,8 @@
 
 namespace Modules\BibleLearning\Repositories;
 
-use App\Models\BlNode;
 use App\Models\BlEdge;
+use App\Models\BlNode;
 use Modules\BibleLearning\Contracts\GraphRepositoryInterface;
 
 class GraphRepository implements GraphRepositoryInterface
@@ -23,9 +23,9 @@ class GraphRepository implements GraphRepositoryInterface
 
         // Only return edges where BOTH from and to node exist
         $nodeIds = $nodes->pluck('id')->all();
-        $edges   = BlEdge::whereIn('source_node_id', $nodeIds)
-                         ->whereIn('target_node_id', $nodeIds)
-                         ->get();
+        $edges = BlEdge::whereIn('source_node_id', $nodeIds)
+            ->whereIn('target_node_id', $nodeIds)
+            ->get();
 
         return $this->buildPayload($nodes, $edges);
     }
@@ -34,7 +34,7 @@ class GraphRepository implements GraphRepositoryInterface
     {
         $mappedNodes = $nodes->map(function ($node) {
             return [
-                'id'    => $node->id,
+                'id' => $node->id,
                 'label' => $node->label,
                 'group' => $node->group,
                 'title' => $node->description,
@@ -44,9 +44,9 @@ class GraphRepository implements GraphRepositoryInterface
 
         $mappedEdges = $edges->map(function ($edge) {
             return [
-                'id'    => $edge->id,
-                'from'  => $edge->source_node_id,
-                'to'    => $edge->target_node_id,
+                'id' => $edge->id,
+                'from' => $edge->source_node_id,
+                'to' => $edge->target_node_id,
                 'label' => $edge->relationship,
                 'arrows' => 'to',
             ];

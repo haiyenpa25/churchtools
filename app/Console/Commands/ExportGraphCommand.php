@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\BlNode;
 use App\Models\BlEdge;
-use Illuminate\Support\Facades\Storage;
+use App\Models\BlNode;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
 class ExportGraphCommand extends Command
@@ -43,31 +42,31 @@ class ExportGraphCommand extends Command
         // 1. XUẤT NODES
         $nodeCount = BlNode::count();
         $this->info("Đang xử lý xuất {$nodeCount} Thực Thể (Nodes)...");
-        
+
         $nodeChunkIndex = 1;
         BlNode::orderBy('id')->chunk($chunkSize, function ($nodes) use (&$nodeChunkIndex, $dumpDir) {
             $data = $nodes->toArray();
             $filename = "nodes_part_{$nodeChunkIndex}.json";
             File::put("{$dumpDir}/{$filename}", json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-            $this->line(" - Đã lưu {$filename} (" . count($data) . " records)");
+            $this->line(" - Đã lưu {$filename} (".count($data).' records)');
             $nodeChunkIndex++;
         });
 
         // 2. XUẤT EDGES
         $edgeCount = BlEdge::count();
         $this->info("Đang xử lý xuất {$edgeCount} Mối Quan Hệ (Edges)...");
-        
+
         $edgeChunkIndex = 1;
         BlEdge::orderBy('id')->chunk($chunkSize, function ($edges) use (&$edgeChunkIndex, $dumpDir) {
             $data = $edges->toArray();
             $filename = "edges_part_{$edgeChunkIndex}.json";
             File::put("{$dumpDir}/{$filename}", json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-            $this->line(" - Đã lưu {$filename} (" . count($data) . " records)");
+            $this->line(" - Đã lưu {$filename} (".count($data).' records)');
             $edgeChunkIndex++;
         });
 
         $this->info("✅ HOÀN TẤT DUMP! Toàn bộ file đã được lưu tại: {$dumpDir}");
-        $this->warn("👉 Bạn hãy commit thư mục [database/data/bible_dump] lên Git, sau đó pull về Server production và chạy lệnh: php artisan bible:import-dump");
+        $this->warn('👉 Bạn hãy commit thư mục [database/data/bible_dump] lên Git, sau đó pull về Server production và chạy lệnh: php artisan bible:import-dump');
 
         return 0;
     }

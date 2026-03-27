@@ -39,7 +39,7 @@ class RagScraperService
         // 1. Kinhthanh.httlvn.org (Bản truyền thống 1934)
         if (str_contains($url, 'kinhthanh.httlvn.org')) {
             $contentNodes = $xpath->query('//div[contains(@class, "bible-content")]');
-        } 
+        }
         // 2. Httlvn.org (Tin tức Tổng Liên Hội)
         elseif (str_contains($url, 'httlvn.org')) {
             $contentNodes = $xpath->query('//div[contains(@class, "entry-content")] | //article');
@@ -51,7 +51,7 @@ class RagScraperService
         // 4. Vietchristian.com (Thư Viện Cơ Đốc)
         elseif (str_contains($url, 'vietchristian.com')) {
             $contentNodes = $xpath->query('//div[contains(@class, "Paragraph")] | //blockquote | //p');
-        } 
+        }
         // 5. Fallback tổng quát cho mọi trang
         else {
             $contentNodes = $xpath->query('//main | //article | //div[contains(@class, "content")] | //body');
@@ -70,10 +70,10 @@ class RagScraperService
         // Loại bỏ Script và Style dư thừa
         $rawText = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $rawText);
         $rawText = preg_replace('#<style(.*?)>(.*?)</style>#is', '', $rawText);
-        
+
         // Dọn cỏ khoảng trắng
         $cleanText = preg_replace('/\s+/', ' ', $rawText);
-        
+
         // Cắt bớt nếu văn bản quá khủng (tránh tràn 32k Token của Gemini limit local)
         $cleanText = mb_substr(trim($cleanText), 0, 15000);
 

@@ -1,44 +1,48 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Modules\BibleLearning\Http\Controllers\ApprovalController;
+use Modules\BibleLearning\Http\Controllers\EventController;
 use Modules\BibleLearning\Http\Controllers\FlashcardController;
+use Modules\BibleLearning\Http\Controllers\GraphController;
+use Modules\BibleLearning\Http\Controllers\PortalController;
+use Modules\BibleLearning\Http\Controllers\QuizController;
 
 Route::middleware([])->group(function () {
     // PORTAL HUB
-    Route::get('/bible-learning', [\Modules\BibleLearning\Http\Controllers\PortalController::class, 'index'])->name('biblelearning.portal');
-    Route::get('/api/portal/stats', [\Modules\BibleLearning\Http\Controllers\PortalController::class, 'getStats']);
+    Route::get('/bible-learning', [PortalController::class, 'index'])->name('biblelearning.portal');
+    Route::get('/api/portal/stats', [PortalController::class, 'getStats']);
 
     // EVENT TIMELINE
-    Route::get('/bible-learning/timeline', [\Modules\BibleLearning\Http\Controllers\EventController::class, 'index'])->name('biblelearning.timeline');
-    Route::get('/api/events', [\Modules\BibleLearning\Http\Controllers\EventController::class, 'getEvents']);
+    Route::get('/bible-learning/timeline', [EventController::class, 'index'])->name('biblelearning.timeline');
+    Route::get('/api/events', [EventController::class, 'getEvents']);
 
     // QUIZ ARENA (MỚI BỔ SUNG)
-    Route::get('/bible-learning/quiz', [\Modules\BibleLearning\Http\Controllers\QuizController::class, 'index'])->name('biblelearning.quiz');
-    Route::get('/api/quizzes/random', [\Modules\BibleLearning\Http\Controllers\QuizController::class, 'fetchQuizSession']);
+    Route::get('/bible-learning/quiz', [QuizController::class, 'index'])->name('biblelearning.quiz');
+    Route::get('/api/quizzes/random', [QuizController::class, 'fetchQuizSession']);
 
     // KNOWLEDGE GRAPH
-    Route::get('/bible-learning/graph', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'index'])->name('biblelearning.graph');
-    Route::get('/api/graph', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'fetchGraph']);
-    Route::get('/api/graph/neighbors/{nodeId}', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'fetchNeighbors']);
-    Route::post('/api/graph/parse-text', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'parseText']);
+    Route::get('/bible-learning/graph', [GraphController::class, 'index'])->name('biblelearning.graph');
+    Route::get('/api/graph', [GraphController::class, 'fetchGraph']);
+    Route::get('/api/graph/neighbors/{nodeId}', [GraphController::class, 'fetchNeighbors']);
+    Route::post('/api/graph/parse-text', [GraphController::class, 'parseText']);
 
     // KNOWLEDGE GRAPH ADMIN COMMANDS
-    Route::post('/api/graph/admin/reset', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminReset']);
-    Route::post('/api/graph/admin/export', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminExport']);
-    Route::post('/api/graph/admin/import', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminImport']);
-    Route::post('/api/graph/admin/ingest', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminIngest']);
-    
+    Route::post('/api/graph/admin/reset', [GraphController::class, 'adminReset']);
+    Route::post('/api/graph/admin/export', [GraphController::class, 'adminExport']);
+    Route::post('/api/graph/admin/import', [GraphController::class, 'adminImport']);
+    Route::post('/api/graph/admin/ingest', [GraphController::class, 'adminIngest']);
+
     // Quản Lý Tracking Nạp Dữ Liệu
-    Route::get('/api/graph/admin/ingestion-status', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminGetIngestionStatus']);
-    Route::post('/api/graph/admin/ingest-single', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminIngestSingleFile']);
+    Route::get('/api/graph/admin/ingestion-status', [GraphController::class, 'adminGetIngestionStatus']);
+    Route::post('/api/graph/admin/ingest-single', [GraphController::class, 'adminIngestSingleFile']);
 
     // BIBLE TEXT & COMMENTARY (Local files)
-    Route::get('/api/bible/text', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'getBibleText']);
-    Route::get('/api/bible/commentary', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'getBibleCommentary']);
-    Route::get('/api/bible/import-guide', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'getBibleImportGuide']);
-    Route::get('/api/bible/commentary-books', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'getCommentaryBooks']);
-
+    Route::get('/api/bible/text', [GraphController::class, 'getBibleText']);
+    Route::get('/api/bible/commentary', [GraphController::class, 'getBibleCommentary']);
+    Route::get('/api/bible/import-guide', [GraphController::class, 'getBibleImportGuide']);
+    Route::get('/api/bible/commentary-books', [GraphController::class, 'getCommentaryBooks']);
 
     // APPROVAL CENTER
     Route::get('/bible-learning/approval', [ApprovalController::class, 'index'])->name('biblelearning.approval.index');
@@ -55,5 +59,8 @@ Route::middleware([])->group(function () {
     Route::post('/api/crawl/gemini', [FlashcardController::class, 'crawlHTTLVN']);
 });
 
-Route::get('/api/graph/admin/force-migrate', function() { \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]); return '✅ MIGRATION THÀNH CÔNG, CSDL ĐÃ ĐƯỢC TẠO!'; });
+Route::get('/api/graph/admin/force-migrate', function () {
+    Artisan::call('migrate', ['--force' => true]);
 
+    return '✅ MIGRATION THÀNH CÔNG, CSDL ĐÃ ĐƯỢC TẠO!';
+});

@@ -14,6 +14,6 @@ class BlEvent extends Model
         'era',
         'description',
         'image_url',
-        'order_index'
+        'order_index',
     ];
 }

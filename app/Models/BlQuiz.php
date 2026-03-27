@@ -14,7 +14,7 @@ class BlQuiz extends Model
         'options',
         'correct_option',
         'explanation',
-        'reference'
+        'reference',
     ];
 
     protected $casts = [

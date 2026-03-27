@@ -24,30 +24,32 @@ class GraphParserService
 
         try {
             $response = Http::timeout(30)->post(
-                'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . $this->apiKey,
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='.$this->apiKey,
                 [
                     'contents' => [
-                        ['parts' => [['text' => $prompt]]]
+                        ['parts' => [['text' => $prompt]]],
                     ],
                     'generationConfig' => [
-                        'temperature'       => 0.1,
-                        'maxOutputTokens'   => 8192,
-                        'responseMimeType'  => 'application/json',
+                        'temperature' => 0.1,
+                        'maxOutputTokens' => 8192,
+                        'responseMimeType' => 'application/json',
                     ],
                 ]
             );
 
             if (! $response->successful()) {
-                Log::error('[GraphParserService] Gemini error: ' . $response->body());
+                Log::error('[GraphParserService] Gemini error: '.$response->body());
+
                 return $this->errorResponse('Gemini API không phản hồi. Kiểm tra API key.');
             }
 
-            $body        = $response->json();
-            $rawJson     = $body['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
-            $parsed      = json_decode($rawJson, true);
+            $body = $response->json();
+            $rawJson = $body['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
+            $parsed = json_decode($rawJson, true);
 
             if (! is_array($parsed) || empty($parsed['nodes'])) {
-                Log::warning('[GraphParserService] Invalid output: ' . $rawJson);
+                Log::warning('[GraphParserService] Invalid output: '.$rawJson);
+
                 return $this->errorResponse('AI không thể phân tích văn bản này. Hãy thêm nội dung chi tiết hơn.');
             }
 
@@ -56,7 +58,7 @@ class GraphParserService
             $labelToId = [];
 
             foreach ($parsed['nodes'] as &$node) {
-                $node['id']    = $baseId++;
+                $node['id'] = $baseId++;
                 $node['group'] = $this->sanitizeGroup($node['group'] ?? 'concept');
                 $labelToId[$node['label']] = $node['id'];
             }
@@ -66,25 +68,26 @@ class GraphParserService
             $resolvedEdges = [];
             foreach (($parsed['edges'] ?? []) as $edge) {
                 $from = $labelToId[$edge['from'] ?? ''] ?? null;
-                $to   = $labelToId[$edge['to'] ?? '']   ?? null;
+                $to = $labelToId[$edge['to'] ?? ''] ?? null;
                 if ($from && $to) {
                     $resolvedEdges[] = [
-                        'from'  => $from,
-                        'to'    => $to,
+                        'from' => $from,
+                        'to' => $to,
                         'label' => $edge['relationship'] ?? $edge['label'] ?? 'liên kết với',
                     ];
                 }
             }
 
             return [
-                'ok'      => true,
-                'nodes'   => $parsed['nodes'],
-                'edges'   => $resolvedEdges,
+                'ok' => true,
+                'nodes' => $parsed['nodes'],
+                'edges' => $resolvedEdges,
                 'summary' => $parsed['summary'] ?? 'Đã phân tích xong văn bản.',
             ];
 
         } catch (\Exception $e) {
-            Log::error('[GraphParserService] Exception: ' . $e->getMessage());
+            Log::error('[GraphParserService] Exception: '.$e->getMessage());
+
             return $this->errorResponse($e->getMessage());
         }
     }
@@ -130,6 +133,7 @@ PROMPT;
     private function sanitizeGroup(string $group): string
     {
         $valid = ['person', 'place', 'event', 'concept', 'book_ot', 'book_nt'];
+
         return in_array($group, $valid) ? $group : 'concept';
     }
 

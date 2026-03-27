@@ -3,14 +3,15 @@
 namespace Modules\BibleLearning\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\BlFlashcard;
+use App\Models\BlTempEntity;
 use Modules\BibleLearning\Contracts\ApprovalRepositoryInterface;
 use Modules\BibleLearning\Contracts\FlashcardRepositoryInterface;
-use App\Models\BlFlashcard;
 
 class PortalController extends Controller
 {
     protected ApprovalRepositoryInterface $approvalRepo;
+
     protected FlashcardRepositoryInterface $flashcardRepo;
 
     public function __construct(ApprovalRepositoryInterface $approvalRepo, FlashcardRepositoryInterface $flashcardRepo)
@@ -37,13 +38,13 @@ class PortalController extends Controller
         $totalCards = BlFlashcard::count();
 
         // Tương lai sẽ thêm Event count ở đây
-        $totalEvents = \App\Models\BlTempEntity::where('type', 'event')->where('status', 'approved')->count();
+        $totalEvents = BlTempEntity::where('type', 'event')->where('status', 'approved')->count();
 
         return response()->json([
             'pending_approvals' => $pendingCount,
             'due_flashcards' => $dueCardsCount,
             'total_flashcards' => $totalCards,
-            'total_events' => $totalEvents
+            'total_events' => $totalEvents,
         ]);
     }
 }

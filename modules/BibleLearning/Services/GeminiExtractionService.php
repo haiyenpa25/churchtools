@@ -17,56 +17,63 @@ class GeminiExtractionService implements BibleLearningExtractorContract
 
     public function extract(string $text, string $context = ''): array
     {
-        $prompt = "Bạn là môt chuyên gia Thần học Cơ Đốc (Tin Lành). Dựa vào văn bản dưới đây, hãy trích xuất các thông tin Đáng Giá và phân loại chúng thành một MẢNG JSON thuần túy (không dùng ```json raw code block). Tối đa 5 đối tượng. Các loại type hợp lệ:
-        1. 'flashcard': {question, answer, reference}
-        2. 'event': {title, description, era, order_index}
-        3. 'quiz': {question, options: {A,B,C,D}, correct_option, explanation, reference}
-        4. 'node': {label, group: 'person'|'place'|'event', description}
-        5. 'edge': {source_node_id, target_node_id, relationship} (Dành cho edge, source/target có thể là id tạm, nhưng hãy cố map tên label).
+        $prompt = "Bạn là môt chuyên gia Thần học Cơ Đốc (Tin Lành). Dựa vào văn bản dưới đây, hãy trích xuất các thông tin Đáng Giá và phân loại chúng thành một MẢNG JSON thuần túy (không dùng ```json raw code block). Yêu cầu trích xuất cạn kiệt nhưng KHÔNG BỊA RA THÔNG TIN CHƯA CÓ TRONG VĂN BẢN:
+        1. 'node': {label, group, description}
+           - group phải thuộc 1 trong 4 loại sau (Bắt buộc): 
+             + 'person' (Tên Nhân vật)
+             + 'event' (Sự kiện/Biến cố)
+             + 'place' (Bản đồ/Địa danh)
+             + 'timeline' (Niên đại/Thời khắc)
+           - description: Ghi chú ngắn gọn, súc tích (1-2 câu) về node này trong ngữ cảnh đoạn văn.
+        2. 'edge': {source_node_id, target_node_id, relationship}
+           - source và target phải là tên label của các node vừa tạo.
+           - relationship mô tả hành trình hoặc quan hệ (VD: 'đi đến', 'chỉ đạo', 'tham gia', 'xảy ra lúc').
         
-        Output MUST be EXACTLY a valid JSON Array: [ {\"type\": \"flashcard\", \"title\": \"...\", \"raw_data\": {...}} ]
+        Output MUST be EXACTLY a valid JSON Array: [ {\"type\": \"node\", \"raw_data\": {...}}, {\"type\": \"edge\", \"raw_data\": {...}} ]
         
-        NGỮ CẢNH (RẤT QUAN TRỌNG ĐỂ PHÂN BIỆT ĐỒNG ÂM KHÁC NGHĨA):
-        " . ($context ?: "Bối cảnh Kinh Thánh chung") . "
+        NGỮ CẢNH BẮT BUỘC ĐỂ PHÂN BIỆT ĐỒNG ÂM KHÁC NGHĨA:
+        ".($context ?: 'Bối cảnh Kinh Thánh chung').'
         
-        NỘI DUNG VĂN BẢN:
-        " . $text;
+        NỘI DUNG VĂN BẢN (Hãy duyệt từng dòng):
+        '.$text;
 
-        Log::info('Gemini is processing payload length: ' . strlen($prompt));
+        Log::info('Gemini is processing payload length: '.strlen($prompt));
 
         try {
             $model = env('GEMINI_MODEL', 'gemini-2.5-flash');
-            $response = Http::post('https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $this->apiKey, [
+            $response = Http::post('https://generativelanguage.googleapis.com/v1beta/models/'.$model.':generateContent?key='.$this->apiKey, [
                 'contents' => [
-                    ['parts' => [['text' => $prompt]]]
+                    ['parts' => [['text' => $prompt]]],
                 ],
                 'generationConfig' => [
                     'temperature' => 0.2,
                     'topK' => 40,
                     'topP' => 0.95,
                     'maxOutputTokens' => 8192,
-                    'responseMimeType' => 'application/json'
-                ]
+                    'responseMimeType' => 'application/json',
+                ],
             ]);
 
-            if (!$response->successful()) {
-                Log::error("Gemini API Error: " . $response->body());
+            if (! $response->successful()) {
+                Log::error('Gemini API Error: '.$response->body());
+
                 return [];
             }
 
             $jsonData = $response->json();
             $generatedText = $jsonData['candidates'][0]['content']['parts'][0]['text'] ?? '[]';
-            
+
             $entities = json_decode($generatedText, true);
-            
-            if (!is_array($entities)) {
+
+            if (! is_array($entities)) {
                 return [];
             }
 
             return $entities;
-            
+
         } catch (\Exception $e) {
-            Log::error("Gemini API Exception: " . $e->getMessage());
+            Log::error('Gemini API Exception: '.$e->getMessage());
+
             return [];
         }
     }

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\BlNode;
 use App\Models\BlEdge;
+use App\Models\BlNode;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
 class B66GraphSeeder extends Seeder
@@ -69,7 +69,7 @@ class B66GraphSeeder extends Seeder
             ['id' => 3, 'cat' => 2001, 'name' => 'Lê-vi Ký', 'ref' => '3', 'desc' => 'Luật lệ về sự thánh khiết và thầy tế lễ.'],
             ['id' => 4, 'cat' => 2001, 'name' => 'Dân Số Ký', 'ref' => '4', 'desc' => 'Sự trôi dạt trong đồng vắng.'],
             ['id' => 5, 'cat' => 2001, 'name' => 'Phục Truyền', 'ref' => '5', 'desc' => 'Nhắc lại luật pháp trước khi vào Đất Hứa.'],
-            
+
             // LỊCH SỬ
             ['id' => 6, 'cat' => 2002, 'name' => 'Giô-suê', 'ref' => '6', 'desc' => 'Chiếm hữu Đất Hứa.'],
             ['id' => 7, 'cat' => 2002, 'name' => 'Các Quan Xét', 'ref' => '7', 'desc' => 'Thời kỳ tối tăm của Y-sơ-ra-ên.'],
@@ -106,7 +106,7 @@ class B66GraphSeeder extends Seeder
             ['id' => 41, 'cat' => 3001, 'name' => 'Mác', 'ref' => '41', 'desc' => 'Chúa Giê-xu - Người Tôi Tớ hành động.'],
             ['id' => 42, 'cat' => 3001, 'name' => 'Lu-ca', 'ref' => '42', 'desc' => 'Chúa Giê-xu - Con Người Toàn Hảo.'],
             ['id' => 43, 'cat' => 3001, 'name' => 'Giăng', 'ref' => '43', 'desc' => 'Chúa Giê-xu - Con Đức Chúa Trời.'],
-            
+
             // LỊCH SỬ TÂN ƯỚC
             ['id' => 44, 'cat' => 3002, 'name' => 'Công Vụ Các Sứ Đồ', 'ref' => '44', 'desc' => 'Sự ra đời và bành trướng của Hội Thánh.'],
 
@@ -131,16 +131,16 @@ class B66GraphSeeder extends Seeder
         foreach (array_merge($otBooks, $ntBooks) as $book) {
             $isOT = $book['cat'] < 3000;
             $groupName = $isOT ? 'book_ot' : 'book_nt';
-            $url = "https://kinhthanh.httlvn.org/?v=VI1934&b=" . $book['ref'];
+            $url = 'https://kinhthanh.httlvn.org/?v=VI1934&b='.$book['ref'];
 
             $htmlDesc = "<p><b>Chủ đề:</b> {$book['desc']}</p>";
             $htmlDesc .= "<a href='{$url}' target='_blank' style='display:inline-block; margin-top:8px; padding:6px 12px; background:#2563eb; color:white; border-radius:6px; text-decoration:none; font-size:12px; font-weight:bold;'>📖 Đọc Bản HTTLVN 1934</a>";
 
             $nodes[] = [
-                'id'    => $book['id'],
+                'id' => $book['id'],
                 'label' => $book['name'],
                 'group' => $groupName,
-                'desc'  => $htmlDesc,
+                'desc' => $htmlDesc,
                 'order' => $book['id'],
             ];
 
@@ -162,7 +162,7 @@ class B66GraphSeeder extends Seeder
                 'id' => $gn['id'],
                 'label' => $gn['label'],
                 'group' => $gn['group'],
-                'desc' => "<p>{$gn['desc']}</p><a href='https://kinhthanh.httlvn.org/?v=VI1934&b=1' target='_blank' style='display:inline-block; margin-top:8px; padding:6px 12px; background:#14b8a6; color:white; border-radius:6px; text-decoration:none; font-size:12px; font-weight:bold;'>Đọc Dẫn Chứng</a>"
+                'desc' => "<p>{$gn['desc']}</p><a href='https://kinhthanh.httlvn.org/?v=VI1934&b=1' target='_blank' style='display:inline-block; margin-top:8px; padding:6px 12px; background:#14b8a6; color:white; border-radius:6px; text-decoration:none; font-size:12px; font-weight:bold;'>Đọc Dẫn Chứng</a>",
             ];
             $edges[] = ['from' => 1, 'to' => $gn['id'], 'label' => 'Ghi chép về'];
         }
@@ -186,7 +186,7 @@ class B66GraphSeeder extends Seeder
                 'id' => $en['id'],
                 'label' => $en['label'],
                 'group' => $en['group'],
-                'desc' => "<p>{$en['desc']}</p><a href='https://kinhthanh.httlvn.org/?v=VI1934&b=2' target='_blank' style='display:inline-block; margin-top:8px; padding:6px 12px; background:#14b8a6; color:white; border-radius:6px; text-decoration:none; font-size:12px; font-weight:bold;'>Đọc Dẫn Chứng</a>"
+                'desc' => "<p>{$en['desc']}</p><a href='https://kinhthanh.httlvn.org/?v=VI1934&b=2' target='_blank' style='display:inline-block; margin-top:8px; padding:6px 12px; background:#14b8a6; color:white; border-radius:6px; text-decoration:none; font-size:12px; font-weight:bold;'>Đọc Dẫn Chứng</a>",
             ];
             $edges[] = ['from' => 2, 'to' => $en['id'], 'label' => 'Ghi chép về'];
         }
@@ -209,7 +209,7 @@ class B66GraphSeeder extends Seeder
             ['id' => 9024, 'label' => 'Hang Sư Tử', 'group' => 'event', 'desc' => 'Đa-ni-ên không bị sư tử hại vì Chúa bảo vệ. <b>(Đa-ni-ên 6)</b>'],
             ['id' => 9025, 'label' => 'Ba-by-lôn', 'group' => 'place', 'desc' => 'Đế quốc vĩ đại nơi tuyển dân bị lưu đày. <b>(Đa-ni-ên 1:1)</b>'],
         ];
-        $link27 = "https://kinhthanh.httlvn.org/?v=VI1934&b=27";
+        $link27 = 'https://kinhthanh.httlvn.org/?v=VI1934&b=27';
         foreach ($danNodes as $dn) {
             $nodes[] = ['id' => $dn['id'], 'label' => $dn['label'], 'group' => $dn['group'], 'desc' => "<p>{$dn['desc']}</p><a href='{$link27}' target='_blank' style='display:inline-block;margin-top:8px;padding:6px 12px;background:#8b5cf6;color:white;border-radius:6px;text-decoration:none;font-size:12px;font-weight:bold;'>Đọc Đa-ni-ên</a>", 'order' => 27];
             $edges[] = ['from' => 27, 'to' => $dn['id'], 'label' => 'Ghi chép về'];
@@ -227,7 +227,7 @@ class B66GraphSeeder extends Seeder
             ['id' => 9034, 'label' => 'Phép Báp-têm', 'group' => 'event', 'desc' => 'Giê-xu chịu phép báp-têm bởi Giăng Báp-tít. Trời mở ra. <b>(Ma-thi-ơ 3:16)</b>'],
             ['id' => 9035, 'label' => 'Bài Giảng Trên Núi', 'group' => 'event', 'desc' => 'Tám Phúc: Nền tảng đạo đức của Vương Quốc Đức Chúa Trời. <b>(Ma-thi-ơ 5-7)</b>'],
         ];
-        $link40 = "https://kinhthanh.httlvn.org/?v=VI1934&b=40";
+        $link40 = 'https://kinhthanh.httlvn.org/?v=VI1934&b=40';
         foreach ($matNodes as $mn) {
             $nodes[] = ['id' => $mn['id'], 'label' => $mn['label'], 'group' => $mn['group'], 'desc' => "<p>{$mn['desc']}</p><a href='{$link40}' target='_blank' style='display:inline-block;margin-top:8px;padding:6px 12px;background:#f59e0b;color:white;border-radius:6px;text-decoration:none;font-size:12px;font-weight:bold;'>Đọc Ma-thi-ơ</a>", 'order' => 40];
             $edges[] = ['from' => 40, 'to' => $mn['id'], 'label' => 'Ghi chép về'];
@@ -247,7 +247,7 @@ class B66GraphSeeder extends Seeder
             ['id' => 9044, 'label' => 'Phép Lạ Tại Ca-na', 'group' => 'event', 'desc' => 'Phép lạ đầu tiên: Nước hóa rượu tại tiệc cưới Ca-na. <b>(Giăng 2:1-11)</b>'],
             ['id' => 9045, 'label' => 'Phòng Tiệc Ly', 'group' => 'place', 'desc' => 'Nơi Chúa Giê-xu lập Tiệc Thánh và rửa chân môn đồ. <b>(Giăng 13)</b>'],
         ];
-        $link43 = "https://kinhthanh.httlvn.org/?v=VI1934&b=43";
+        $link43 = 'https://kinhthanh.httlvn.org/?v=VI1934&b=43';
         foreach ($johnNodes as $jn) {
             $nodes[] = ['id' => $jn['id'], 'label' => $jn['label'], 'group' => $jn['group'], 'desc' => "<p>{$jn['desc']}</p><a href='{$link43}' target='_blank' style='display:inline-block;margin-top:8px;padding:6px 12px;background:#06b6d4;color:white;border-radius:6px;text-decoration:none;font-size:12px;font-weight:bold;'>Đọc Giăng</a>", 'order' => 43];
             $edges[] = ['from' => 43, 'to' => $jn['id'], 'label' => 'Ghi chép về'];
@@ -264,7 +264,7 @@ class B66GraphSeeder extends Seeder
             ['id' => 9054, 'label' => 'Giê-ru-sa-lem Mới', 'group' => 'place', 'desc' => 'Thành phố vĩ đại từ trời xuống — đời sống đời đời. <b>(Khải Huyền 21)</b>'],
             ['id' => 9055, 'label' => 'Chiên Con', 'group' => 'concept', 'desc' => 'Hình ảnh Đấng Christ đã bị giết nhưng đang sống — Vua của vua chúa. <b>(Khải Huyền 5:6)</b>'],
         ];
-        $link66 = "https://kinhthanh.httlvn.org/?v=VI1934&b=66";
+        $link66 = 'https://kinhthanh.httlvn.org/?v=VI1934&b=66';
         foreach ($revNodes as $rn) {
             $nodes[] = ['id' => $rn['id'], 'label' => $rn['label'], 'group' => $rn['group'], 'desc' => "<p>{$rn['desc']}</p><a href='{$link66}' target='_blank' style='display:inline-block;margin-top:8px;padding:6px 12px;background:#dc2626;color:white;border-radius:6px;text-decoration:none;font-size:12px;font-weight:bold;'>Đọc Khải Huyền</a>", 'order' => 66];
             $edges[] = ['from' => 66, 'to' => $rn['id'], 'label' => 'Ghi chép về'];
@@ -284,17 +284,17 @@ class B66GraphSeeder extends Seeder
             3 => [ // Lê-vi Ký
                 ['id' => 9101, 'label' => 'Lễ Vượt Qua', 'group' => 'event', 'desc' => 'Kỷ niệm Chúa cứu Y-sơ-ra-ên khỏi Ai Cập.'],
                 ['id' => 9102, 'label' => 'Đền Tạm', 'group' => 'place', 'desc' => 'Nơi ngự của Đức Chúa Trời giữa vòng dân sự.'],
-                ['id' => 9103, 'label' => 'Thầy Tế Lễ', 'group' => 'concept', 'desc' => 'Người trung gian giữa Đức Chúa Trời và con người.']
+                ['id' => 9103, 'label' => 'Thầy Tế Lễ', 'group' => 'concept', 'desc' => 'Người trung gian giữa Đức Chúa Trời và con người.'],
             ],
             6 => [ // Giô-suê
                 ['id' => 9104, 'label' => 'Giô-suê', 'group' => 'person', 'desc' => 'Người kế nhiệm Môi-se, dẫn dân vào Đất Hứa.'],
                 ['id' => 9105, 'label' => 'Giê-ri-cô', 'group' => 'place', 'desc' => 'Thành trì kiên cố bị sụp đổ bởi tiếng kèn.'],
-                ['id' => 9106, 'label' => 'Sông Giô-đanh', 'group' => 'place', 'desc' => 'Dòng sông rẽ nước cho Y-sơ-ra-ên đi qua.']
+                ['id' => 9106, 'label' => 'Sông Giô-đanh', 'group' => 'place', 'desc' => 'Dòng sông rẽ nước cho Y-sơ-ra-ên đi qua.'],
             ],
             7 => [ // Các Quan Xét
                 ['id' => 9107, 'label' => 'Sam-sôn', 'group' => 'person', 'desc' => 'Quan xét có sức mạnh phi thường từ tóc.'],
                 ['id' => 9108, 'label' => 'Ghê-đê-ôn', 'group' => 'person', 'desc' => 'Quan xét chiến thắng với 300 người.'],
-                ['id' => 9109, 'label' => 'Đê-bô-ra', 'group' => 'person', 'desc' => 'Nữ tiên tri và nữ quan xét của Y-sơ-ra-ên.']
+                ['id' => 9109, 'label' => 'Đê-bô-ra', 'group' => 'person', 'desc' => 'Nữ tiên tri và nữ quan xét của Y-sơ-ra-ên.'],
             ],
             8 => [ // Ru-tơ
                 ['id' => 9110, 'label' => 'Ru-tơ', 'group' => 'person', 'desc' => 'Người nữ Mô-áp, tổ mẫu của Vua Đa-vít.'],
@@ -303,55 +303,55 @@ class B66GraphSeeder extends Seeder
             9 => [ // I Sa-mu-ên
                 ['id' => 9112, 'label' => 'Sa-mu-ên', 'group' => 'person', 'desc' => 'Tiên tri và quan xét cuối cùng.'],
                 ['id' => 9113, 'label' => 'Đa-vít', 'group' => 'person', 'desc' => 'Vị vua vĩ đại nhất của Y-sơ-ra-ên, người vừa lòng Đức Chúa Trời.'],
-                ['id' => 9114, 'label' => 'Gô-li-át', 'group' => 'person', 'desc' => 'Tên khổng lồ Phi-li-tin bị Đa-vít đánh bại.']
+                ['id' => 9114, 'label' => 'Gô-li-át', 'group' => 'person', 'desc' => 'Tên khổng lồ Phi-li-tin bị Đa-vít đánh bại.'],
             ],
             11 => [ // I Các Vua
                 ['id' => 9115, 'label' => 'Sa-lô-môn', 'group' => 'person', 'desc' => 'Vua khôn ngoan nhất, xây dựng Đền Thờ đầu tiên.'],
                 ['id' => 9116, 'label' => 'Ê-li', 'group' => 'person', 'desc' => 'Tiên tri quyền năng, được cất lên trời trong xe lửa.'],
-                ['id' => 9117, 'label' => 'Đền Thờ', 'group' => 'place', 'desc' => 'Trung tâm thờ phượng tại Giê-ru-sa-lem.']
+                ['id' => 9117, 'label' => 'Đền Thờ', 'group' => 'place', 'desc' => 'Trung tâm thờ phượng tại Giê-ru-sa-lem.'],
             ],
             23 => [ // Ê-sai
                 ['id' => 9118, 'label' => 'Ê-sai', 'group' => 'person', 'desc' => 'Tiên tri vĩ đại, báo trước sự giáng sinh của Đấng Mê-si.'],
-                ['id' => 9119, 'label' => 'Đấng Mê-si', 'group' => 'concept', 'desc' => 'Đấng Cứu Thế được xức dầu.']
+                ['id' => 9119, 'label' => 'Đấng Mê-si', 'group' => 'concept', 'desc' => 'Đấng Cứu Thế được xức dầu.'],
             ],
             32 => [ // Giô-na
                 ['id' => 9120, 'label' => 'Giô-na', 'group' => 'person', 'desc' => 'Tiên tri chạy trốn Chúa, bị cá nuốt 3 ngày.'],
                 ['id' => 9121, 'label' => 'Ni-ni-ve', 'group' => 'place', 'desc' => 'Thủ đô A-si-ri, ăn năn khi nghe giảng.'],
             ],
-            
+
             // TÂN ƯỚC
             42 => [ // Lu-ca
                 ['id' => 9122, 'label' => 'Xa-chê', 'group' => 'person', 'desc' => 'Người thu thuế nhỏ thó trèo lên cây sung để gặp Chúa.'],
-                ['id' => 9123, 'label' => 'Người Sa-ma-ri Nhân Lành', 'group' => 'concept', 'desc' => 'Câu chuyện thí dụ về tình yêu thương láng giềng.']
+                ['id' => 9123, 'label' => 'Người Sa-ma-ri Nhân Lành', 'group' => 'concept', 'desc' => 'Câu chuyện thí dụ về tình yêu thương láng giềng.'],
             ],
             44 => [ // Công Vụ
                 ['id' => 9124, 'label' => 'Phao-lô', 'group' => 'person', 'desc' => 'Sứ đồ của dân ngoại, tác giả 13 thư tín Tân Ước.'],
                 ['id' => 9125, 'label' => 'Lễ Ngũ Tuần', 'group' => 'event', 'desc' => 'Đức Thánh Linh giáng lâm, Hội Thánh đầu tiên được thành lập.'],
-                ['id' => 9126, 'label' => 'An-ti-ốt', 'group' => 'place', 'desc' => 'Nơi môn đồ lần đầu tiên được gọi là Cơ-đốc nhân.']
+                ['id' => 9126, 'label' => 'An-ti-ốt', 'group' => 'place', 'desc' => 'Nơi môn đồ lần đầu tiên được gọi là Cơ-đốc nhân.'],
             ],
             45 => [ // Rô-ma
                 ['id' => 9127, 'label' => 'Sự Xưng Công Bình', 'group' => 'concept', 'desc' => 'Con người được kể là vô tội nhờ đức tin nơi Đấng Christ.'],
-                ['id' => 9128, 'label' => 'Ân Điển', 'group' => 'concept', 'desc' => 'Sự ban cho không xứng đáng từ Đức Chúa Trời.']
+                ['id' => 9128, 'label' => 'Ân Điển', 'group' => 'concept', 'desc' => 'Sự ban cho không xứng đáng từ Đức Chúa Trời.'],
             ],
             58 => [ // Hê-bơ-rơ
                 ['id' => 9129, 'label' => 'Mên-chi-xê-đéc', 'group' => 'person', 'desc' => 'Vua và Thầy Tế Lễ bí ẩn, hình bóng của Đấng Christ.'],
-                ['id' => 9130, 'label' => 'Đức Tin', 'group' => 'concept', 'desc' => 'Sự biết chắc vững vàng của những điều mình đương mong đợi.']
-            ]
+                ['id' => 9130, 'label' => 'Đức Tin', 'group' => 'concept', 'desc' => 'Sự biết chắc vững vàng của những điều mình đương mong đợi.'],
+            ],
         ];
 
         foreach ($extendedData as $bookId => $bookNodes) {
-            $linkBook = "https://kinhthanh.httlvn.org/?v=VI1934&b=" . $bookId;
+            $linkBook = 'https://kinhthanh.httlvn.org/?v=VI1934&b='.$bookId;
             foreach ($bookNodes as $en) {
                 $color = ($bookId < 40) ? '#14b8a6' : '#3b82f6'; // Teal for OT, Blue for NT
-                
+
                 $nodes[] = [
                     'id' => $en['id'],
                     'label' => $en['label'],
                     'group' => $en['group'],
                     'desc' => "<p>{$en['desc']}</p><a href='{$linkBook}' target='_blank' style='display:inline-block;margin-top:8px;padding:6px 12px;background:{$color};color:white;border-radius:6px;text-decoration:none;font-size:12px;font-weight:bold;'>Đọc Dẫn Chứng</a>",
-                    'order' => $bookId
+                    'order' => $bookId,
                 ];
-                
+
                 $edges[] = ['from' => $bookId, 'to' => $en['id'], 'label' => 'Ghi chép về'];
             }
         }
@@ -373,9 +373,9 @@ class B66GraphSeeder extends Seeder
         // ══════════════════════════════════════════════════════
         foreach ($nodes as $n) {
             BlNode::create([
-                'id'          => $n['id'],
-                'label'       => $n['label'],
-                'group'       => $n['group'],
+                'id' => $n['id'],
+                'label' => $n['label'],
+                'group' => $n['group'],
                 'description' => $n['desc'] ?? '',
             ]);
         }
@@ -384,9 +384,8 @@ class B66GraphSeeder extends Seeder
             BlEdge::create([
                 'source_node_id' => $e['from'],
                 'target_node_id' => $e['to'],
-                'relationship'   => $e['label'],
+                'relationship' => $e['label'],
             ]);
         }
     }
 }
-

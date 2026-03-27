@@ -2,9 +2,8 @@
 
 namespace Modules\BibleLearning\Services;
 
-use App\Models\BlNode;
 use App\Models\BlEdge;
-use Illuminate\Support\Facades\Log;
+use App\Models\BlNode;
 
 class EntityResolutionService
 {
@@ -15,7 +14,7 @@ class EntityResolutionService
     {
         // 1. Chuẩn hóa tên (Alias Normalization)
         $normalizedName = $this->normalizeAlias($name);
-        
+
         if (empty($normalizedName)) {
             return null;
         }
@@ -27,9 +26,34 @@ class EntityResolutionService
             ['description' => $description, 'metadata' => empty($metadata) ? null : $metadata]
         );
 
-        // Nếu node đã tồn tại, ta có thể update metadata nếu cần (tạm thời không ghi đè để bảo toàn data gốc)
-        // Nếu muốn update: $node->update(['metadata' => array_merge($node->metadata ?? [], $metadata)]);
-        
+        // THUẬT TOÁN ĐỌC HIỂU LIÊN KẾT: Tích lũy thêm Dữ Liệu nếu Nhân vật/Sự kiện đã tồn tại
+        if (! $node->wasRecentlyCreated) {
+            $updated = false;
+
+            // 1. Dồn nội dung Description
+            if (! empty($description) && ! str_contains((string) $node->description, $description)) {
+                $separator = empty($node->description) ? '' : "\n- ";
+                $node->description = trim($node->description.$separator.$description);
+                $updated = true;
+            }
+
+            // 2. Tích lũy Nơi Trích Dẫn (Mentions)
+            $existingMeta = $node->metadata ?? [];
+            if (! empty($metadata['source_verse'])) {
+                $mentions = $existingMeta['mentions'] ?? [];
+                if (! in_array($metadata['source_verse'], $mentions)) {
+                    $mentions[] = $metadata['source_verse'];
+                    $existingMeta['mentions'] = $mentions;
+                    $node->metadata = $existingMeta;
+                    $updated = true;
+                }
+            }
+
+            if ($updated) {
+                $node->save();
+            }
+        }
+
         return $node;
     }
 
@@ -47,10 +71,10 @@ class EntityResolutionService
             [
                 'source_node_id' => $source->id,
                 'target_node_id' => $target->id,
-                'relationship'   => $relationship
+                'relationship' => $relationship,
             ],
             [
-                'metadata' => empty($metadata) ? null : $metadata
+                'metadata' => empty($metadata) ? null : $metadata,
             ]
         );
 
@@ -64,7 +88,7 @@ class EntityResolutionService
     {
         $name = trim($name);
         $lowerName = mb_strtolower($name, 'UTF-8');
-        
+
         // Load từ điển từ config/bible_aliases.php
         $aliases = config('bible_aliases', []);
 

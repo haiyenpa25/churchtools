@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\ExtractBibleChunkJob;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use App\Jobs\ExtractBibleChunkJob;
+use Modules\BibleLearning\Services\ImportTrackerService;
 
 class ParseBibleCommand extends Command
 {
@@ -19,32 +20,35 @@ class ParseBibleCommand extends Command
         $category = $this->option('category');
         $path = base_path("tai-lieu/{$category}");
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             $this->error("Lỗi: Không tìm thấy thư mục: {$path}");
+
             return;
         }
 
         $files = File::files($path);
-        
+
         if (empty($files)) {
-            $this->error("Thư mục trống hoặc không có file.");
+            $this->error('Thư mục trống hoặc không có file.');
+
             return;
         }
 
         $bookFilter = $this->option('book');
         $jobCount = 0;
 
-        $this->info("Bắt đầu quy trình Chunking & Đẩy vào Queue...");
+        $this->info('Bắt đầu quy trình Chunking & Đẩy vào Queue...');
         $bar = $this->output->createProgressBar(count($files));
-        $tracker = app(\Modules\BibleLearning\Services\ImportTrackerService::class);
+        $tracker = app(ImportTrackerService::class);
 
         foreach ($files as $file) {
             $filename = $file->getFilenameWithoutExtension();
             $hash = md5_file($file->getRealPath());
-            
+
             // Lọc theo cờ --book (rất hữu ích để test riêng lẻ)
-            if ($bookFilter && !str_contains(mb_strtolower($filename, 'UTF-8'), mb_strtolower($bookFilter, 'UTF-8'))) {
+            if ($bookFilter && ! str_contains(mb_strtolower($filename, 'UTF-8'), mb_strtolower($bookFilter, 'UTF-8'))) {
                 $bar->advance();
+
                 continue;
             }
 
@@ -52,18 +56,20 @@ class ParseBibleCommand extends Command
             if ($tracker->isProcessedAndUnchanged($category, $filename, $hash)) {
                 $this->info("\n[SKIP] Bỏ qua file đã phân tích xong: {$filename}");
                 $bar->advance();
+
                 continue;
             }
 
             $lines = file($file->getRealPath(), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             if (empty($lines)) {
                 $bar->advance();
+
                 continue;
             }
 
             // Dòng đầu tiên luôn là "Tên sách + Chương", VD: "Ma-thi-ơ 1"
             $bookAndChapterName = trim(array_shift($lines));
-            
+
             preg_match('/^(.*?)\s+?(\d+)$/', $bookAndChapterName, $matches);
             $bookName = trim($matches[1] ?? $bookAndChapterName);
             $chapter = (int) ($matches[2] ?? 0);
@@ -78,11 +84,11 @@ class ParseBibleCommand extends Command
 
             foreach ($chunks as $chunk) {
                 $textChunk = implode("\n", $chunk);
-                
+
                 // Lấy số câu
                 preg_match('/^(\d+)/', $chunk[0] ?? '', $startMatch);
                 preg_match('/^(\d+)/', end($chunk) ?? '', $endMatch);
-                
+
                 $startV = $startMatch[1] ?? '?';
                 $endV = $endMatch[1] ?? '?';
                 $versesRange = ($startV === $endV) ? $startV : "$startV-$endV";
@@ -96,9 +102,9 @@ class ParseBibleCommand extends Command
 
         $bar->finish();
         $this->newLine(2);
-        
+
         // Hoàn tất
         $this->info("✅ Đã bắn THÀNH CÔNG {$jobCount} Jobs vào Queue (Hàng đợi)!");
-        $this->line("👉 Để xử lý, bạn mở terminal mới và gõ: <fg=green>php artisan queue:work</>");
+        $this->line('👉 Để xử lý, bạn mở terminal mới và gõ: <fg=green>php artisan queue:work</>');
     }
 }

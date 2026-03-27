@@ -5,9 +5,17 @@ namespace Modules\BibleLearning\Providers;
 use Illuminate\Support\ServiceProvider;
 use Modules\BibleLearning\Contracts\ApprovalRepositoryInterface;
 use Modules\BibleLearning\Contracts\BibleLearningExtractorContract;
+use Modules\BibleLearning\Contracts\EventRepositoryInterface;
 use Modules\BibleLearning\Contracts\FlashcardRepositoryInterface;
+use Modules\BibleLearning\Contracts\GraphRepositoryInterface;
+use Modules\BibleLearning\Contracts\ImportTrackerRepositoryInterface;
+use Modules\BibleLearning\Contracts\QuizRepositoryInterface;
 use Modules\BibleLearning\Repositories\ApprovalRepository;
+use Modules\BibleLearning\Repositories\EventRepository;
 use Modules\BibleLearning\Repositories\FlashcardRepository;
+use Modules\BibleLearning\Repositories\GraphRepository;
+use Modules\BibleLearning\Repositories\ImportTrackerRepository;
+use Modules\BibleLearning\Repositories\QuizRepository;
 use Modules\BibleLearning\Services\GeminiExtractionService;
 
 class BibleLearningServiceProvider extends ServiceProvider
@@ -17,24 +25,24 @@ class BibleLearningServiceProvider extends ServiceProvider
         $this->app->bind(BibleLearningExtractorContract::class, GeminiExtractionService::class);
         $this->app->bind(ApprovalRepositoryInterface::class, ApprovalRepository::class);
         $this->app->bind(
-            \Modules\BibleLearning\Contracts\FlashcardRepositoryInterface::class,
-            \Modules\BibleLearning\Repositories\FlashcardRepository::class
+            FlashcardRepositoryInterface::class,
+            FlashcardRepository::class
         );
         $this->app->bind(
-            \Modules\BibleLearning\Contracts\EventRepositoryInterface::class,
-            \Modules\BibleLearning\Repositories\EventRepository::class
+            EventRepositoryInterface::class,
+            EventRepository::class
         );
         $this->app->bind(
-            \Modules\BibleLearning\Contracts\QuizRepositoryInterface::class,
-            \Modules\BibleLearning\Repositories\QuizRepository::class
+            QuizRepositoryInterface::class,
+            QuizRepository::class
         );
         $this->app->bind(
-            \Modules\BibleLearning\Contracts\GraphRepositoryInterface::class,
-            \Modules\BibleLearning\Repositories\GraphRepository::class
+            GraphRepositoryInterface::class,
+            GraphRepository::class
         );
         $this->app->bind(
-            \Modules\BibleLearning\Contracts\ImportTrackerRepositoryInterface::class,
-            \Modules\BibleLearning\Repositories\ImportTrackerRepository::class
+            ImportTrackerRepositoryInterface::class,
+            ImportTrackerRepository::class
         );
     }
 

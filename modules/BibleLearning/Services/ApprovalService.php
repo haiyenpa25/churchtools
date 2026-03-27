@@ -2,6 +2,11 @@
 
 namespace Modules\BibleLearning\Services;
 
+use App\Models\BlEdge;
+use App\Models\BlEvent;
+use App\Models\BlFlashcard;
+use App\Models\BlNode;
+use App\Models\BlQuiz;
 use Exception;
 use InvalidArgumentException;
 use Modules\BibleLearning\Contracts\ApprovalRepositoryInterface;
@@ -38,7 +43,7 @@ class ApprovalService
         // Logic Auto-Move: Chuyển dữ liệu Flashcard nháp sang Database chính thức sau khi duyệt
         if ($entity->type === 'flashcard' && $entity->raw_data) {
             $data = is_string($entity->raw_data) ? json_decode($entity->raw_data, true) : $entity->raw_data;
-            \App\Models\BlFlashcard::create([
+            BlFlashcard::create([
                 'question' => $data['question'] ?? $entity->title,
                 'answer' => $data['answer'] ?? $entity->description,
                 'reference' => $data['reference'] ?? null,
@@ -46,11 +51,11 @@ class ApprovalService
                 'status' => 'active',
             ]);
         }
-        
+
         // Logic Auto-Move: Chuyển dữ liệu Sự Kiện (Event) vào bảng bl_events
         if ($entity->type === 'event' && $entity->raw_data) {
             $data = is_string($entity->raw_data) ? json_decode($entity->raw_data, true) : $entity->raw_data;
-            \App\Models\BlEvent::create([
+            BlEvent::create([
                 'title' => $data['title'] ?? $entity->title,
                 'era' => $data['era'] ?? null,
                 'description' => $data['description'] ?? $entity->description,
@@ -62,7 +67,7 @@ class ApprovalService
         // Logic Auto-Move: Chuyển Trắc nghiệm (Quiz) vào bảng bl_quizzes
         if ($entity->type === 'quiz' && $entity->raw_data) {
             $data = is_string($entity->raw_data) ? json_decode($entity->raw_data, true) : $entity->raw_data;
-            \App\Models\BlQuiz::create([
+            BlQuiz::create([
                 'question' => $data['question'] ?? $entity->title,
                 'options' => $data['options'] ?? [],
                 'correct_option' => $data['correct_option'] ?? 'A',
@@ -70,11 +75,11 @@ class ApprovalService
                 'reference' => $data['reference'] ?? null,
             ]);
         }
-        
+
         // Logic Auto-Move: Đỉnh (Node)
         if ($entity->type === 'node' && $entity->raw_data) {
             $data = is_string($entity->raw_data) ? json_decode($entity->raw_data, true) : $entity->raw_data;
-            \App\Models\BlNode::create([
+            BlNode::create([
                 'label' => $data['label'] ?? $entity->title,
                 'group' => $data['group'] ?? 'person',
                 'description' => $data['description'] ?? $entity->description,
@@ -84,7 +89,7 @@ class ApprovalService
         // Logic Auto-Move: Cạnh lưới (Edge)
         if ($entity->type === 'edge' && $entity->raw_data) {
             $data = is_string($entity->raw_data) ? json_decode($entity->raw_data, true) : $entity->raw_data;
-            \App\Models\BlEdge::create([
+            BlEdge::create([
                 'source_node_id' => $data['source_node_id'],
                 'target_node_id' => $data['target_node_id'],
                 'relationship' => $data['relationship'] ?? 'related_to',

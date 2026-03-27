@@ -2,18 +2,19 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\BlNode;
 use App\Models\BlEdge;
+use App\Models\BlNode;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class ProGraphSeeder extends Seeder
 {
     public function run()
     {
-        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        Schema::disableForeignKeyConstraints();
         BlNode::truncate();
         BlEdge::truncate();
-        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+        Schema::enableForeignKeyConstraints();
 
         // TẠO NHỮNG ĐỈNH (NODES) ĐẦU TIÊN THEO SÁNG THẾ KÝ
         $nodes = [
@@ -40,7 +41,7 @@ class ProGraphSeeder extends Seeder
                 'id' => $id,
                 'label' => $node['label'],
                 'group' => $node['group'],
-                'description' => $node['description']
+                'description' => $node['description'],
             ]);
         }
 
@@ -50,37 +51,37 @@ class ProGraphSeeder extends Seeder
             ['source' => 5, 'target' => 3, 'label' => 'Tạo Ra'],
             ['source' => 5, 'target' => 4, 'label' => 'Tạo Ra'],
             ['source' => 5, 'target' => 2, 'label' => 'Nơi Chốn'],
-            
+
             ['source' => 3, 'target' => 6, 'label' => 'Sinh ra'],
             ['source' => 3, 'target' => 7, 'label' => 'Sinh ra'],
             ['source' => 4, 'target' => 6, 'label' => 'Sinh ra'],
             ['source' => 4, 'target' => 7, 'label' => 'Sinh ra'],
-            
+
             ['source' => 6, 'target' => 7, 'label' => 'Giết'],
-            
+
             ['source' => 3, 'target' => 8, 'label' => 'Sinh ra (Thay thế)'],
             ['source' => 8, 'target' => 9, 'label' => 'Tổ tiên của'],
-            
+
             ['source' => 1, 'target' => 10, 'label' => 'Giáng Quả'],
             ['source' => 9, 'target' => 10, 'label' => 'Vượt Qua'],
-            
+
             ['source' => 9, 'target' => 11, 'label' => 'Tổ tiên của'],
             ['source' => 11, 'target' => 12, 'label' => 'Bác của'],
-            
+
             ['source' => 11, 'target' => 14, 'label' => 'Sinh ra (với Aga)'],
             ['source' => 11, 'target' => 13, 'label' => 'Sinh ra (với Sa-ra)'],
-            
+
             ['source' => 13, 'target' => 15, 'label' => 'Sinh ra'],
             ['source' => 13, 'target' => 16, 'label' => 'Sinh ra'],
-            
-            ['source' => 15, 'target' => 16, 'label' => 'Cướp phước lành']
+
+            ['source' => 15, 'target' => 16, 'label' => 'Cướp phước lành'],
         ];
 
         foreach ($edges as $edge) {
             BlEdge::create([
                 'source_node_id' => $edge['source'],
                 'target_node_id' => $edge['target'],
-                'relationship' => $edge['label']
+                'relationship' => $edge['label'],
             ]);
         }
     }

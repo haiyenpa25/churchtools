@@ -29,9 +29,10 @@ class ImportGraphCommand extends Command
     {
         $dumpDir = database_path('data/bible_dump');
 
-        if (!File::exists($dumpDir)) {
+        if (! File::exists($dumpDir)) {
             $this->error("Không tìm thấy thư mục dump: {$dumpDir}");
             $this->line("Vui lòng copy thư mục 'bible_dump' từ môi trường Local lên server.");
+
             return 1;
         }
 
@@ -52,10 +53,11 @@ class ImportGraphCommand extends Command
 
         if (empty($nodeFiles) && empty($edgeFiles)) {
             $this->error('Không có file JSON nào trong thư mục dump!');
+
             return 1;
         }
 
-        $this->info("Tìm thấy " . count($nodeFiles) . " file Nodes và " . count($edgeFiles) . " file Edges.");
+        $this->info('Tìm thấy '.count($nodeFiles).' file Nodes và '.count($edgeFiles).' file Edges.');
 
         DB::beginTransaction();
         try {
@@ -64,9 +66,9 @@ class ImportGraphCommand extends Command
                 $this->line("Đang nạp file Thực Thể: {$file->getFilename()}...");
                 $json = File::get($file->getPathname());
                 $data = json_decode($json, true);
-                
+
                 // Ép Ký tự Unicode và Encode mảng JSON cho cột metadata nếu cần
-                // Eloquent toArray() đã trả về array cho attribute casting. 
+                // Eloquent toArray() đã trả về array cho attribute casting.
                 // Khi dùng DB::table()->insert(), ta phải tự encode mảng metadata lại thành string JSON.
                 foreach ($data as &$row) {
                     if (isset($row['metadata']) && is_array($row['metadata'])) {
@@ -99,7 +101,8 @@ class ImportGraphCommand extends Command
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error("Có lỗi xảy ra trong quá trình nạp dữ liệu: " . $e->getMessage());
+            $this->error('Có lỗi xảy ra trong quá trình nạp dữ liệu: '.$e->getMessage());
+
             return 1;
         }
 

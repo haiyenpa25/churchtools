@@ -28,9 +28,10 @@ class ResetGraphCommand extends Command
     public function handle()
     {
         $this->warn('⚠️  CẢNH BÁO: Lệnh này sẽ XÓA TOÀN BỘ dữ liệu Knowledge Graph (Nodes & Edges).');
-        
-        if (!$this->option('force') && !$this->confirm('Bạn có CỰC KỲ CHẮC CHẮN muốn xóa sạch dữ liệu không?', false)) {
+
+        if (! $this->option('force') && ! $this->confirm('Bạn có CỰC KỲ CHẮC CHẮN muốn xóa sạch dữ liệu không?', false)) {
             $this->info('Đã hủy thao tác xóa.');
+
             return 0;
         }
 
@@ -38,14 +39,14 @@ class ResetGraphCommand extends Command
 
         // Tắt kiểm tra khóa ngoại để Truncate an toàn
         Schema::disableForeignKeyConstraints();
-        
+
         DB::table('bl_edges')->truncate();
         DB::table('bl_nodes')->truncate();
-        
+
         Schema::enableForeignKeyConstraints();
 
         $this->info('✅ Đã dọn sạch bảng bl_nodes và bl_edges thành công!');
-        
+
         return 0;
     }
 }

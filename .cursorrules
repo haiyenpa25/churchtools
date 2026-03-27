@@ -1,0 +1,3 @@
+# ChurchTools Project Rules
+
+- **Bắt buộc sử dụng mã hóa UTF-8**: Mọi tiến trình đọc, ghi, xử lý file (đặc biệt là văn bản Kinh Thánh `.txt`, Giải Nghĩa) đều phải được thực hiện với chuẩn mã hóa UTF-8. Từ định dạng file lưu trữ, kết nối Cơ sở dữ liệu, cho đến thao tác Output/Input của Bot đều phải tuân thủ nghiêm ngặt để giữ nguyên vẹn dấu Tiếng Việt (Vietnamese tones).

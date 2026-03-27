@@ -8,22 +8,30 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Modules\BibleLearning\Services\GeminiExtractionService;
 use Modules\BibleLearning\Services\EntityResolutionService;
+use Modules\BibleLearning\Services\GeminiExtractionService;
+use Modules\BibleLearning\Services\ImportTrackerService;
 
 class ExtractBibleChunkJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 120; // 2 phút timeout cho API Gemini
+
     public $tries = 3;     // Thử lại 3 lần nếu API lỗi (Rate limit)
 
     protected string $textChunk;
+
     protected string $bookName;
+
     protected int $chapter;
+
     protected string $versesRange;
+
     protected string $category;
+
     protected string $fileName;
+
     protected string $fileHash;
 
     public function __construct(string $textChunk, string $bookName, int $chapter, string $versesRange, string $category, string $fileName, string $fileHash)
@@ -37,16 +45,17 @@ class ExtractBibleChunkJob implements ShouldQueue
         $this->fileHash = $fileHash;
     }
 
-    public function handle(GeminiExtractionService $aiService, EntityResolutionService $resolutionService, \Modules\BibleLearning\Services\ImportTrackerService $trackerService): void
+    public function handle(GeminiExtractionService $aiService, EntityResolutionService $resolutionService, ImportTrackerService $trackerService): void
     {
         Log::info("Processing Bible Chunk: {$this->bookName} {$this->chapter}:{$this->versesRange}");
 
         $context = "Bối cảnh: Cuốn sách {$this->bookName}, đoạn {$this->chapter}. Hãy trích xuất các Thực thể (Nhân vật, Địa danh, Sự kiện, Khái niệm) và Quan hệ (Edges) một cách chính xác dựa trên đoạn văn bản này.";
-        
+
         $results = $aiService->extract($this->textChunk, $context);
 
         if (empty($results)) {
             Log::warning("No entities extracted for {$this->bookName} {$this->chapter}:{$this->versesRange}");
+
             return;
         }
 
@@ -112,9 +121,9 @@ class ExtractBibleChunkJob implements ShouldQueue
      */
     public function failed(\Throwable $exception)
     {
-        $tracker = app(\Modules\BibleLearning\Services\ImportTrackerService::class);
+        $tracker = app(ImportTrackerService::class);
         $errorMsg = substr($exception->getMessage(), 0, 1000);
-        $tracker->markAsFailed($this->category, $this->fileName, "Lỗi Chunk {$this->chapter}:{$this->versesRange} - " . $errorMsg);
+        $tracker->markAsFailed($this->category, $this->fileName, "Lỗi Chunk {$this->chapter}:{$this->versesRange} - ".$errorMsg);
         Log::error("ExtractBibleChunkJob FAILED for {$this->fileName} chunk. Tracker marked as failed.");
     }
 }

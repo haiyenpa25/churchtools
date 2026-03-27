@@ -28,6 +28,7 @@ class QuizController extends Controller
     public function fetchQuizSession()
     {
         $quizzes = $this->repository->getRandomQuizzes(7); // Lấy 7 câu mỗi lượt chơi
+
         return response()->json($quizzes);
     }
 }

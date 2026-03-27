@@ -19,7 +19,7 @@ class ImportTrackerService
     public function isProcessedAndUnchanged(string $category, string $fileName, string $fileHash): bool
     {
         $record = $this->trackerRepo->findByCategoryAndName($category, $fileName);
-        if (!$record) {
+        if (! $record) {
             return false;
         }
 
@@ -39,7 +39,7 @@ class ImportTrackerService
         return $this->trackerRepo->updateOrCreate(
             ['category' => $category, 'file_name' => $fileName],
             [
-                'file_hash' => $fileHash, 
+                'file_hash' => $fileHash,
                 'status' => 'processing',
                 'total_chunks' => $totalChunks,
                 'processed_chunks' => 0,
@@ -60,7 +60,7 @@ class ImportTrackerService
             $record->processed_chunks += 1;
             $record->nodes_added += $nodesAdded;
             $record->edges_added += $edgesAdded;
-            
+
             if ($record->processed_chunks >= $record->total_chunks && $record->total_chunks > 0) {
                 $record->status = 'completed';
             }

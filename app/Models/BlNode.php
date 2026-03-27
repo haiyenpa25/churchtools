@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class BlNode extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = ['label', 'group', 'description', 'metadata'];
 
     protected $casts = [

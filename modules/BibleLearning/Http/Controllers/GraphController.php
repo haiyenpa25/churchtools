@@ -4,16 +4,22 @@ namespace Modules\BibleLearning\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Modules\BibleLearning\Contracts\GraphRepositoryInterface;
-use Modules\BibleLearning\Services\GraphParserService;
-use Modules\BibleLearning\Services\BibleTextService;
 use Modules\BibleLearning\Services\BibleCommentaryService;
+use Modules\BibleLearning\Services\BibleTextService;
+use Modules\BibleLearning\Services\GraphParserService;
+use Modules\BibleLearning\Services\ImportTrackerService;
 
 class GraphController extends Controller
 {
     protected GraphRepositoryInterface $repository;
+
     protected GraphParserService $parser;
+
     protected BibleTextService $bibleText;
+
     protected BibleCommentaryService $commentary;
 
     public function __construct(
@@ -23,8 +29,8 @@ class GraphController extends Controller
         BibleCommentaryService $commentary
     ) {
         $this->repository = $repository;
-        $this->parser     = $parser;
-        $this->bibleText  = $bibleText;
+        $this->parser = $parser;
+        $this->bibleText = $bibleText;
         $this->commentary = $commentary;
     }
 
@@ -50,28 +56,28 @@ class GraphController extends Controller
      */
     public function fetchNeighbors(int $nodeId)
     {
-        $data      = $this->repository->getNetworkData();
-        $nodeMap   = collect($data['nodes'])->keyBy('id')->toArray();
+        $data = $this->repository->getNetworkData();
+        $nodeMap = collect($data['nodes'])->keyBy('id')->toArray();
         $neighbors = [];
 
         foreach ($data['edges'] as $edge) {
             $neighborId = null;
-            $relation   = $edge['label'] ?? '';
+            $relation = $edge['label'] ?? '';
 
             if ($edge['from'] === $nodeId) {
                 $neighborId = $edge['to'];
             } elseif ($edge['to'] === $nodeId) {
                 $neighborId = $edge['from'];
-                $relation   = '← ' . $relation;
+                $relation = '← '.$relation;
             }
 
             if ($neighborId && isset($nodeMap[$neighborId])) {
                 $n = $nodeMap[$neighborId];
                 $neighbors[] = [
-                    'id'           => $n['id'],
-                    'label'        => $n['label'],
-                    'group'        => $n['group'],
-                    'title'        => $n['title'] ?? '',
+                    'id' => $n['id'],
+                    'label' => $n['label'],
+                    'group' => $n['group'],
+                    'title' => $n['title'] ?? '',
                     'relationship' => $relation,
                 ];
             }
@@ -83,9 +89,9 @@ class GraphController extends Controller
         }
 
         return response()->json([
-            'node'      => $nodeMap[$nodeId] ?? null,
+            'node' => $nodeMap[$nodeId] ?? null,
             'neighbors' => $grouped,
-            'total'     => count($neighbors),
+            'total' => count($neighbors),
         ]);
     }
 
@@ -115,7 +121,7 @@ class GraphController extends Controller
     public function getBibleText(Request $request)
     {
         $request->validate([
-            'book'    => 'required|string|max:100',
+            'book' => 'required|string|max:100',
             'chapter' => 'required|integer|min:1|max:150',
         ]);
 
@@ -163,9 +169,9 @@ class GraphController extends Controller
     public function getBibleImportGuide()
     {
         return response()->json([
-            'bible_text'  => $this->bibleText->getImportFormatGuide(),
-            'commentary'  => $this->commentary->getImportFormatGuide(),
-            'book_list'   => $this->bibleText->getBookList(),
+            'bible_text' => $this->bibleText->getImportFormatGuide(),
+            'commentary' => $this->commentary->getImportFormatGuide(),
+            'book_list' => $this->bibleText->getBookList(),
         ]);
     }
 
@@ -187,7 +193,8 @@ class GraphController extends Controller
      */
     public function adminReset()
     {
-        \Illuminate\Support\Facades\Artisan::call('bible:reset', ['--force' => true]);
+        Artisan::call('bible:reset', ['--force' => true]);
+
         return response()->json(['message' => 'Reset Database thành công. Knowledge Graph đã được dọn sạch!']);
     }
 
@@ -196,7 +203,8 @@ class GraphController extends Controller
      */
     public function adminExport()
     {
-        \Illuminate\Support\Facades\Artisan::call('bible:export-dump');
+        Artisan::call('bible:export-dump');
+
         return response()->json(['message' => 'Đóng gói JSON thành công vào thư mục Git database/data/bible_dump!']);
     }
 
@@ -205,7 +213,8 @@ class GraphController extends Controller
      */
     public function adminImport()
     {
-        \Illuminate\Support\Facades\Artisan::call('bible:import-dump');
+        Artisan::call('bible:import-dump');
+
         return response()->json(['message' => 'Đã nạp thành công toàn bộ file JSON vào Database MySQL!']);
     }
 
@@ -215,28 +224,31 @@ class GraphController extends Controller
     public function adminIngest(Request $request)
     {
         $category = $request->input('category', 'kinh-thanh');
-        \Illuminate\Support\Facades\Artisan::call('bible:ingest', ['--category' => $category]);
+        Artisan::call('bible:ingest', ['--category' => $category]);
+
         return response()->json(['message' => "Đã gửi lệnh quét thư mục [{$category}] tới Queue! Hãy đảm bảo AI Worker đang chạy."]);
     }
 
     /**
      * API: Lấy Trạng Thái File theo Thư mục
      */
-    public function adminGetIngestionStatus(Request $request, \Modules\BibleLearning\Services\ImportTrackerService $trackerService)
+    public function adminGetIngestionStatus(Request $request, ImportTrackerService $trackerService)
     {
         $category = $request->input('category', 'kinh-thanh');
         $path = base_path("tai-lieu/{$category}");
-        
-        if (!\Illuminate\Support\Facades\File::exists($path)) {
+
+        if (! File::exists($path)) {
             return response()->json(['error' => 'Category folder not found', 'files' => []], 404);
         }
 
         $filesOut = [];
         $trackerRecords = $trackerService->getCategoryStatus($category)->keyBy('file_name');
 
-        foreach (\Illuminate\Support\Facades\File::files($path) as $file) {
-            if ($file->getExtension() !== 'txt') continue;
-            
+        foreach (File::files($path) as $file) {
+            if ($file->getExtension() !== 'txt') {
+                continue;
+            }
+
             $filename = $file->getFilenameWithoutExtension();
             $hash = md5_file($file->getRealPath());
             $record = $trackerRecords->get($filename);
@@ -258,7 +270,7 @@ class GraphController extends Controller
                 'total_chunks' => $record ? $record->total_chunks : 0,
                 'processed_chunks' => $record ? $record->processed_chunks : 0,
                 'updated_at' => $record ? $record->updated_at->format('Y-m-d H:i') : null,
-                'error_log' => $record ? $record->error_log : null
+                'error_log' => $record ? $record->error_log : null,
             ];
         }
 
@@ -277,14 +289,14 @@ class GraphController extends Controller
     {
         $category = $request->input('category', 'kinh-thanh');
         $filename = $request->input('filename');
-        
-        if (!$filename) {
+
+        if (! $filename) {
             return response()->json(['error' => 'Missing filename parameter'], 400);
         }
 
-        \Illuminate\Support\Facades\Artisan::call('bible:ingest', [
+        Artisan::call('bible:ingest', [
             '--category' => $category,
-            '--book' => $filename
+            '--book' => $filename,
         ]);
 
         return response()->json(['message' => "Đã gửi tệp $filename vào Hàng đợi AI (Job Queue)!"]);

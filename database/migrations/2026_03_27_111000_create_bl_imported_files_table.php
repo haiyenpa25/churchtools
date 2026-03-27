@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('edges_added')->default(0);
             $table->text('error_log')->nullable();
             $table->timestamps();
-            
+
             // Đảm bảo không nạp lặp 1 file trong 1 thư mục trừ khi file bị sửa content (khác hash)
             $table->index(['category', 'file_name']);
         });

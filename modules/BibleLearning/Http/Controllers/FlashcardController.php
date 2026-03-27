@@ -3,21 +3,25 @@
 namespace Modules\BibleLearning\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\BlTempEntity;
 use Exception;
 use Illuminate\Http\Request;
+use Modules\BibleLearning\Contracts\BibleLearningExtractorContract;
 use Modules\BibleLearning\Services\RagScraperService;
 use Modules\BibleLearning\Services\SpacedRepetitionService;
 
 class FlashcardController extends Controller
 {
     protected SpacedRepetitionService $srsService;
+
     protected RagScraperService $scraperService;
-    protected \Modules\BibleLearning\Contracts\BibleLearningExtractorContract $aiExtractor;
+
+    protected BibleLearningExtractorContract $aiExtractor;
 
     public function __construct(
-        SpacedRepetitionService $srsService, 
+        SpacedRepetitionService $srsService,
         RagScraperService $scraperService,
-        \Modules\BibleLearning\Contracts\BibleLearningExtractorContract $aiExtractor
+        BibleLearningExtractorContract $aiExtractor
     ) {
         $this->srsService = $srsService;
         $this->scraperService = $scraperService;
@@ -77,11 +81,11 @@ class FlashcardController extends Controller
             if (is_array($extractedEntities) && count($extractedEntities) > 0) {
                 foreach ($extractedEntities as $entity) {
                     if (isset($entity['type']) && isset($entity['raw_data'])) {
-                        \App\Models\BlTempEntity::create([
+                        BlTempEntity::create([
                             'type' => $entity['type'], // flashcard, event, quiz, node, edge
-                            'title' => $entity['title'] ?? ('[Auto] ' . strtoupper($entity['type']) . ' Trích xuất ' . date('Y-m-d')),
+                            'title' => $entity['title'] ?? ('[Auto] '.strtoupper($entity['type']).' Trích xuất '.date('Y-m-d')),
                             'raw_data' => is_string($entity['raw_data']) ? $entity['raw_data'] : json_encode($entity['raw_data']),
-                            'status' => 'pending'
+                            'status' => 'pending',
                         ]);
                         $insertedCount++;
                     }
@@ -92,7 +96,7 @@ class FlashcardController extends Controller
                 'success' => true,
                 'scraped_words' => str_word_count($rawText),
                 'extracted_count' => $insertedCount,
-                'message' => "Gemini đã quét Web và nhả ra $insertedCount siêu thực thể chờ Duyệt!"
+                'message' => "Gemini đã quét Web và nhả ra $insertedCount siêu thực thể chờ Duyệt!",
             ]);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

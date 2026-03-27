@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\BlTempEntity;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
 class TempEntitySeeder extends Seeder
@@ -26,7 +26,7 @@ class TempEntitySeeder extends Seeder
                 'question' => 'Năm sách thi ca của Cựu Ước (Gióp, Thi Thiên, Châm Ngôn, Truyền Đạo, Nhã Ca) thuộc thể loại sách gì?',
                 'answer' => 'Sách Tĩnh Từ (Hoặc Thi Ca).',
                 'tags' => ['Cuu Uoc', 'Van Hoc'],
-                'reference' => 'Sổ Tay Kinh Thánh'
+                'reference' => 'Sổ Tay Kinh Thánh',
             ],
             'status' => 'pending',
         ]);
@@ -42,11 +42,11 @@ class TempEntitySeeder extends Seeder
                     'A' => 'Áp-ra-ham và Môi-se',
                     'B' => 'Hê-nóc và Ê-li',
                     'C' => 'Đa-vít và Sa-lô-môn',
-                    'D' => 'Ê-xê-chi-ên và Đa-ni-ên'
+                    'D' => 'Ê-xê-chi-ên và Đa-ni-ên',
                 ],
                 'correct_option' => 'B',
                 'explanation' => 'Hê-nóc đồng đi cùng Đức Chúa Trời rồi mất biệt (Sáng 5:24) và Tiên tri Ê-li được lên trời bằng xe lửa và ngựa lửa (2 Các Vua 2:11).',
-                'reference' => 'Sáng 5:24; 2 Các Vua 2:11'
+                'reference' => 'Sáng 5:24; 2 Các Vua 2:11',
             ],
             'status' => 'pending',
         ]);
@@ -64,7 +64,7 @@ class TempEntitySeeder extends Seeder
             ],
             'status' => 'pending',
         ]);
-        
+
         // 4. Giả lập liên kết Gia Cốp -> Y-sác
         BlTempEntity::create([
             'type' => 'edge',
