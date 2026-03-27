@@ -55,7 +55,9 @@ class GeminiExtractionService implements BibleLearningExtractorContract
             ]);
 
             if (! $response->successful()) {
-                Log::error('Gemini API Error: '.$response->body());
+                $errorBody = $response->json();
+                $errorMsg = $errorBody['error']['message'] ?? 'Lỗi không xác định (' . $response->status() . ')';
+                Log::error('Gemini API Error: ' . $errorMsg . ' | Body: ' . $response->body());
 
                 return [];
             }

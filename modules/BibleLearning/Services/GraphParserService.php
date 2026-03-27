@@ -23,8 +23,9 @@ class GraphParserService
         $prompt = $this->buildPrompt($rawText);
 
         try {
-            $response = Http::timeout(30)->post(
-                'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='.$this->apiKey,
+            $model = env('GEMINI_MODEL', 'gemini-1.5-flash');
+            $response = Http::timeout(45)->post(
+                'https://generativelanguage.googleapis.com/v1beta/models/'.$model.':generateContent?key='.$this->apiKey,
                 [
                     'contents' => [
                         ['parts' => [['text' => $prompt]]],
@@ -38,9 +39,11 @@ class GraphParserService
             );
 
             if (! $response->successful()) {
+                $errorBody = $response->json();
+                $errorMsg = $errorBody['error']['message'] ?? 'Lỗi không xác định từ máy chủ ('. $response->status() . ')';
                 Log::error('[GraphParserService] Gemini error: '.$response->body());
 
-                return $this->errorResponse('Gemini API không phản hồi. Kiểm tra API key.');
+                return $this->errorResponse('Lỗi Gemini API: ' . $errorMsg);
             }
 
             $body = $response->json();
