@@ -42,10 +42,20 @@ class ResetGraphCommand extends Command
 
         DB::table('bl_edges')->truncate();
         DB::table('bl_nodes')->truncate();
+        DB::table('bl_imported_files')->truncate();
+
+        // Dọn dẹp luôn Hàng đợi để tránh các Job cũ chạy loạn
+        if (Schema::hasTable('jobs')) {
+            DB::table('jobs')->truncate();
+        }
+        if (Schema::hasTable('failed_jobs')) {
+            DB::table('failed_jobs')->truncate();
+        }
 
         Schema::enableForeignKeyConstraints();
 
-        $this->info('✅ Đã dọn sạch bảng bl_nodes và bl_edges thành công!');
+        $this->info('✅ Đã dọn sạch bảng bl_nodes, bl_edges, bl_imported_files và Hàng đợi Queue thành công!');
+
 
         return 0;
     }
