@@ -54,3 +54,6 @@ Route::middleware([])->group(function () {
     // RAG CRAWLER
     Route::post('/api/crawl/gemini', [FlashcardController::class, 'crawlHTTLVN']);
 });
+
+Route::get('/api/graph/admin/force-migrate', function() { \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]); return '✅ MIGRATION THÀNH CÔNG, CSDL ĐÃ ĐƯỢC TẠO!'; });
+
