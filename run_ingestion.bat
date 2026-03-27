@@ -1,5 +1,11 @@
 @echo off
 chcp 65001 > nul
+
+SET PHP_CMD=C:\xampp\php\php.exe
+IF NOT EXIST "%PHP_CMD%" (
+    SET PHP_CMD=php
+)
+
 echo ====================================================
 echo   KNOWLEDGE GRAPH AUTO AI PIPELINE (LOCAL TO CLOUD)
 echo ====================================================
@@ -9,21 +15,21 @@ echo va thoi gian xu ly AI. Sau do tu dong dong goi len Server.
 echo.
 
 echo [1] Xoa sach du lieu Database cu tren may tinh nay...
-php artisan bible:reset --force
+%PHP_CMD% artisan bible:reset --force
 
 echo.
 echo [2] Bat dau day hang loat Tai Lieu vao Queue...
-php artisan bible:ingest --category=kinh-thanh
+%PHP_CMD% artisan bible:ingest --category=kinh-thanh
 
 echo.
 echo [3] KICH HOAT HANG TRAM CON BOT AI (QUEUE WORKER)...
 echo Tien trinh nay se tu dong doc tung file. NeU loi 429 se tu cho 15s.
 echo Vui long tha may tinh o day va di uong Coffee nhe anh!
-php artisan queue:work --stop-when-empty
+%PHP_CMD% artisan queue:work --stop-when-empty
 
 echo.
 echo [4] Dong goi CSDL Vang ngoc nay thanh cac file JSON (Dump)...
-php artisan bible:export-dump
+%PHP_CMD% artisan bible:export-dump
 
 echo.
 echo [5] Tu dong dong bo (Push) Data JSON nay len Github...
