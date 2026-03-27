@@ -4,7 +4,7 @@ echo ====================================================
 echo   KNOWLEDGE GRAPH AUTO AI PIPELINE (LOCAL TO CLOUD)
 echo ====================================================
 echo Day la Phien ban dac biet theo Yeu cau cua Giam Doc Du An!
-echo Co che hoat dong: Local Windows se cAng dang toan bo chi phi
+echo Co che hoat dong: Local Windows se cang dang toan bo chi phi
 echo va thoi gian xu ly AI. Sau do tu dong dong goi len Server.
 echo.
 
@@ -16,7 +16,7 @@ echo [2] Bat dau day hang loat Tai Lieu vao Queue...
 php artisan bible:ingest --category=kinh-thanh
 
 echo.
-echo [3] 🚀 KICH HOAT HANG TRAM CON BOT AI (QUEUE WORKER)...
+echo [3] KICH HOAT HANG TRAM CON BOT AI (QUEUE WORKER)...
 echo Tien trinh nay se tu dong doc tung file. NeU loi 429 se tu cho 15s.
 echo Vui long tha may tinh o day va di uong Coffee nhe anh!
 php artisan queue:work --stop-when-empty
@@ -33,7 +33,7 @@ git push origin main
 
 echo.
 echo ====================================================
-echo 🎉 HOAN THANH XUAT SAC!
+echo   HOAN THANH XUAT SAC!
 echo ----------------------------------------------------
 echo Bay gio anh chi len Website tren Hosting:
 echo 1. Vao muc [Cai Dat He Thong]
