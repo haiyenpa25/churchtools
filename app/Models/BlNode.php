@@ -9,5 +9,9 @@ class BlNode extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['label', 'group', 'description'];
+    protected $fillable = ['label', 'group', 'description', 'metadata'];
+
+    protected $casts = [
+        'metadata' => 'array',
+    ];
 }

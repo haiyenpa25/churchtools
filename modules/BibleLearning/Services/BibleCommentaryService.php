@@ -63,7 +63,7 @@ class BibleCommentaryService
 
     public function __construct()
     {
-        $basePath    = base_path('trinh-chieu/giai nghia kinh thanh');
+        $basePath    = base_path('tai-lieu/kinh-thanh-giai-nghia');
         $this->files = [
             $basePath . DIRECTORY_SEPARATOR . 'Giai-nghia-kt1.txt',
             $basePath . DIRECTORY_SEPARATOR . 'Giai-nghia-kt2.txt',

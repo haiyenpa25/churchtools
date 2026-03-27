@@ -179,4 +179,114 @@ class GraphController extends Controller
             'books' => $this->commentary->listAvailableBooks(),
         ]);
     }
+
+    // ─── Admin Tool Data Portability ───────────────────────────────────────
+
+    /**
+     * API: Reset DB
+     */
+    public function adminReset()
+    {
+        \Illuminate\Support\Facades\Artisan::call('bible:reset', ['--force' => true]);
+        return response()->json(['message' => 'Reset Database thành công. Knowledge Graph đã được dọn sạch!']);
+    }
+
+    /**
+     * API: Đóng gói JSON
+     */
+    public function adminExport()
+    {
+        \Illuminate\Support\Facades\Artisan::call('bible:export-dump');
+        return response()->json(['message' => 'Đóng gói JSON thành công vào thư mục Git database/data/bible_dump!']);
+    }
+
+    /**
+     * API: Import JSON
+     */
+    public function adminImport()
+    {
+        \Illuminate\Support\Facades\Artisan::call('bible:import-dump');
+        return response()->json(['message' => 'Đã nạp thành công toàn bộ file JSON vào Database MySQL!']);
+    }
+
+    /**
+     * API: Kích hoạt ngầm AI Quét Kinh Thánh
+     */
+    public function adminIngest(Request $request)
+    {
+        $category = $request->input('category', 'kinh-thanh');
+        \Illuminate\Support\Facades\Artisan::call('bible:ingest', ['--category' => $category]);
+        return response()->json(['message' => "Đã gửi lệnh quét thư mục [{$category}] tới Queue! Hãy đảm bảo AI Worker đang chạy."]);
+    }
+
+    /**
+     * API: Lấy Trạng Thái File theo Thư mục
+     */
+    public function adminGetIngestionStatus(Request $request, \Modules\BibleLearning\Services\ImportTrackerService $trackerService)
+    {
+        $category = $request->input('category', 'kinh-thanh');
+        $path = base_path("tai-lieu/{$category}");
+        
+        if (!\Illuminate\Support\Facades\File::exists($path)) {
+            return response()->json(['error' => 'Category folder not found', 'files' => []], 404);
+        }
+
+        $filesOut = [];
+        $trackerRecords = $trackerService->getCategoryStatus($category)->keyBy('file_name');
+
+        foreach (\Illuminate\Support\Facades\File::files($path) as $file) {
+            if ($file->getExtension() !== 'txt') continue;
+            
+            $filename = $file->getFilenameWithoutExtension();
+            $hash = md5_file($file->getRealPath());
+            $record = $trackerRecords->get($filename);
+
+            $status = 'pending';
+            if ($record) {
+                if ($record->file_hash !== $hash && $record->status === 'completed') {
+                    $status = 'changed'; // File was edited after AI ran
+                } else {
+                    $status = $record->status;
+                }
+            }
+
+            $filesOut[] = [
+                'file_name' => $filename,
+                'status' => $status,
+                'nodes_added' => $record ? $record->nodes_added : 0,
+                'edges_added' => $record ? $record->edges_added : 0,
+                'total_chunks' => $record ? $record->total_chunks : 0,
+                'processed_chunks' => $record ? $record->processed_chunks : 0,
+                'updated_at' => $record ? $record->updated_at->format('Y-m-d H:i') : null,
+                'error_log' => $record ? $record->error_log : null
+            ];
+        }
+
+        // Sort by filename or status
+        usort($filesOut, function ($a, $b) {
+            return strnatcmp($a['file_name'], $b['file_name']);
+        });
+
+        return response()->json(['files' => $filesOut]);
+    }
+
+    /**
+     * API: Nạp 1 File duy nhất qua Option --book
+     */
+    public function adminIngestSingleFile(Request $request)
+    {
+        $category = $request->input('category', 'kinh-thanh');
+        $filename = $request->input('filename');
+        
+        if (!$filename) {
+            return response()->json(['error' => 'Missing filename parameter'], 400);
+        }
+
+        \Illuminate\Support\Facades\Artisan::call('bible:ingest', [
+            '--category' => $category,
+            '--book' => $filename
+        ]);
+
+        return response()->json(['message' => "Đã gửi tệp $filename vào Hàng đợi AI (Job Queue)!"]);
+    }
 }

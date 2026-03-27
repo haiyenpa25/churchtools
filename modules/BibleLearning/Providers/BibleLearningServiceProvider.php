@@ -32,6 +32,10 @@ class BibleLearningServiceProvider extends ServiceProvider
             \Modules\BibleLearning\Contracts\GraphRepositoryInterface::class,
             \Modules\BibleLearning\Repositories\GraphRepository::class
         );
+        $this->app->bind(
+            \Modules\BibleLearning\Contracts\ImportTrackerRepositoryInterface::class,
+            \Modules\BibleLearning\Repositories\ImportTrackerRepository::class
+        );
     }
 
     public function boot()

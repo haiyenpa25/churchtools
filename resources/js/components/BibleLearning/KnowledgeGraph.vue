@@ -7,10 +7,11 @@
     <!-- ══ HEADER ══ -->
     <header class="cosmos-header">
       <div class="header-left">
+        <button @click="showSidebar = !showSidebar" class="mobile-menu-btn">☰</button>
         <a href="/bible-learning" class="back-btn">
           <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         </a>
-        <div>
+        <div class="header-text-wrap">
           <h1 class="cosmos-title">✦ Lưới Tư Duy Thần Học</h1>
           <p class="cosmos-subtitle">Cosmos Theology Explorer · {{ allNodes.length }} Thực Thể · {{ allEdges.length }} Liên Kết</p>
         </div>
@@ -25,14 +26,15 @@
         </div>
       </div>
       <div class="header-right">
+        <button @click="showSettings = true" class="settings-btn" title="Cài đặt Hệ Thống">⚙️</button>
         <button @click="showParser = true" class="ai-parse-btn">
-          <span>✨</span> AI Phân Tích Text
+          <span class="ai-icon">✨</span> <span class="ai-text">AI Phân Tích</span>
         </button>
       </div>
     </header>
 
     <!-- ══ LEFT SIDEBAR: FILTER ══ -->
-    <aside class="filter-sidebar">
+    <aside :class="['filter-sidebar', { 'is-open': showSidebar }]">
       <h3 class="sidebar-title">🔍 Khám Phá</h3>
       <div class="search-wrap">
         <input v-model="searchQuery" @input="onSearch" placeholder="Tìm kiếm..." class="search-input"/>
@@ -208,6 +210,113 @@
       </div>
     </transition>
 
+    <!-- ══ ADMIN SETTINGS MODAL ══ -->
+    <transition name="modal-fade">
+      <div v-if="showSettings" class="modal-overlay" @click.self="showSettings = false">
+        <div class="parser-modal settings-modal" style="max-width: 800px; height: 85vh;">
+          <div class="modal-header">
+            <div>
+              <h2 class="modal-title">⚙️ Trung Tâm Quản Trị Hệ Sinh Thái Dữ Liệu</h2>
+              <p class="modal-sub">Data Portability & Data Management Center</p>
+            </div>
+            <button @click="showSettings = false" class="close-btn">✕</button>
+          </div>
+
+          <!-- ADMIN TABS -->
+          <div class="admin-tabs">
+            <button :class="['admin-tab', { active: adminTab === 'files' }]" @click="adminTab = 'files'">📁 Quản Lý File Đầu Vào (Ingestion)</button>
+            <button :class="['admin-tab', { active: adminTab === 'portability' }]" @click="adminTab = 'portability'">🔄 Di Chuyển Dữ Liệu (Dump & Restore)</button>
+          </div>
+
+          <div v-if="adminMsg" :class="['admin-msg', { 'error': adminError }]">
+            {{ adminMsg }}
+          </div>
+
+          <!-- TAB: DATA PORTABILITY -->
+          <div v-if="adminTab === 'portability'" class="admin-scroll-area">
+            <div class="admin-grid">
+              <div class="admin-card">
+                <h3>📥 Nạp JSON (Import)</h3>
+                <p>Khôi phục Data tức thì từ <code>database/data/bible_dump/</code> không cần chạy qua Máy chủ AI.</p>
+                <button @click="runAdminAction('import')" :disabled="adminLoading" class="admin-btn btn-blue">Nạp dữ liệu Git</button>
+              </div>
+              <div class="admin-card">
+                <h3>📤 Đóng Gói (Export)</h3>
+                <p>Đóng gói CSDL Graph thành JSON (5000 lines/file) đẩy vào Git Sync chuẩn bị chuyển Server.</p>
+                <button @click="runAdminAction('export')" :disabled="adminLoading" class="admin-btn btn-green">Xuất File JSON</button>
+              </div>
+              <div class="admin-card" style="grid-column: 1 / -1;">
+                <h3>🔄 Format Xóa Rỗng CSDL (Reset)</h3>
+                <p>Xóa sạch Bảng <code>bl_nodes</code> và <code>bl_edges</code> làm lại từ đầu. Thận trọng khi dùng lệnh này!</p>
+                <button @click="runAdminAction('reset')" :disabled="adminLoading" class="admin-btn btn-red">Xóa Trắng Database</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: FILE MANAGER (INGESTION) -->
+          <div v-if="adminTab === 'files'" class="admin-scroll-area file-manager">
+            <div class="fm-toolbar">
+              <label class="fm-label">Thư Mục Dữ Liệu (Category):</label>
+              <select v-model="selectedCategory" @change="fetchIngestionStatus" class="fm-select">
+                <option value="kinh-thanh">Kinh Thánh (Chuẩn)</option>
+                <option value="kinh-thanh-giai-nghia">Giải Nghĩa Kinh Thánh (Wiersbe)</option>
+                <option value="duong-linh">Tài Liệu Dưỡng Linh</option>
+              </select>
+              <button @click="fetchIngestionStatus" class="fm-refresh-btn" :disabled="adminLoading">↻ Làm Mới</button>
+              <button @click="ingestAllPending" class="fm-ingest-all-btn btn-purple" :disabled="adminLoading || pendingFilesCount === 0">🚀 Chạy AI {{ pendingFilesCount }} File Chưa Nạp</button>
+            </div>
+
+            <div class="fm-table-wrap">
+              <table class="fm-table">
+                <thead>
+                  <tr>
+                    <th>Tên File Txt</th>
+                    <th>Trạng Thái</th>
+                    <th>Thực Thể AI (Nodes/Edges)</th>
+                    <th>Tiến Độ Chunk</th>
+                    <th>Hành Động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="ingestionFiles.length === 0">
+                    <td colspan="5" style="text-align:center; padding: 20px;">Thư mục <code>tai-lieu/{{selectedCategory}}</code> trống. Hãy ném file văn bản txt vào đây.</td>
+                  </tr>
+                  <tr v-for="cf in ingestionFiles" :key="cf.file_name">
+                    <td class="col-name">{{ cf.file_name }}.txt</td>
+                    <td>
+                      <span :class="['status-badge', cf.status]">{{ formatStatus(cf.status) }}</span>
+                    </td>
+                    <td class="col-stats">
+                      <span v-if="cf.status === 'completed'" class="stat-node">N: {{ cf.nodes_added }}</span>
+                      <span v-if="cf.status === 'completed'" class="stat-edge">E: {{ cf.edges_added }}</span>
+                      <span v-if="cf.status !== 'completed'" style="color:#64748b">-</span>
+                    </td>
+                    <td class="col-progress">
+                      <div class="progress-bar-bg" v-if="cf.total_chunks > 0">
+                        <div class="progress-bar-fill" :style="`width: ${(cf.processed_chunks / cf.total_chunks) * 100}%`"></div>
+                      </div>
+                      <span class="progress-text" v-if="cf.total_chunks > 0">{{ cf.processed_chunks }}/{{ cf.total_chunks }}</span>
+                      <span v-else style="color:#64748b">-</span>
+                    </td>
+                    <td>
+                      <button v-if="cf.status === 'pending' || cf.status === 'changed' || cf.status === 'failed'"
+                              @click="ingestSingleFile(cf.file_name)"
+                              :disabled="adminLoading"
+                              class="fm-action-btn btn-purple">
+                        Bắt đầu Nạp
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="fm-note">💡 Ghi chú: Hãy mở Terminal chạy <code>php artisan queue:work</code> để Tiến trình AI hoạt động ngầm (Push Jobs xử lý từ từ chống bị Google chặn).</p>
+          </div>
+
+        </div>
+      </div>
+    </transition>
+
     <!-- Loading -->
     <transition name="fade">
       <div v-if="loading" class="cosmos-loading">
@@ -237,7 +346,16 @@ const allEdges         = ref([])
 const selectedNode     = ref(null)
 const searchQuery      = ref('')
 const currentView      = ref('galaxy')
+const showSidebar      = ref(window.innerWidth > 768)
+const showSettings     = ref(false)
 const showParser       = ref(false)
+const adminTab         = ref('files')
+const adminLoading     = ref(false)
+const adminMsg         = ref('')
+const adminError       = ref(false)
+const selectedCategory = ref('kinh-thanh')
+const ingestionFiles   = ref([])
+const pendingFilesCount= ref(0)
 const parseText        = ref('')
 const parseResult      = ref(null)
 const parseError       = ref('')
@@ -467,7 +585,96 @@ const applyFilter = () => drawGraph(currentView.value)
 const focusNode   = (id) => { networkInstance?.focus(id, { scale: 2, animation: { duration: 800, easingFunction: 'easeInOutQuad' } }); networkInstance?.selectNodes([id]) }
 const jumpToNode  = (id) => { selectedNode.value = allNodes.value.find(n => n.id === id) || null; focusNode(id); fetchNeighbors(id) }
 const closePanel  = () => { selectedNode.value = null; neighbors.value = {}; panelTab.value = 'links'; bibleData.value = null; commentaryData.value = null }
-const closeAll    = () => { closePanel(); showParser.value = false }
+const closeAll    = () => { closePanel(); showParser.value = false; showSettings.value = false }
+
+// ── Settings Modal System ──
+const runAdminAction = async (action) => {
+  adminLoading.value = true
+  adminMsg.value = 'Đang xử lý xin vui lòng chờ...'
+  adminError.value = false
+  try {
+    const res = await axios.post(`/api/graph/admin/${action}`)
+    adminMsg.value = '✅ ' + (res.data.message || 'Thành công!')
+    if (action === 'reset' || action === 'import') {
+      setTimeout(() => fetchAndDraw(), 1500)
+    }
+  } catch (e) {
+    adminError.value = true
+    adminMsg.value = '⚠️ Lỗi: ' + (e.response?.data?.message || e.message)
+  } finally {
+    adminLoading.value = false
+  }
+}
+
+const fetchIngestionStatus = async () => {
+  adminLoading.value = true
+  adminMsg.value = ''
+  adminError.value = false
+  try {
+    const res = await axios.get('/api/graph/admin/ingestion-status', { params: { category: selectedCategory.value } })
+    ingestionFiles.value = res.data.files || []
+    pendingFilesCount.value = ingestionFiles.value.filter(f => f.status === 'pending' || f.status === 'changed' || f.status === 'failed').length
+  } catch (e) {
+    adminError.value = true
+    adminMsg.value = '⚠️ Không lấy được thông tin thư mục: ' + e.message
+  } finally {
+    adminLoading.value = false
+  }
+}
+
+const ingestSingleFile = async (filename) => {
+  adminLoading.value = true
+  adminMsg.value = 'Đang đẩy file ' + filename + ' vào hàng đợi...'
+  adminError.value = false
+  try {
+    const res = await axios.post('/api/graph/admin/ingest-single', {
+      category: selectedCategory.value,
+      filename: filename
+    })
+    adminMsg.value = '✅ ' + (res.data.message || 'Đã thêm file vào Queue!')
+    setTimeout(() => fetchIngestionStatus(), 1000)
+  } catch (e) {
+    adminError.value = true
+    adminMsg.value = '⚠️ Lỗi Nạp Dữ Liệu: ' + (e.response?.data?.message || e.message)
+  } finally {
+    adminLoading.value = false
+  }
+}
+
+const ingestAllPending = async () => {
+  adminLoading.value = true
+  adminMsg.value = 'Đang rải tất cả tài liệu vào hàng đợi (10-15 câu / 1 chunk)...'
+  adminError.value = false
+  try {
+    const res = await axios.post('/api/graph/admin/ingest', { category: selectedCategory.value })
+    adminMsg.value = '✅ ' + (res.data.message || 'Thành công!')
+    setTimeout(() => fetchIngestionStatus(), 1500)
+  } catch (e) {
+    adminError.value = true
+    adminMsg.value = '⚠️ Lỗi: ' + (e.response?.data?.message || e.message)
+  } finally {
+    adminLoading.value = false
+  }
+}
+
+const formatStatus = (s) => {
+  if (s === 'completed') return 'ĐÃ NẠP (OK)'
+  if (s === 'pending') return 'CHƯA NẠP'
+  if (s === 'processing') return 'ĐANG XỬ LÝ (QUEUE)'
+  if (s === 'changed') return 'ĐÃ BỊ SỬA (LỆCH HASH)'
+  if (s === 'failed') return 'LỖI AI (THẤT BẠI)'
+  return s
+}
+
+import { watch } from 'vue'
+watch(showSettings, (val) => {
+  if (val && adminTab.value === 'files') {
+    fetchIngestionStatus()
+  }
+})
+watch(adminTab, (val) => {
+  if (val === 'files') fetchIngestionStatus()
+})
 
 // Switch panel tab and auto-populate book name from node
 const switchPanelTab = (tab) => {
@@ -573,6 +780,10 @@ onMounted(async () => {
 .back-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
 .cosmos-title { font-size: 1.15rem; font-weight: 900; background: linear-gradient(135deg, #a5b4fc 0%, #f0abfc 60%, #facc15 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
 .cosmos-subtitle { font-size: 11px; color: #475569; margin: 2px 0 0; }
+.mobile-menu-btn { display: none; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; width: 36px; height: 36px; font-size: 18px; cursor: pointer; transition: 0.2s; align-items: center; justify-content: center; }
+.settings-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #cbd5e1; width: 38px; height: 38px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.settings-btn:hover { background: rgba(255,255,255,0.15); transform: rotate(45deg); }
+.header-right { flex-shrink: 0; display: flex; gap: 8px; }
 
 /* View Switcher */
 .view-switcher { display: flex; gap: 6px; }
@@ -587,7 +798,8 @@ onMounted(async () => {
 .ai-parse-btn:hover { background: linear-gradient(135deg, rgba(167,139,250,0.4), rgba(245,158,11,0.35)); box-shadow: 0 0 20px rgba(167,139,250,0.2); }
 
 /* Left Sidebar */
-.filter-sidebar { position: absolute; top: 64px; left: 0; bottom: 0; width: 210px; z-index: 20; background: rgba(3,6,20,0.85); border-right: 1px solid rgba(255,255,255,0.07); backdrop-filter: blur(16px); padding: 16px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.filter-sidebar { position: absolute; top: 64px; left: 0; bottom: 0; width: 210px; z-index: 20; background: rgba(3,6,20,0.85); border-right: 1px solid rgba(255,255,255,0.07); backdrop-filter: blur(16px); padding: 16px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); transform: translateX(-100%); }
+.filter-sidebar.is-open { transform: translateX(0); }
 .sidebar-title { font-size: 13px; font-weight: 800; letter-spacing: 0.05em; color: #94a3b8; margin: 0; }
 .search-wrap { position: relative; }
 .search-input { width: 100%; padding: 8px 12px 8px 32px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #e2e8f0; font-size: 13px; outline: none; transition: border-color .2s; box-sizing: border-box; }
@@ -715,5 +927,77 @@ onMounted(async () => {
 .page-btn:hover:not(:disabled) { background: rgba(129,140,248,0.15); color: #a5b4fc; }
 .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .page-info { font-size: 11px; color: #475569; font-weight: 700; }
+
+/* Admin Framework */
+.admin-scroll-area { flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 16px; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
+.admin-tabs { display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+.admin-tab { padding: 10px 16px; border-radius: 12px; border: 1px solid transparent; background: rgba(255,255,255,0.04); color: #64748b; font-size: 13px; font-weight: 800; cursor: pointer; transition: all .2s; }
+.admin-tab:hover { background: rgba(255,255,255,0.08); color: #94a3b8; }
+.admin-tab.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.3); color: #93c5fd; }
+
+/* FileManager Dashboard */
+.file-manager { display: flex; flex-direction: column; gap: 16px; }
+.fm-toolbar { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 12px; flex-wrap: wrap; }
+.fm-label { font-size: 13px; font-weight: 700; color: #94a3b8; }
+.fm-select { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; transition: 0.2s; font-family: inherit; }
+.fm-select:focus { border-color: #818cf8; }
+.fm-refresh-btn { padding: 8px 14px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #e2e8f0; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+.fm-refresh-btn:hover { background: rgba(255,255,255,0.15); }
+.fm-ingest-all-btn { margin-left: auto; padding: 8px 16px; border-radius: 8px; font-size: 13px; }
+
+.fm-table-wrap { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; overflow: hidden; }
+.fm-table { width: 100%; border-collapse: collapse; text-align: left; }
+.fm-table th { background: rgba(255,255,255,0.04); font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); letter-spacing: 0.05em; }
+.fm-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 13px; color: #cbd5e1; }
+.fm-table tr:hover td { background: rgba(255,255,255,0.02); }
+.fm-table tr:last-child td { border-bottom: none; }
+
+.col-name { font-weight: 700; color: #e2e8f0; }
+.status-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 900; letter-spacing: 0.05em; }
+.status-badge.completed { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+.status-badge.pending { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+.status-badge.processing { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+.status-badge.changed { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+.status-badge.failed { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+.stat-node, .stat-edge { display: inline-block; font-size: 11px; background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; margin-right: 4px; font-weight: 700; color: #a78bfa; }
+.stat-edge { color: #f472b6; }
+
+.progress-bar-bg { width: 100px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s; }
+.progress-text { font-size: 11px; font-weight: 800; color: #94a3b8; }
+
+.fm-action-btn { padding: 6px 12px; border-radius: 6px; font-size: 11px; }
+.fm-note { font-size: 12px; color: #64748b; line-height: 1.6; padding: 0 10px; margin: 0; }
+
+/* Admin Modal Grid */
+.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.admin-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.admin-card h3 { margin: 0; font-size: 14px; color: #e2e8f0; font-weight: 800; }
+.admin-card p { font-size: 12px; color: #94a3b8; line-height: 1.5; flex: 1; margin: 0; }
+.admin-card code { background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; color: #a5b4fc; font-size: 11px; }
+.admin-btn { padding: 10px; border-radius: 8px; border: none; font-size: 13px; font-weight: 800; color: #fff; cursor: pointer; transition: 0.2s; }
+.admin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-blue { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); } .btn-blue:hover { background: rgba(59,130,246,0.4); }
+.btn-green { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); } .btn-green:hover { background: rgba(16,185,129,0.4); }
+.btn-red { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); } .btn-red:hover { background: rgba(239,68,68,0.4); }
+.btn-purple { background: rgba(168,85,247,0.2); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.3); } .btn-purple:hover { background: rgba(168,85,247,0.4); }
+.admin-msg { margin-top: 10px; padding: 12px; border-radius: 8px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #10b981; font-size: 13px; text-align: center; }
+.admin-msg.error { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #ef4444; }
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+  .mobile-menu-btn { display: flex; }
+  .header-text-wrap { display: none; }
+  .view-label { display: none; }
+  .ai-text { display: none; }
+  .cosmos-header { padding: 0 10px; }
+  .graph-area { left: 0; }
+  .detail-panel { width: 100%; border-left: none; }
+  .admin-grid { grid-template-columns: 1fr; }
+}
+@media (min-width: 769px) {
+  .filter-sidebar { transform: translateX(0) !important; }
+}
 </style>
 

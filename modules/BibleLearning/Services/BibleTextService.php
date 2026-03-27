@@ -90,7 +90,7 @@ class BibleTextService
 
     public function __construct()
     {
-        $this->basePath = base_path('trinh-chieu/kinh thanh');
+        $this->basePath = base_path('tai-lieu/kinh-thanh');
     }
 
     /**

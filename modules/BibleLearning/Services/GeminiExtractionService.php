@@ -15,7 +15,7 @@ class GeminiExtractionService implements BibleLearningExtractorContract
         $this->apiKey = env('GEMINI_API_KEY', 'AIzaSyBYnWx6PJprTFX6GxWAiQZ8YT8vjcOH1BA'); // Giả lập key default
     }
 
-    public function extract(string $text): array
+    public function extract(string $text, string $context = ''): array
     {
         $prompt = "Bạn là môt chuyên gia Thần học Cơ Đốc (Tin Lành). Dựa vào văn bản dưới đây, hãy trích xuất các thông tin Đáng Giá và phân loại chúng thành một MẢNG JSON thuần túy (không dùng ```json raw code block). Tối đa 5 đối tượng. Các loại type hợp lệ:
         1. 'flashcard': {question, answer, reference}
@@ -26,13 +26,17 @@ class GeminiExtractionService implements BibleLearningExtractorContract
         
         Output MUST be EXACTLY a valid JSON Array: [ {\"type\": \"flashcard\", \"title\": \"...\", \"raw_data\": {...}} ]
         
+        NGỮ CẢNH (RẤT QUAN TRỌNG ĐỂ PHÂN BIỆT ĐỒNG ÂM KHÁC NGHĨA):
+        " . ($context ?: "Bối cảnh Kinh Thánh chung") . "
+        
         NỘI DUNG VĂN BẢN:
         " . $text;
 
         Log::info('Gemini is processing payload length: ' . strlen($prompt));
 
         try {
-            $response = Http::post('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . $this->apiKey, [
+            $model = env('GEMINI_MODEL', 'gemini-2.5-flash');
+            $response = Http::post('https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $this->apiKey, [
                 'contents' => [
                     ['parts' => [['text' => $prompt]]]
                 ],

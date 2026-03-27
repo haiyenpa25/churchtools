@@ -23,6 +23,16 @@ Route::middleware([])->group(function () {
     Route::get('/api/graph/neighbors/{nodeId}', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'fetchNeighbors']);
     Route::post('/api/graph/parse-text', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'parseText']);
 
+    // KNOWLEDGE GRAPH ADMIN COMMANDS
+    Route::post('/api/graph/admin/reset', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminReset']);
+    Route::post('/api/graph/admin/export', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminExport']);
+    Route::post('/api/graph/admin/import', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminImport']);
+    Route::post('/api/graph/admin/ingest', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminIngest']);
+    
+    // Quản Lý Tracking Nạp Dữ Liệu
+    Route::get('/api/graph/admin/ingestion-status', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminGetIngestionStatus']);
+    Route::post('/api/graph/admin/ingest-single', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'adminIngestSingleFile']);
+
     // BIBLE TEXT & COMMENTARY (Local files)
     Route::get('/api/bible/text', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'getBibleText']);
     Route::get('/api/bible/commentary', [\Modules\BibleLearning\Http\Controllers\GraphController::class, 'getBibleCommentary']);
