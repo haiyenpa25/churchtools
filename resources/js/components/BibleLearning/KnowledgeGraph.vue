@@ -263,14 +263,15 @@
                 <option value="duong-linh">Tài Liệu Dưỡng Linh</option>
               </select>
               <button @click="fetchIngestionStatus" class="fm-refresh-btn" :disabled="adminLoading">↻ Làm Mới</button>
-              <button @click="ingestAllPending" class="fm-ingest-all-btn btn-purple" :disabled="adminLoading || pendingFilesCount === 0">🚀 Chạy AI {{ pendingFilesCount }} File Chưa Nạp</button>
+              <button @click="ingestAllPending" class="fm-ingest-all-btn btn-purple" :disabled="adminLoading || pendingFilesCount === 0">🚀 Chạy AI {{ pendingFilesCount }} File Tồn Đọng</button>
+              <button @click="runWorkQueue" class="fm-refresh-btn" style="background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.3); font-weight: 900;" :disabled="adminLoading" title="Bơm 3 File đang kẹt ĐANG XỬ LÝ (QUEUE) vào chạy ngay">⚡ Khởi Động AI Ngầm (Xử lý kẹt Queue)</button>
             </div>
 
             <div class="fm-table-wrap">
               <table class="fm-table">
                 <thead>
                   <tr>
-                    <th>Tên File Txt</th>
+                    <th>Tên File Txt <span style="font-weight: normal; font-size: 9px; text-transform:none">(Xem bằng Tab Kinh Thánh cột phải)</span></th>
                     <th>Trạng Thái</th>
                     <th>Thực Thể AI (Nodes/Edges)</th>
                     <th>Tiến Độ Chunk</th>
@@ -641,6 +642,22 @@ const ingestSingleFile = async (filename) => {
   }
 }
 
+const runWorkQueue = async () => {
+  adminLoading.value = true
+  adminMsg.value = 'Đang kích hoạt Worker đẩy luồng chạy ngầm cho 3 Jobs bị kẹt...'
+  adminError.value = false
+  try {
+    const res = await axios.get('/api/graph/admin/work-queue') // Sử dụng GET Method do đã đổi thành any
+    adminMsg.value = '⚡ ' + (res.data.message || 'Worker đã chạy xong 3 File!')
+    setTimeout(() => fetchIngestionStatus(), 1000)
+  } catch (e) {
+    adminError.value = true
+    adminMsg.value = '⚠️ Lỗi Kích Hoạt Worker: ' + (e.response?.data?.message || e.message)
+  } finally {
+    adminLoading.value = false
+  }
+}
+
 const ingestAllPending = async () => {
   adminLoading.value = true
   adminMsg.value = 'Đang rải tất cả tài liệu vào hàng đợi (10-15 câu / 1 chunk)...'
@@ -945,9 +962,9 @@ onMounted(async () => {
 .fm-refresh-btn:hover { background: rgba(255,255,255,0.15); }
 .fm-ingest-all-btn { margin-left: auto; padding: 8px 16px; border-radius: 8px; font-size: 13px; }
 
-.fm-table-wrap { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; overflow: hidden; }
+.fm-table-wrap { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; overflow-y: auto; max-height: 50vh; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
 .fm-table { width: 100%; border-collapse: collapse; text-align: left; }
-.fm-table th { background: rgba(255,255,255,0.04); font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); letter-spacing: 0.05em; }
+.fm-table th { position: sticky; top: 0; background: #080d1e; font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); letter-spacing: 0.05em; z-index: 5; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 .fm-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 13px; color: #cbd5e1; }
 .fm-table tr:hover td { background: rgba(255,255,255,0.02); }
 .fm-table tr:last-child td { border-bottom: none; }
