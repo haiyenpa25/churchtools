@@ -114,6 +114,10 @@ class ExtractBibleChunkJob implements ShouldQueue
         $trackerService->incrementChunk($this->category, $this->fileName, $nodesAdded, $edgesAdded);
 
         Log::info("Finished Processing Chunk: {$sourceRef} (Nodes: $nodesAdded, Edges: $edgesAdded)");
+
+        // BẢO VỆ API QUOTA: Gemini Free Tier cho phép 15 Request / Phút
+        // Delay 4 giây mỗi Job để đảm bảo chạy trơn tru không bao giờ dính 429 TooManyRequests
+        sleep(4);
     }
 
     /**

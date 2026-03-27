@@ -37,6 +37,7 @@ Route::middleware([])->group(function () {
     // Quản Lý Tracking Nạp Dữ Liệu
     Route::get('/api/graph/admin/ingestion-status', [GraphController::class, 'adminGetIngestionStatus']);
     Route::post('/api/graph/admin/ingest-single', [GraphController::class, 'adminIngestSingleFile']);
+    Route::post('/api/graph/admin/work-queue', [GraphController::class, 'adminWorkQueue']);
 
     // BIBLE TEXT & COMMENTARY (Local files)
     Route::get('/api/bible/text', [GraphController::class, 'getBibleText']);

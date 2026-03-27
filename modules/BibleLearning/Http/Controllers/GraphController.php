@@ -301,4 +301,26 @@ class GraphController extends Controller
 
         return response()->json(['message' => "Đã gửi tệp $filename vào Hàng đợi AI (Job Queue)!"]);
     }
+
+    /**
+     * API: Kích hoạt Queue Worker từ Web (Bypass SSH)
+     * Limit max 3-5 jobs để tránh Timeout Timeout Server
+     */
+    public function adminWorkQueue()
+    {
+        try {
+            // Chạy worker ngầm và dừng lại ngay sau khi xử lý xong 3 Jobs hoặc khi hàng đợi rỗng
+            Artisan::call('queue:work', [
+                '--stop-when-empty' => true,
+                '--max-jobs' => 3
+            ]);
+
+            return response()->json([
+                'message' => 'Đã kích hoạt AI Worker xử lý tiếp 3 phân đoạn!',
+                'output' => Artisan::output()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
