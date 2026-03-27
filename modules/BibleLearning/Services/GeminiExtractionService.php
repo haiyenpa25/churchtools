@@ -63,11 +63,12 @@ class GeminiExtractionService implements BibleLearningExtractorContract
             ]);
 
             if (! $response->successful()) {
+                $status = $response->status();
                 $errorBody = $response->json();
-                $errorMsg = $errorBody['error']['message'] ?? 'Lỗi không xác định (' . $response->status() . ')';
-                Log::error('Gemini API Error: ' . $errorMsg . ' | Body: ' . $response->body());
+                $errorMsg = $errorBody['error']['message'] ?? 'Lỗi không xác định (' . $status . ')';
+                Log::error("Gemini API Error [{$status}]: {$errorMsg}");
 
-                return [];
+                throw new \Exception("Gemini API Error {$status}: {$errorMsg}");
             }
 
             $jsonData = $response->json();
@@ -83,8 +84,9 @@ class GeminiExtractionService implements BibleLearningExtractorContract
 
         } catch (\Exception $e) {
             Log::error('Gemini API Exception: '.$e->getMessage());
-
-            return [];
+            
+            // Nếu lỗi là 429 hoặc lỗi Timeout, phải ném ra để Job biết đường Retry
+            throw $e;
         }
     }
 }

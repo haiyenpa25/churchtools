@@ -20,6 +20,8 @@ class ExtractBibleChunkJob implements ShouldQueue
 
     public $tries = 3;     // Thử lại 3 lần nếu API lỗi (Rate limit)
 
+    public $backoff = 10;  // Chờ 10 giây trước khi thử lại nếu Job bị fail (RẤT QUAN TRỌNG ĐỂ CHỐNG SPAM)
+
     protected string $textChunk;
 
     protected string $bookName;
@@ -49,9 +51,22 @@ class ExtractBibleChunkJob implements ShouldQueue
     {
         Log::info("Processing Bible Chunk: {$this->bookName} {$this->chapter}:{$this->versesRange}");
 
+        // BẢO VỆ API QUOTA TRƯỚC KHI GỌI: Ngủ 4 giây ngay từ đầu để hãm tốc độ của mọi Worker
+        sleep(4);
+
         $context = "Bối cảnh: Cuốn sách {$this->bookName}, đoạn {$this->chapter}. Hãy trích xuất các Thực thể (Nhân vật, Địa danh, Sự kiện, Khái niệm) và Quan hệ (Edges) một cách chính xác dựa trên đoạn văn bản này.";
 
-        $results = $aiService->extract($this->textChunk, $context);
+        try {
+            $results = $aiService->extract($this->textChunk, $context);
+        } catch (\Exception $e) {
+            // Nếu lỗi 429 Too Many Requests, tự động đẩy lại mạng sau 15 giây
+            if (str_contains($e->getMessage(), '429') || str_contains($e->getMessage(), 'quota')) {
+                Log::warning("Rate Limit 429 Hit cho {$this->bookName}. Lùi lại 15s...");
+                $this->release(15);
+                return;
+            }
+            throw $e; // Quăng ra để Laravel tính là 1 lần Failed
+        }
 
         if (empty($results)) {
             Log::warning("No entities extracted for {$this->bookName} {$this->chapter}:{$this->versesRange}");
@@ -114,10 +129,6 @@ class ExtractBibleChunkJob implements ShouldQueue
         $trackerService->incrementChunk($this->category, $this->fileName, $nodesAdded, $edgesAdded);
 
         Log::info("Finished Processing Chunk: {$sourceRef} (Nodes: $nodesAdded, Edges: $edgesAdded)");
-
-        // BẢO VỆ API QUOTA: Gemini Free Tier cho phép 15 Request / Phút
-        // Delay 4 giây mỗi Job để đảm bảo chạy trơn tru không bao giờ dính 429 TooManyRequests
-        sleep(4);
     }
 
     /**

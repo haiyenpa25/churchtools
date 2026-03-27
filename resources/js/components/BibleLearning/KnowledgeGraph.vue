@@ -285,7 +285,7 @@
               </select>
               <button @click="fetchIngestionStatus" class="fm-refresh-btn" :disabled="adminLoading">↻ Làm Mới</button>
               <button @click="ingestAllPending" class="fm-ingest-all-btn btn-purple" :disabled="adminLoading || pendingFilesCount === 0">🚀 Chạy AI {{ pendingFilesCount }} File Tồn Đọng</button>
-              <button @click="runWorkQueue" class="fm-refresh-btn" style="background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.3); font-weight: 900;" :disabled="adminLoading" title="Bơm 3 File đang kẹt ĐANG XỬ LÝ (QUEUE) vào chạy ngay">⚡ Khởi Động AI Ngầm (Xử lý kẹt Queue)</button>
+              <button @click="runWorkQueue" class="fm-refresh-btn" style="background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.3); font-weight: 900;" :disabled="adminLoading" title="Bơm 2 File đang kẹt ĐANG XỬ LÝ (QUEUE) vào chạy ngay">⚡ Khởi Động AI Ngầm (Xử lý kẹt Queue)</button>
             </div>
 
             <div class="fm-table-wrap">
