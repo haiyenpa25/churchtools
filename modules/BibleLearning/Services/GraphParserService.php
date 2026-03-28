@@ -31,7 +31,7 @@ class GraphParserService
         $prompt = $this->buildPrompt($rawText);
 
         try {
-            $model = env('GEMINI_MODEL', 'gemini-1.5-flash');
+            $model = env('GEMINI_MODEL', 'gemini-2.5-flash');
             $response = Http::timeout(45)->post(
                 'https://generativelanguage.googleapis.com/v1beta/models/'.$model.':generateContent?key='.$this->apiKey,
                 [

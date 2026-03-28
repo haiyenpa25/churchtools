@@ -48,7 +48,7 @@ class GeminiExtractionService implements BibleLearningExtractorContract
         Log::info('Gemini is processing payload length: '.strlen($prompt));
 
         try {
-            $model = env('GEMINI_MODEL', 'gemini-1.5-flash');
+            $model = env('GEMINI_MODEL', 'gemini-2.5-flash');
             $response = Http::post('https://generativelanguage.googleapis.com/v1beta/models/'.$model.':generateContent?key='.$this->apiKey, [
                 'contents' => [
                     ['parts' => [['text' => $prompt]]],
