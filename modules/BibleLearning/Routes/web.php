@@ -9,6 +9,7 @@ use Modules\BibleLearning\Http\Controllers\GraphController;
 use Modules\BibleLearning\Http\Controllers\OllamaController;
 use Modules\BibleLearning\Http\Controllers\PortalController;
 use Modules\BibleLearning\Http\Controllers\QuizController;
+use Modules\BibleLearning\Http\Controllers\WebhookController;
 
 Route::middleware([])->group(function () {
     // PORTAL HUB
@@ -42,6 +43,9 @@ Route::middleware([])->group(function () {
     Route::get('/api/graph/admin/get-key', [GraphController::class, 'adminGetKey']);
     Route::post('/api/graph/admin/save-key', [GraphController::class, 'adminSaveKey']);
     Route::get('/api/graph/admin/view-json', [GraphController::class, 'adminViewJson']);
+
+    // GITHUB WEBHOOK CI/CD AUTO-DEPLOY
+    Route::post('/api/deploy/github', [WebhookController::class, 'github']);
 
     // OLLAMA LOCAL AI PIPELINE DASHBOARD (PHA 17)
     Route::get('/api/graph/ollama/status', [OllamaController::class, 'getStatus']);
