@@ -88,17 +88,30 @@
                 </div>
             </div>
 
-            <!-- CỘT 3: CÂU KINH THÁNH TRỰC DIỆN -->
-            <div class="col-span-1 md:col-span-2 bg-gray-800/50 border border-gray-700 rounded-2xl overflow-hidden shadow-2xl flex flex-col relative">
+            <!-- CỘT 3: CÂU KINH THÁNH & GIẢI NGHĨA -->
+            <div class="col-span-1 md:col-span-2 bg-gray-800/50 border border-gray-700 rounded-2xl overflow-hidden shadow-2xl flex flex-col relative" :class="showCommentaryTab ? 'md:col-span-2' : ''">
                 <div class="p-4 border-b border-gray-700 bg-gray-900/80 flex justify-between items-center z-10">
                     <div>
                         <h2 class="font-bold text-gray-300 text-lg flex items-center gap-2">
-                            ✨ Nội dung Chương
+                            <span x-show="!showCommentaryTab">✨ Nội dung Chương</span>
+                            <span x-show="showCommentaryTab" class="text-amber-400">📚 Đọc Giải Nghĩa</span>
                         </h2>
                         <p class="text-[11px] text-emerald-400 mt-1 uppercase tracking-wider font-semibold" x-show="selectedBook && selectedChapter" x-text="selectedBook.name + ' - Chương ' + selectedChapter.chapter_number"></p>
                     </div>
-                    <div class="text-xs text-gray-500" x-show="verses.length > 0">
-                        Tổng cộng: <span x-text="verses.length" class="text-gray-300 font-bold"></span> CÂU
+                    
+                    <!-- Nút Đảo Tab View -->
+                    <div class="flex items-center gap-2 bg-gray-900 rounded-lg p-1 border border-gray-700" x-show="selectedChapter">
+                        <button @click="showCommentaryTab = false" 
+                                class="px-3 py-1.5 rounded-md text-xs font-bold transition"
+                                :class="!showCommentaryTab ? 'bg-emerald-900/50 text-emerald-400 shadow-sm' : 'text-gray-500 hover:text-gray-300'">
+                            📖 Kinh Thánh
+                        </button>
+                        <button @click="showCommentaryTab = true" 
+                                class="px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1"
+                                :class="showCommentaryTab ? 'bg-amber-900/60 text-amber-400 shadow-sm' : 'text-gray-500 hover:text-gray-300'">
+                            📚 Wiersbe
+                            <span x-show="isLoadingCommentary" class="inline-block w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></span>
+                        </button>
                     </div>
                 </div>
 
@@ -111,14 +124,15 @@
                         </div>
                     </template>
                     
-                    <template x-if="isLoadingVerses">
+                    <template x-if="isLoadingVerses && !showCommentaryTab">
                         <div class="text-center py-20">
                             <div class="inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                             <p class="text-xs text-emerald-500 mt-2 font-medium">Đang bung kho dữ liệu...</p>
                         </div>
                     </template>
 
-                    <div class="space-y-3" x-show="verses.length > 0 && !isLoadingVerses">
+                    <!-- VIEW KINH THÁNH -->
+                    <div class="space-y-3" x-show="!showCommentaryTab && verses.length > 0 && !isLoadingVerses">
                         <template x-for="verse in verses" :key="verse.id">
                             <div class="group relative flex gap-3 p-3 rounded-xl hover:bg-gray-700/30 transition border border-transparent hover:border-gray-700">
                                 <div class="font-bold text-gray-500 text-sm pt-0.5 select-none w-6 text-right" x-text="verse.verse_number"></div>
@@ -128,6 +142,32 @@
                                         Sửa Câu Đọc
                                     </button>
                                 </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- VIEW GIẢI NGHĨA -->
+                    <div class="space-y-6" x-show="showCommentaryTab" x-transition>
+                        <template x-if="isLoadingCommentary">
+                            <div class="text-center py-20">
+                                <p class="text-xs text-amber-500 mt-2 font-medium">Đang tải Giải Nghĩa Kinh Thánh JSON...</p>
+                            </div>
+                        </template>
+                        <template x-if="!isLoadingCommentary && currentChapterCommentaries.length === 0">
+                            <div class="text-center py-10 opacity-60">
+                                <div class="text-4xl mb-3">📭</div>
+                                <p class="text-sm text-gray-400 font-medium">Không tìm thấy phần Giải Nghĩa cụ thể nào khớp với Chương <span x-text="selectedChapter?.chapter_number"></span></p>
+                                <p class="text-xs text-gray-500 mt-1">Gợi ý: Hãy qua Đọc Kinh Thánh gốc hoặc chuyển sang một Chương khác.</p>
+                            </div>
+                        </template>
+                        <template x-for="item in currentChapterCommentaries" :key="item.id">
+                            <div class="bg-[#151b23] border border-amber-900/30 p-5 rounded-2xl shadow-inner">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="bg-amber-900/40 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded tracking-wider uppercase border border-amber-700/50">Phân Đoạn</span>
+                                    <h3 class="text-gray-200 font-bold text-base font-serif" x-text="item.title"></h3>
+                                    <span class="text-gray-500 text-xs ml-auto" x-text="item.reference"></span>
+                                </div>
+                                <div class="text-gray-400 text-sm leading-relaxed prose prose-invert prose-amber max-w-none font-serif" style="white-space: pre-line;" x-text="item.content"></div>
                             </div>
                         </template>
                     </div>
@@ -197,6 +237,12 @@
                 isLoadingChapters: false,
                 isLoadingVerses: false,
                 
+                // Commentary JSON Storage (G-A-E-V Integration)
+                bookCommentaryCache: [], // Cache mảng JSON Giải nghĩa của Sách đang chọn
+                currentChapterCommentaries: [], // Lọc ra mảng JSON khớp với Chương đang chọn
+                showCommentaryTab: false,
+                isLoadingCommentary: false,
+                
                 // Edit Modal Area
                 showModal: false,
                 isSaving: false,
@@ -227,20 +273,37 @@
                     this.selectedChapter = null;
                     this.verses = [];
                     this.chapters = [];
+                    this.bookCommentaryCache = [];
+                    this.currentChapterCommentaries = [];
+                    this.showCommentaryTab = false; // Reset UI
                     
                     this.isLoadingChapters = true;
+                    this.isLoadingCommentary = true;
+                    
+                    // Paralell Fetching: Tải song song Danh sách MỤC LỤC Chương + Tải JSON Wiersbe Ngầm.
                     try {
-                        let res = await fetch('{{ url("/bible-manager/api/chapters") }}?book_id=' + book.id);
-                        if (res.ok) {
-                            this.chapters = await res.json();
+                        let resChapters = fetch('{{ url("/bible-manager/api/chapters") }}?book_id=' + book.id);
+                        let resCommentary = fetch('{{ url("/api/graph/admin/view-commentary-json") }}?book=' + book.id);
+                        
+                        let [chRes, comRes] = await Promise.all([resChapters, resCommentary]);
+                        
+                        if (chRes.ok) this.chapters = await chRes.json();
+                        if (comRes.ok) {
+                            let data = await comRes.json();
+                            this.bookCommentaryCache = data.commentary_data || [];
                         }
-                    } catch (e) { console.error('Lỗi tải chương:', e); }
+                    } catch (e) { console.error('Lỗi khởi tạo song song data:', e); }
+                    
                     this.isLoadingChapters = false;
+                    this.isLoadingCommentary = false;
                 },
 
                 async selectChapter(chapter) {
                     this.selectedChapter = chapter;
                     this.verses = [];
+                    
+                    // Filter Wiersbe Array: Tìm các block JSON có liên quan đến chapter đang chọn
+                    this.filterCommentaryByChapter(chapter.chapter_number);
                     
                     this.isLoadingVerses = true;
                     try {
@@ -248,8 +311,39 @@
                         if (res.ok) {
                             this.verses = await res.json();
                         }
-                    } catch (e) { console.error('Lỗi tải câu:', e); }
+                    } catch (e) { console.error('Lỗi tải câu KT:', e); }
                     this.isLoadingVerses = false;
+                },
+                
+                // Thuật toán bóc tách JSON Giải Nghĩa dựa theo số Chương
+                filterCommentaryByChapter(chapterNumber) {
+                    if (this.bookCommentaryCache.length === 0) {
+                        this.currentChapterCommentaries = [];
+                        return;
+                    }
+                    
+                    const matches = [];
+                    const searchStr1 = " " + chapterNumber + ":";   // "Sáng 1:" HOẶC "Kh 1:"
+                    const searchStr2 = " " + chapterNumber + ",";   // "Kh 1,2:" 
+                    const searchStr3 = " " + chapterNumber + "\n"; // Đứng độc lập ở Reference cuối câu
+                    const searchStr4 = " " + chapterNumber;        // Chỉ có mỗi "Kh 1" (Khá hiếm)
+                    
+                    this.bookCommentaryCache.forEach(item => {
+                        let cleanRef = item.reference.replace(/\\n/g, ' ').replace(/\n/g, ' '); // Xóa dấu ngắt dòng thừa
+                        // Regex kiểm tra số Chương đứng trước dấu hai chấm, dấu phẩy, khoảng trắng hoặc cuối chuỗi
+                        const regex = new RegExp(`\\b${chapterNumber}(?=:|,|\\s|$)`, 'g');
+                        if (regex.test(cleanRef)) {
+                            matches.push(item);
+                            return; // Đã match thì bỏ qua check thêm tránh duplicate HTML
+                        }
+                        
+                        // Fallback logic rà soát tiêu đề (Title) nếu reference trống (Xảy ra với Mở Đầu quyển sách)
+                        if (chapterNumber === 1 && item.title.includes("Mở Đầu")) {
+                            matches.push(item);
+                        }
+                    });
+                    
+                    this.currentChapterCommentaries = matches;
                 },
 
                 openEditModal(verse) {
