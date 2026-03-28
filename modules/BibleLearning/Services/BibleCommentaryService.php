@@ -69,44 +69,60 @@ class BibleCommentaryService
         ];
     }
 
-    /**
-     * Get commentary section for a given book name
-     *
-     * @return array{ok: bool, book: string, header: string, content: string, excerpt: string}
-     */
     public function getCommentary(string $bookName): array
     {
-        $headerKey = $this->resolveHeaderKey($bookName);
+        // 1. Tìm sách Kinh Thánh từ DB (Hỗ trợ Like Search siêu tốc)
+        $book = \App\Models\BibleBook::where('name', 'LIKE', '%' . $bookName . '%')->first();
 
-        if (! $headerKey) {
+        if (!$book) {
+            // Thử bằng Regex Mapping nếu bị sai lệch tên gọi
+            $mappedName = $this->resolveHeaderKey($bookName);
+            if ($mappedName) {
+                // Thử tìm lại bằng map
+                $book = \App\Models\BibleBook::where('name', 'LIKE', '%' . $mappedName . '%')->first();
+            }
+        }
+
+        if (!$book) {
+            return ['ok' => false, 'error' => "Không tìm thấy sách: {$bookName} trong CSDL"];
+        }
+
+        // 2. Lấy toàn bộ các đoạn giải nghĩa của Sách này
+        $commentaries = \App\Models\BibleCommentary::where('bible_book_id', $book->id)->orderBy('id')->get();
+
+        if ($commentaries->isEmpty()) {
             return ['ok' => false, 'error' => "Không có giải nghĩa cho sách: {$bookName}"];
         }
 
-        foreach ($this->files as $filePath) {
-            if (! file_exists($filePath)) {
-                continue;
-            }
-
-            $result = $this->searchInFile($filePath, $headerKey);
-            if ($result !== null) {
-                return [
-                    'ok' => true,
-                    'book' => $bookName,
-                    'header' => $headerKey,
-                    'content' => $result['content'],
-                    'excerpt' => mb_substr($result['content'], 0, 800).'...',
-                    'source' => 'Giải Nghĩa của Warren W. Wiersbe',
-                    'char_count' => mb_strlen($result['content']),
-                ];
-            }
+        // 3. Nối các nội dung giải nghĩa thành 1 tệp HTML/Text thuần để Frontend đọc
+        $content = "";
+        foreach ($commentaries as $c) {
+            $content .= "\n\n========================================\n";
+            $content .= "📖 [" . $c->reference_string . "] - " . $c->title . "\n";
+            $content .= "========================================\n\n";
+            $content .= $c->content;
         }
 
-        return ['ok' => false, 'error' => "Không tìm thấy giải nghĩa cho: {$bookName}"];
+        return [
+            'ok' => true,
+            'book' => $book->name,
+            'header' => mb_strtoupper($book->name),
+            'content' => trim($content),
+            'excerpt' => mb_substr(trim($content), 0, 800) . '...',
+            'source' => 'Giải Nghĩa Kinh Thánh Wiersbe (Database Engine)',
+            'char_count' => mb_strlen($content),
+            // Trả về luôn mảng raw_data gốc nguyên sinh để user gọi API có JSON luôn!
+            'raw_json_data' => $commentaries->map(function ($c) {
+                return [
+                    'id' => $c->id,
+                    'reference' => $c->reference_string,
+                    'title' => $c->title,
+                    'structure' => $c->raw_data,
+                ];
+            })->toArray()
+        ];
     }
 
-    /**
-     * Get a paginated portion of commentary (for long books)
-     */
     public function getCommentaryPage(string $bookName, int $page = 1, int $pageSize = 3000): array
     {
         $result = $this->getCommentary($bookName);
@@ -117,6 +133,17 @@ class BibleCommentaryService
         $content = $result['content'];
         $totalChars = mb_strlen($content);
         $totalPages = (int) ceil($totalChars / $pageSize);
+        
+        // Fix: nếu Page = -1, trả về Toàn bộ Nội Dung thay vì cắt chuỗi!
+        if ($page === -1) {
+            return array_merge($result, [
+                'page' => 1,
+                'total_pages' => 1,
+                'page_content' => $content,
+                'has_more' => false,
+            ]);
+        }
+
         $start = ($page - 1) * $pageSize;
         $slice = mb_substr($content, $start, $pageSize);
 
@@ -128,97 +155,19 @@ class BibleCommentaryService
         ]);
     }
 
-    /**
-     * Get import format guide for commentary files
-     */
     public function getImportFormatGuide(): array
     {
         return [
-            'format' => 'Large TXT files (one or multiple)',
-            'separator' => '--------------------',
-            'structure' => [
-                'book_header' => "--------------------\nTÊN SÁCH (UPPERCASE)\nĐược viết bởi: Author\n...",
-                'content' => 'Free-form text paragraphs, scripture refs like (Sa 1:1)',
-                'next_book' => "--------------------\nSÁCH KẾ TIẾP",
-            ],
-            'example' => "--------------------\nSÁNG THẾ KÝ\nĐược viết bởi:\nNguyễn Thiên Ý\n...\n",
-            'files' => array_map(fn ($f) => basename($f), $this->files),
-            'note' => 'Books are separated by the "--------------------" divider followed by BOOK NAME in uppercase',
+            'status' => 'DEPRECATED',
+            'note' => 'Hệ thống đã nâng cấp lên Database. Vui lòng sử dụng Seeder: php artisan db:seed --class=BibleCommentarySeeder',
         ];
     }
 
-    /**
-     * List all books found in commentary files
-     */
     public function listAvailableBooks(): array
     {
-        $found = [];
-        foreach ($this->files as $filePath) {
-            if (! file_exists($filePath)) {
-                continue;
-            }
-            $handle = fopen($filePath, 'r');
-            if (! $handle) {
-                continue;
-            }
-            $prevLine = '';
-            while (($line = fgets($handle)) !== false) {
-                $line = rtrim($line);
-                if ($prevLine === '--------------------' && ! empty(trim($line))) {
-                    $found[] = trim($line);
-                }
-                $prevLine = $line;
-            }
-            fclose($handle);
-        }
-
-        return array_unique($found);
-    }
-
-    /**
-     * Search for a book section within a file.
-     * Returns ['content' => '...'] or null if not found.
-     */
-    protected function searchInFile(string $filePath, string $headerKey): ?array
-    {
-        $handle = fopen($filePath, 'r');
-        if (! $handle) {
-            return null;
-        }
-
-        $inSection = false;
-        $prevLine = '';
-        $content = '';
-        $headerLower = mb_strtolower($headerKey);
-
-        while (($line = fgets($handle)) !== false) {
-            $trimmed = rtrim($line);
-
-            if ($inSection) {
-                // Next section starts
-                if ($trimmed === '--------------------') {
-                    break;
-                }
-                $content .= $trimmed."\n";
-            } else {
-                // Detect section start: "--------------------" followed by book name
-                if ($prevLine === '--------------------') {
-                    $lineLower = mb_strtolower(trim($trimmed));
-                    if ($lineLower === $headerLower ||
-                        str_contains($lineLower, $headerLower) ||
-                        str_contains($headerLower, $lineLower)) {
-                        $inSection = true;
-                        $content = $trimmed."\n"; // include header
-                    }
-                }
-            }
-
-            $prevLine = $trimmed;
-        }
-
-        fclose($handle);
-
-        return $inSection && ! empty(trim($content)) ? ['content' => $content] : null;
+        // Lấy danh sách tên sách từ bảng bible_books mà có chứa ít nhất 1 bài giải nghĩa
+        $books = \App\Models\BibleBook::whereHas('commentaries')->pluck('name')->toArray();
+        return $books;
     }
 
     protected function resolveHeaderKey(string $bookName): ?string
@@ -236,4 +185,5 @@ class BibleCommentaryService
 
         return null;
     }
+
 }

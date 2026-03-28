@@ -404,4 +404,40 @@ class GraphController extends Controller
             'edges' => $payload['edges'] ?? [],
         ]);
     }
+
+    /**
+     * API: Đọc chuỗi JSON thuần của phần Giải Nghĩa Kinh Thánh từ CSDL
+     */
+    public function adminViewCommentaryJson(Request $request)
+    {
+        $book = $request->input('book'); // Ví dụ: 'Sáng Thế Ký' hoặc id sách
+        if (!$book) {
+            return response()->json(['error' => 'Vui lòng cung cấp tham số book tương ứng tên sách hoặc ID sách'], 400);
+        }
+
+        $bibleBook = \App\Models\BibleBook::where('name', 'LIKE', "%{$book}%")
+            ->orWhere('id', $book)
+            ->first();
+
+        if (!$bibleBook) {
+            return response()->json(['error' => "Không tìm thấy sách: {$book}"], 404);
+        }
+
+        $commentaries = \App\Models\BibleCommentary::where('bible_book_id', $bibleBook->id)->get();
+
+        return response()->json([
+            'book_id' => $bibleBook->id,
+            'book_name' => $bibleBook->name,
+            'total_items' => $commentaries->count(),
+            'commentary_data' => $commentaries->map(function($c) {
+                return [
+                    'id' => $c->id,
+                    'reference' => $c->reference_string,
+                    'title' => $c->title,
+                    'content' => $c->content,
+                    'raw_data' => $c->raw_data,
+                ];
+            })
+        ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    }
 }

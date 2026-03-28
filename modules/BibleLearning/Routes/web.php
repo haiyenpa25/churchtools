@@ -53,6 +53,7 @@ Route::middleware([])->group(function () {
     Route::get('/api/graph/admin/get-key', [GraphController::class, 'adminGetKey']);
     Route::post('/api/graph/admin/save-key', [GraphController::class, 'adminSaveKey']);
     Route::get('/api/graph/admin/view-json', [GraphController::class, 'adminViewJson']);
+    Route::get('/api/graph/admin/view-commentary-json', [GraphController::class, 'adminViewCommentaryJson']);
 
     // GITHUB WEBHOOK CI/CD AUTO-DEPLOY
     Route::post('/api/deploy/github', [WebhookController::class, 'github']);
