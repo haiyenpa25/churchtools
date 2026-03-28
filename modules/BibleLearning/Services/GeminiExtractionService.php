@@ -2,6 +2,7 @@
 
 namespace Modules\BibleLearning\Services;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Modules\BibleLearning\Contracts\BibleLearningExtractorContract;
@@ -13,10 +14,11 @@ class GeminiExtractionService implements BibleLearningExtractorContract
     public function __construct()
     {
         $path = storage_path('app/bible_gemini_key.txt');
-        if (\Illuminate\Support\Facades\File::exists($path)) {
-            $key = trim(\Illuminate\Support\Facades\File::get($path));
-            if (!empty($key)) {
+        if (File::exists($path)) {
+            $key = trim(File::get($path));
+            if (! empty($key)) {
                 $this->apiKey = $key;
+
                 return;
             }
         }
@@ -65,7 +67,7 @@ class GeminiExtractionService implements BibleLearningExtractorContract
             if (! $response->successful()) {
                 $status = $response->status();
                 $errorBody = $response->json();
-                $errorMsg = $errorBody['error']['message'] ?? 'Lỗi không xác định (' . $status . ')';
+                $errorMsg = $errorBody['error']['message'] ?? 'Lỗi không xác định ('.$status.')';
                 Log::error("Gemini API Error [{$status}]: {$errorMsg}");
 
                 throw new \Exception("Gemini API Error {$status}: {$errorMsg}");
@@ -84,7 +86,7 @@ class GeminiExtractionService implements BibleLearningExtractorContract
 
         } catch (\Exception $e) {
             Log::error('Gemini API Exception: '.$e->getMessage());
-            
+
             // Nếu lỗi là 429 hoặc lỗi Timeout, phải ném ra để Job biết đường Retry
             throw $e;
         }

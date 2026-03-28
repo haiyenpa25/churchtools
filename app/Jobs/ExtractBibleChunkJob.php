@@ -63,6 +63,7 @@ class ExtractBibleChunkJob implements ShouldQueue
             if (str_contains($e->getMessage(), '429') || str_contains($e->getMessage(), 'quota')) {
                 Log::warning("Rate Limit 429 Hit cho {$this->bookName}. Lùi lại 15s...");
                 $this->release(15);
+
                 return;
             }
             throw $e; // Quăng ra để Laravel tính là 1 lần Failed

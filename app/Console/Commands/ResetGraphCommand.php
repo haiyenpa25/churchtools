@@ -56,7 +56,6 @@ class ResetGraphCommand extends Command
 
         $this->info('✅ Đã dọn sạch bảng bl_nodes, bl_edges, bl_imported_files và Hàng đợi Queue thành công!');
 
-
         return 0;
     }
 }

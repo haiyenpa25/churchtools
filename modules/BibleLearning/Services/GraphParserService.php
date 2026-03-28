@@ -2,6 +2,7 @@
 
 namespace Modules\BibleLearning\Services;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -12,10 +13,11 @@ class GraphParserService
     public function __construct()
     {
         $path = storage_path('app/bible_gemini_key.txt');
-        if (\Illuminate\Support\Facades\File::exists($path)) {
-            $key = trim(\Illuminate\Support\Facades\File::get($path));
-            if (!empty($key)) {
+        if (File::exists($path)) {
+            $key = trim(File::get($path));
+            if (! empty($key)) {
                 $this->apiKey = $key;
+
                 return;
             }
         }
@@ -48,10 +50,10 @@ class GraphParserService
 
             if (! $response->successful()) {
                 $errorBody = $response->json();
-                $errorMsg = $errorBody['error']['message'] ?? 'Lỗi không xác định từ máy chủ ('. $response->status() . ')';
+                $errorMsg = $errorBody['error']['message'] ?? 'Lỗi không xác định từ máy chủ ('.$response->status().')';
                 Log::error('[GraphParserService] Gemini error: '.$response->body());
 
-                return $this->errorResponse('Lỗi Gemini API: ' . $errorMsg);
+                return $this->errorResponse('Lỗi Gemini API: '.$errorMsg);
             }
 
             $body = $response->json();

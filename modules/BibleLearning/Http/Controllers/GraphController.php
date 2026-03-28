@@ -312,12 +312,12 @@ class GraphController extends Controller
             // Chạy worker ngầm và dừng lại ngay sau khi xử lý xong 2 Jobs hoặc khi hàng đợi rỗng
             Artisan::call('queue:work', [
                 '--stop-when-empty' => true,
-                '--max-jobs' => 2
+                '--max-jobs' => 2,
             ]);
 
             return response()->json([
                 'message' => 'Đã kích hoạt AI Worker xử lý tiếp 2 phân đoạn!',
-                'output' => Artisan::output()
+                'output' => Artisan::output(),
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -345,12 +345,12 @@ class GraphController extends Controller
 
         $masked = '';
         if ($key) {
-            $masked = substr($key, 0, 6) . '...' . substr($key, -4);
+            $masked = substr($key, 0, 6).'...'.substr($key, -4);
         }
 
         return response()->json([
             'masked_key' => $masked,
-            'has_key' => !empty($key)
+            'has_key' => ! empty($key),
         ]);
     }
 }

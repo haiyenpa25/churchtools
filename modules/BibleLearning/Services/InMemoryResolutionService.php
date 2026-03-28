@@ -1,0 +1,113 @@
+<?php
+
+namespace Modules\BibleLearning\Services;
+
+class InMemoryResolutionService
+{
+    private array $nodeMap = [];
+
+    private array $edgeMap = [];
+
+    // Bảng Ánh Xạ Nhân Vật (Entity Aliasing) để gộp nhánh
+    private array $aliasMap = [
+        'si-môn' => 'Phi-e-rơ',
+        'sê-pha' => 'Phi-e-rơ',
+        'áp-ram' => 'Áp-ra-ham',
+        'sa-rai' => 'Sa-ra',
+        'sau-lơ' => 'Phao-lô',
+        'nhã-ca' => 'Sa-lô-môn',
+        // Có thể mở rộng vô hạn ở đây hoặc nạp từ file JSON/Config
+    ];
+
+    public function resolveAlias(string $name): string
+    {
+        $key = mb_strtolower(trim($name), 'UTF-8');
+
+        return $this->aliasMap[$key] ?? trim($name);
+    }
+
+    public function upsertNode(string $name, string $group, string $desc, array $metadata = []): ?string
+    {
+        $resolvedName = $this->resolveAlias($name);
+        $key = mb_strtolower($resolvedName, 'UTF-8');
+
+        if (empty($key)) {
+            return null;
+        }
+
+        // Tốc độ tìm kiếm O(1) bằng Hash Map (Mảng trong PHP)
+        if (! isset($this->nodeMap[$key])) {
+            $this->nodeMap[$key] = [
+                // Giả lập 1 ID duy nhất để nối Edge sau này
+                'id' => md5($key.$group),
+                'label' => $resolvedName,
+                'group' => $group,
+                'description' => $desc,
+                'metadata' => [
+                    'mentions' => [],
+                ],
+            ];
+        } else {
+            // Nối Description nếu cái cũ bị rỗng
+            if (empty($this->nodeMap[$key]['description']) && ! empty($desc)) {
+                $this->nodeMap[$key]['description'] = $desc;
+            }
+        }
+
+        // Chồng lấp (Gộp) danh sách các câu Kinh Thánh nhắc tới nhân vật
+        if (! empty($metadata['source_verse'])) {
+            $this->nodeMap[$key]['metadata']['mentions'][] = $metadata['source_verse'];
+            $this->nodeMap[$key]['metadata']['mentions'] = array_unique($this->nodeMap[$key]['metadata']['mentions']);
+        }
+
+        return $key;
+    }
+
+    public function upsertEdge(string $sourceKey, string $targetKey, string $relationship, array $metadata = [])
+    {
+        if (! isset($this->nodeMap[$sourceKey]) || ! isset($this->nodeMap[$targetKey])) {
+            return; // Tránh nối vào Node vô hình (Ghost Node)
+        }
+
+        $sourceNode = $this->nodeMap[$sourceKey];
+        $targetNode = $this->nodeMap[$targetKey];
+
+        // Mã băm (Hash) để định danh 1 Mối quan hệ duy nhất trên Đồ thị
+        $edgeHash = md5($sourceNode['id'].$targetNode['id'].$relationship);
+
+        if (! isset($this->edgeMap[$edgeHash])) {
+            $this->edgeMap[$edgeHash] = [
+                'source' => $sourceNode['id'],
+                'target' => $targetNode['id'],
+                'relationship' => $relationship,
+                'metadata' => [
+                    'source_verses' => [],
+                ],
+            ];
+        }
+
+        if (! empty($metadata['source_verse'])) {
+            $this->edgeMap[$edgeHash]['metadata']['source_verses'][] = $metadata['source_verse'];
+            $this->edgeMap[$edgeHash]['metadata']['source_verses'] = array_unique($this->edgeMap[$edgeHash]['metadata']['source_verses']);
+        }
+    }
+
+    /**
+     * Dọn dẹp sạch sẽ RAM O(1) để chuyển sang Sách (Book) mới
+     */
+    public function flushMemory(): void
+    {
+        $this->nodeMap = [];
+        $this->edgeMap = [];
+    }
+
+    public function getNodes(): array
+    {
+        return array_values($this->nodeMap);
+    }
+
+    public function getEdges(): array
+    {
+        return array_values($this->edgeMap);
+    }
+}
