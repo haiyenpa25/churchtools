@@ -161,18 +161,38 @@
         <!-- Song Library Manager -->
         <a href="{{ url('/songs') }}" class="card" style="border-color:rgba(56,189,248,0.2); background:linear-gradient(135deg,rgba(56,189,248,0.05) 0%,rgba(10,10,24,0.6) 100%)">
             <div class="card-body">
-                <div class="icon icon-blue">📖</div>
+                <div class="icon icon-blue">🎵</div>
                 <div>
                     <div class="card-title">Quản Lý Bài Hát</div>
                     <p class="card-desc">Thư viện bài hát số với phân loại, tìm kiếm, và chỉnh sửa trực tiếp. Dữ liệu đồng bộ với PPT Livestream.</p>
                     <div class="tags">
-                        <span class="tag" style="background:rgba(56,189,248,0.15);color:#7dd3fc;border-color:rgba(56,189,248,0.25)">1295+ Bài Hát</span>
+                        <span class="tag" style="background:rgba(56,189,248,0.15);color:#7dd3fc;border-color:rgba(56,189,248,0.25)">2000+ Bài Hát</span>
                         <span class="tag" style="background:rgba(56,189,248,0.15);color:#7dd3fc;border-color:rgba(56,189,248,0.25)">MySQL</span>
                     </div>
                 </div>
             </div>
             <div class="card-footer">
                 <span>Database · Laravel · Alpine</span>
+                <span class="arrow">Mở ngay →</span>
+            </div>
+        </a>
+
+        <!-- Bible Manager (G-A-E-V) -->
+        <a href="{{ url('/bible-manager') }}" class="card" style="border-color:rgba(16,185,129,0.2); background:linear-gradient(135deg,rgba(16,185,129,0.05) 0%,rgba(10,10,24,0.6) 100%)">
+            <div class="card-body">
+                <div class="icon icon-green">📖</div>
+                <div>
+                    <div class="card-title">Quản Lý Kinh Thánh</div>
+                    <div style="font-size:0.72rem; color:#10b981; font-weight:700; margin-bottom:0.6rem">✓ G-A-E-V Engine</div>
+                    <p class="card-desc">Trạm kiểm soát trung tâm toàn bộ 66 Sách, 1189 Chương và 31,102 Câu Kinh Thánh. Chỉnh sửa cực nhanh với kiến trúc 4-Layer siêu việt.</p>
+                    <div class="tags">
+                        <span class="tag" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(16,185,129,0.25)">Client-Side Alpine</span>
+                        <span class="tag" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(16,185,129,0.25)">4-Layer REST</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span>Grapuco · Laravel · Repository</span>
                 <span class="arrow">Mở ngay →</span>
             </div>
         </a>

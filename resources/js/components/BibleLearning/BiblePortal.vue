@@ -153,6 +153,46 @@
           </div>
         </a>
 
+        <!-- CARD 7: QUẢN LÝ KINH THÁNH (NEW) -->
+        <a href="/bible-manager" class="group relative bg-[#0d141e] rounded-3xl p-8 shadow-lg border border-emerald-900/50 hover:shadow-2xl hover:shadow-emerald-900/50 hover:-translate-y-2 transition-all duration-300 overflow-hidden flex flex-col md:col-span-3">
+          <div class="absolute inset-0 bg-gradient-to-r from-emerald-900/40 via-transparent to-teal-900/20 opacity-50"></div>
+          
+          <div class="relative z-10 flex flex-col md:flex-row items-center gap-6">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/30 group-hover:rotate-12 transition-transform">
+              <span class="text-3xl">📖</span>
+            </div>
+            
+            <div class="flex-1 text-center md:text-left">
+              <h3 class="text-2xl font-black text-white mb-2">Quản Lý Dữ Liệu Kinh Thánh</h3>
+              <p class="text-emerald-200/70 font-medium">Truy cập giao diện Admin 4-Layer (G-A-E-V) chỉnh sửa trực tiếp 66 chiều không gian Sách Kinh Thánh. Cơ chế lưu trữ AlpineJS thời gian thực.</p>
+            </div>
+            
+            <div class="text-white bg-white/10 w-12 h-12 rounded-full flex items-center justify-center group-hover:bg-emerald-500 transition-colors backdrop-blur-md">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- CARD 6: QUẢN LÝ BÀI HÁT -->
+        <a href="/songs" class="group relative bg-[#131b26] rounded-3xl p-8 shadow-lg border border-blue-900/50 hover:shadow-2xl hover:shadow-sky-900/50 hover:-translate-y-2 transition-all duration-300 overflow-hidden flex flex-col md:col-span-3">
+          <div class="absolute inset-0 bg-gradient-to-r from-sky-900/40 via-transparent to-blue-900/20 opacity-50"></div>
+          
+          <div class="relative z-10 flex flex-col md:flex-row items-center gap-6">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-sky-500/30 group-hover:rotate-12 transition-transform">
+              <span class="text-3xl">🎵</span>
+            </div>
+            
+            <div class="flex-1 text-center md:text-left">
+              <h3 class="text-2xl font-black text-white mb-2">Quản Lý Dữ Liệu Bài Hát</h3>
+              <p class="text-sky-200/70 font-medium">Trạm kiểm soát 2000+ bài Thánh Ca. Thêm, Sửa, Xóa và đồng bộ với PPT Livestream tự động. Gộp thư mục nhanh gọn lẹ.</p>
+            </div>
+            
+            <div class="text-white bg-white/10 w-12 h-12 rounded-full flex items-center justify-center group-hover:bg-sky-500 transition-colors backdrop-blur-md">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </div>
+          </div>
+        </a>
+
       </div>
 
     </main>
