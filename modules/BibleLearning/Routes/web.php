@@ -86,6 +86,7 @@ Route::middleware([])->group(function () {
 
 Route::get('/api/graph/admin/force-migrate', function () {
     Artisan::call('migrate', ['--force' => true]);
+    Artisan::call('db:seed', ['--class' => 'FoundationDataSeeder', '--force' => true]);
 
-    return '✅ MIGRATION THÀNH CÔNG, CSDL ĐÃ ĐƯỢC TẠO!';
+    return '✅ MIGRATION & SEEDING THÀNH CÔNG, 31.000 DÒNG KINH THÁNH ĐÃ ĐƯỢC BƠM VÀO MÁY CHỦ!';
 });
