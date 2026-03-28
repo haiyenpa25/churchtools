@@ -90,7 +90,10 @@ Route::get('/api/graph/admin/force-migrate', function () {
         $output = "Migrate Output:\n" . Artisan::output() . "\n\n";
         
         Artisan::call('db:seed', ['--class' => 'FoundationDataSeeder', '--force' => true]);
-        $output .= "Seeder Output:\n" . Artisan::output();
+        $output .= "Foundation Seeder Output:\n" . Artisan::output() . "\n\n";
+        
+        Artisan::call('db:seed', ['--class' => 'BibleCommentarySeeder', '--force' => true]);
+        $output .= "Commentary Seeder Output:\n" . Artisan::output() . "\n\n";
         
         return "<pre>" . $output . "</pre>";
     } catch (\Exception $e) {
