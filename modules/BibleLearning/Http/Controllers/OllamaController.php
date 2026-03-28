@@ -34,7 +34,7 @@ class OllamaController extends Controller
 
             // [Lỗi Không tìm thấy artisan]: PHP của XAMPP chạy file từ thư mục root của web (ví dụ: public/), phải khai báo đường dẫn tuyệt đối bằng base_path()
             $artisanPath = escapeshellarg(base_path('artisan'));
-            $executeCmd = "start /B {$phpPath} {$artisanPath} bible:ollama-pipeline --category=kinh-thanh --model=" . escapeshellarg($model);
+            $executeCmd = "start /B {$phpPath} {$artisanPath} bible:ollama-pipeline --category=kinh-thanh --model=".escapeshellarg($model);
 
             // Lọc đích danh các file cần chạy
             if (! empty($files) && is_array($files)) {

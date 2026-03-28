@@ -5,12 +5,14 @@ namespace Modules\BibleLearning\Providers;
 use Illuminate\Support\ServiceProvider;
 use Modules\BibleLearning\Contracts\ApprovalRepositoryInterface;
 use Modules\BibleLearning\Contracts\BibleLearningExtractorContract;
+use Modules\BibleLearning\Contracts\BibleManagerRepositoryInterface;
 use Modules\BibleLearning\Contracts\EventRepositoryInterface;
 use Modules\BibleLearning\Contracts\FlashcardRepositoryInterface;
 use Modules\BibleLearning\Contracts\GraphRepositoryInterface;
 use Modules\BibleLearning\Contracts\ImportTrackerRepositoryInterface;
 use Modules\BibleLearning\Contracts\QuizRepositoryInterface;
 use Modules\BibleLearning\Repositories\ApprovalRepository;
+use Modules\BibleLearning\Repositories\BibleManagerRepository;
 use Modules\BibleLearning\Repositories\EventRepository;
 use Modules\BibleLearning\Repositories\FlashcardRepository;
 use Modules\BibleLearning\Repositories\GraphRepository;
@@ -43,6 +45,10 @@ class BibleLearningServiceProvider extends ServiceProvider
         $this->app->bind(
             ImportTrackerRepositoryInterface::class,
             ImportTrackerRepository::class
+        );
+        $this->app->bind(
+            BibleManagerRepositoryInterface::class,
+            BibleManagerRepository::class
         );
     }
 

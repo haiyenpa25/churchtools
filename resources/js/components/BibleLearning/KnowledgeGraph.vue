@@ -247,9 +247,16 @@
                 <p>Đóng gói CSDL Graph thành JSON (5000 lines/file) đẩy vào Git Sync chuẩn bị chuyển Server.</p>
                 <button @click="runAdminAction('export')" :disabled="adminLoading" class="admin-btn btn-green">Xuất File JSON</button>
               </div>
+              
+              <div class="admin-card" style="grid-column: 1 / -1; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05);">
+                <h3 style="color: #10b981;">🌱 Kích Hoạt Dữ Liệu Gốc (Foundation Seeding)</h3>
+                <p>Chỉ dùng khi Setup Server Cùng Lệnh <strong>/git_deploy</strong>: Nạp ngược toàn tốc độ tất cả Sách Kinh Thánh và Bài Hát từ file tĩnh JSON vào thẳng MySQL.</p>
+                <button @click="seedFoundationData" :disabled="adminLoading" class="admin-btn" style="background:#10b981; color:#fff; font-weight: bold; font-size: 14px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);">🟢 Bơm Dữ Liệu (Seed Database)</button>
+              </div>
+
               <div class="admin-card" style="grid-column: 1 / -1;">
-                <h3>🔄 Format Xóa Rỗng CSDL (Reset)</h3>
-                <p>Xóa sạch Bảng <code>bl_nodes</code> và <code>bl_edges</code> làm lại từ đầu. Thận trọng khi dùng lệnh này!</p>
+                <h3 style="color:#ef4444;">🔄 Format Xóa Rỗng CSDL (Reset)</h3>
+                <p>Xóa sạch Bảng AI <code>bl_nodes</code> và <code>bl_edges</code> làm lại từ đầu. Thận trọng khi dùng lệnh này!</p>
                 <button @click="runAdminAction('reset')" :disabled="adminLoading" class="admin-btn btn-red">Xóa Trắng Database</button>
               </div>
             </div>
@@ -843,6 +850,22 @@ const ingestSingleFile = async (filename) => {
   } catch (e) {
     adminError.value = true
     adminMsg.value = '⚠️ Lỗi Nạp Dữ Liệu: ' + (e.response?.data?.message || e.message)
+  } finally {
+    adminLoading.value = false
+  }
+}
+const seedFoundationData = async () => {
+  if (!confirm('Hành động này sẽ Xóa Sạch Dữ Liệu Kinh Thánh + Bài Hát cũ trên Database và dội bom thay thế bằng Gói JSON Gốc. Bạn có chắc chắn muốn Kích Hoạt?')) return
+  
+  adminLoading.value = true
+  adminMsg.value = 'Đang Cày xới CSDL và Gieo mầm dữ liệu (Khoảng 10-20 giây)...'
+  adminError.value = false
+  try {
+    const res = await axios.post('/api/graph/admin/seed-foundation')
+    adminMsg.value = '✅ ' + (res.data.message || 'Thành công!')
+  } catch (e) {
+    adminError.value = true
+    adminMsg.value = '⚠️ Lỗi: ' + (e.response?.data?.message || e.message)
   } finally {
     adminLoading.value = false
   }

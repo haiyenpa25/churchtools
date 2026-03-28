@@ -43,6 +43,31 @@ class GraphController extends Controller
     }
 
     /**
+     * API: Quản trị kích hoạt (Seeding) Foundation Data (Kinh Thánh + Bài Hát)
+     * POST /api/graph/admin/seed-foundation
+     */
+    public function adminSeedFoundation()
+    {
+        try {
+            Artisan::call('db:seed', [
+                '--class' => 'FoundationDataSeeder',
+                '--force' => true,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã Kích Hoạt (Seeding) thành công Dữ Liệu Gốc!',
+                'output' => Artisan::output(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi Kích Hoạt: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * API: Cấp phát mảng JSON chứa Nodes và Edges
      */
     public function fetchGraph()

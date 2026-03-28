@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Modules\BibleLearning\Services\ImportTrackerService;
 use Modules\BibleLearning\Services\InMemoryResolutionService;
@@ -38,14 +39,15 @@ class RunOllamaPipelineCommand extends Command
 
         // Tìm tất cả các file trong thư mục Root của XAMPP (Không dùng Storage ảo của Laravel)
         $path = base_path("tai-lieu/{$category}");
-        if (! \Illuminate\Support\Facades\File::exists($path)) {
+        if (! File::exists($path)) {
             $msg = "Không tìm thấy thư mục: {$path}";
             $this->error($msg);
             $tracker->stop($msg);
+
             return;
         }
 
-        $allFiles = \Illuminate\Support\Facades\File::files($path);
+        $allFiles = File::files($path);
         $files = [];
         foreach ($allFiles as $f) {
             if ($f->getExtension() === 'txt') {
@@ -57,6 +59,7 @@ class RunOllamaPipelineCommand extends Command
             $msg = "Không tìm thấy file txt nào trong thư mục {$path}";
             $this->error($msg);
             $tracker->stop($msg);
+
             return;
         }
 
@@ -74,6 +77,7 @@ class RunOllamaPipelineCommand extends Command
                 $msg = 'Không tìm thấy file nào khớp với tuỳ chọn --file';
                 $this->error($msg);
                 $tracker->stop($msg);
+
                 return;
             }
         }

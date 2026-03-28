@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Modules\BibleLearning\Http\Controllers\ApprovalController;
+use Modules\BibleLearning\Http\Controllers\BibleManagerController;
 use Modules\BibleLearning\Http\Controllers\EventController;
 use Modules\BibleLearning\Http\Controllers\FlashcardController;
 use Modules\BibleLearning\Http\Controllers\GraphController;
@@ -12,6 +13,14 @@ use Modules\BibleLearning\Http\Controllers\QuizController;
 use Modules\BibleLearning\Http\Controllers\WebhookController;
 
 Route::middleware([])->group(function () {
+    // APP QUẢN LÝ KINH THÁNH (G-A-E-V)
+    Route::prefix('/bible-manager')->group(function () {
+        Route::get('/', [BibleManagerController::class, 'index'])->name('biblelearning.manager.index');
+        Route::get('/api/books', [BibleManagerController::class, 'getBooks']);
+        Route::get('/api/chapters', [BibleManagerController::class, 'getChapters']);
+        Route::get('/api/verses', [BibleManagerController::class, 'getVerses']);
+        Route::put('/api/verses/{id}', [BibleManagerController::class, 'updateVerse']);
+    });
     // PORTAL HUB
     Route::get('/bible-learning', [PortalController::class, 'index'])->name('biblelearning.portal');
     Route::get('/api/portal/stats', [PortalController::class, 'getStats']);
@@ -35,6 +44,7 @@ Route::middleware([])->group(function () {
     Route::post('/api/graph/admin/export', [GraphController::class, 'adminExport']);
     Route::post('/api/graph/admin/import', [GraphController::class, 'adminImport']);
     Route::post('/api/graph/admin/ingest', [GraphController::class, 'adminIngest']);
+    Route::post('/api/graph/admin/seed-foundation', [GraphController::class, 'adminSeedFoundation']);
 
     // Quản Lý Tracking Nạp Dữ Liệu
     Route::get('/api/graph/admin/ingestion-status', [GraphController::class, 'adminGetIngestionStatus']);

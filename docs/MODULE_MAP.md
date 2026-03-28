@@ -48,3 +48,25 @@ Mô tả: Hệ thống cũ chạy bằng Laravel Queue. Giao tiếp với Cloud 
   "BlastRadius": "Phụ thuộc 100% vào mạng kết nối Google. Nếu sửa GeminiExtractionService return rỗng, Job sẽ nuốt lỗi và không retry."
 }
 ```
+
+## 3. Cỗ Máy Quản Lý Kinh Thánh Đa Tầng (Bible Manager App)
+Mô tả: Ứng dụng Quản trị Cơ Sở Dữ Liệu Kinh Thánh chuẩn 4-Layer (Controller - Service - Repository - Contract). Không lưu logic xử lý ở Controller. Toàn bộ là Client-Side AlpineJS gọi API REST. Cuối cùng nhét chặt vào file `index.blade.php`.
+
+```json
+{
+  "Module": "BibleManagerApp",
+  "EntryPoint": "Modules\\BibleLearning\\Http\\Controllers\\BibleManagerController",
+  "Trigger": "Route: /bible-manager hoặc GET/PUT API /api/verses",
+  "ExecutionFlow": [
+    "1. Controller (Cổng Web) tiếp nhận Request. Không chọc MySQL.",
+    "2. Controller chuyển giao Data thô cho BibleManagerService (Lớp Não Bộ).",
+    "3. Service Kiểm tra Validation (Rỗng, Format) rồi vứt Data sang RepositoryInterface.",
+    "4. AppServiceProvider trỏ Interface về BibleManagerRepository thực thi lệnh UPDATE SQL cuối cùng."
+  ],
+  "ImpactZone": [
+    "MySQL: bible_books, bible_chapters, bible_verses",
+    "Blade: resources/views/manager/index.blade.php"
+  ],
+  "BlastRadius": "Luồng API REST. Nếu đổi Return Type của BibleManagerRepository, Service sẽ sụp đổ. Controller sẽ văng HTTP Error 500."
+}
+```
