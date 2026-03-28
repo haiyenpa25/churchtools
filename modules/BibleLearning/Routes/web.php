@@ -85,8 +85,15 @@ Route::middleware([])->group(function () {
 });
 
 Route::get('/api/graph/admin/force-migrate', function () {
-    Artisan::call('migrate', ['--force' => true]);
-    Artisan::call('db:seed', ['--class' => 'FoundationDataSeeder', '--force' => true]);
-
-    return '✅ MIGRATION & SEEDING THÀNH CÔNG, 31.000 DÒNG KINH THÁNH ĐÃ ĐƯỢC BƠM VÀO MÁY CHỦ!';
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        $output = "Migrate Output:\n" . Artisan::output() . "\n\n";
+        
+        Artisan::call('db:seed', ['--class' => 'FoundationDataSeeder', '--force' => true]);
+        $output .= "Seeder Output:\n" . Artisan::output();
+        
+        return "<pre>" . $output . "</pre>";
+    } catch (\Exception $e) {
+        return "<pre>LỖI MÁY CHỦ:\n" . $e->getMessage() . "\n" . $e->getTraceAsString() . "</pre>";
+    }
 });
