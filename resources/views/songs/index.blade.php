@@ -192,7 +192,7 @@
                 async init() {
                     this.isLoading = true;
                     try {
-                        let res = await fetch('/ChurchTool/public/api/songs');
+                        let res = await fetch('{{ url("/api/songs") }}');
                         if (res.ok) {
                             this.songs = await res.json();
                         }
@@ -236,7 +236,7 @@
                     }
                     
                     this.isSaving = true;
-                    let url = '/ChurchTool/public/api/songs';
+                    let url = '{{ url("/api/songs") }}';
                     let method = 'POST';
                     if (this.isEditing) {
                         url += '/' + this.currentSong.id;
@@ -280,7 +280,7 @@
                     
                     this.isSaving = true;
                     try {
-                        let res = await fetch('/ChurchTool/public/api/songs/' + this.currentSong.id, { method: 'DELETE' });
+                        let res = await fetch('{{ url("/api/songs") }}/' + this.currentSong.id, { method: 'DELETE' });
                         if (res.ok) {
                             this.songs = this.songs.filter(s => s.id !== this.currentSong.id);
                             this.showModal = false;

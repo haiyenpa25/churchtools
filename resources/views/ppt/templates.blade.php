@@ -217,7 +217,7 @@
 
             async fetchTemplates() {
                 this.loading = true;
-                const res = await fetch('/ChurchTool/public/api/ppt/templates');
+                const res = await fetch('{{ url("/api/ppt/templates") }}');
                 const data = await res.json();
                 this.templates = data.map(t => {
                     let fc = {};
@@ -275,8 +275,8 @@
                 if (this.modal.removeLogo) fd.append('remove_logo', '1');
 
                 const url = this.modal.id
-                    ? `/ChurchTool/public/api/ppt/templates/${this.modal.id}`
-                    : '/ChurchTool/public/api/ppt/templates';
+                    ? `{{ url("/api/ppt/templates") }}/${this.modal.id}`
+                    : '{{ url("/api/ppt/templates") }}';
 
                 try {
                     const res = await fetch(url, { method: 'POST', body: fd });
@@ -301,7 +301,7 @@
             async deleteTemplate() {
                 this.saving = true;
                 try {
-                    const res = await fetch(`/ChurchTool/public/api/ppt/templates/${this.deleteModal.id}`, { method: 'DELETE' });
+                    const res = await fetch(`{{ url("/api/ppt/templates") }}/${this.deleteModal.id}`, { method: 'DELETE' });
                     if (res.ok) {
                         this.deleteModal.open = false;
                         await this.fetchTemplates();

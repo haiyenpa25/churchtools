@@ -206,7 +206,7 @@
                 async init() {
                     this.isLoadingBooks = true;
                     try {
-                        let res = await fetch('/ChurchTool/public/bible-manager/api/books');
+                        let res = await fetch('{{ url("/bible-manager/api/books") }}');
                         if (res.ok) {
                             this.allBooks = await res.json();
                         }
@@ -230,7 +230,7 @@
                     
                     this.isLoadingChapters = true;
                     try {
-                        let res = await fetch('/ChurchTool/public/bible-manager/api/chapters?book_id=' + book.id);
+                        let res = await fetch('{{ url("/bible-manager/api/chapters") }}?book_id=' + book.id);
                         if (res.ok) {
                             this.chapters = await res.json();
                         }
@@ -244,7 +244,7 @@
                     
                     this.isLoadingVerses = true;
                     try {
-                        let res = await fetch('/ChurchTool/public/bible-manager/api/verses?chapter_id=' + chapter.id);
+                        let res = await fetch('{{ url("/bible-manager/api/verses") }}?chapter_id=' + chapter.id);
                         if (res.ok) {
                             this.verses = await res.json();
                         }
@@ -267,7 +267,7 @@
                     
                     this.isSaving = true;
                     try {
-                        let res = await fetch('/ChurchTool/public/bible-manager/api/verses/' + this.currentVerse.id, {
+                        let res = await fetch('{{ url("/bible-manager/api/verses") }}/' + this.currentVerse.id, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
