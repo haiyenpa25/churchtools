@@ -210,11 +210,11 @@
       </div>
     </transition>
 
-    <!-- ══ ADMIN SETTINGS MODAL ══ -->
-    <transition name="modal-fade">
-      <div v-if="showSettings" class="modal-overlay" @click.self="showSettings = false">
-        <div class="parser-modal settings-modal" style="max-width: 800px; height: 85vh;">
-          <div class="modal-header">
+    <!-- ══ ADMIN SETTINGS SLIDE-OVER ══ -->
+    <transition name="slide-in-right">
+      <div v-if="showSettings" class="slide-over-overlay" @click.self="showSettings = false">
+        <div class="slide-over-panel">
+          <div class="slide-header">
             <div>
               <h2 class="modal-title">⚙️ Trung Tâm Quản Trị Hệ Sinh Thái Dữ Liệu</h2>
               <p class="modal-sub">Data Portability & Data Management Center</p>
@@ -226,6 +226,7 @@
             <button :class="['admin-tab', { active: adminTab === 'files' }]" @click="adminTab = 'files'">📁 Quản Lý File Đầu Vào (Ingestion)</button>
             <button :class="['admin-tab', { active: adminTab === 'portability' }]" @click="adminTab = 'portability'">🔄 Di Chuyển Dữ Liệu (Dump & Restore)</button>
             <button :class="['admin-tab', { active: adminTab === 'settings' }]" @click="adminTab = 'settings'">🔑 Cấu Hình API Key</button>
+            <button :class="['admin-tab', { active: adminTab === 'ollama' }]" @click="adminTab = 'ollama'">🚀 Local AI Pipeline</button>
           </div>
 
 
@@ -271,6 +272,106 @@
               <div style="margin-top:20px; font-size:13px; color:#f87171;" v-else>
                 ⚠️ <strong>Máy chủ đang dùng Key nội bộ!</strong> Nếu nó hết hạn, hệ thống phân tích sẽ tê liệt. Hãy nhập Key riêng của bạn để làm chủ tốc độ.
               </div>
+            </div>
+          </div>
+
+          <!-- TAB: OLLAMA LOCAL AI PIPELINE -->
+          <div v-if="adminTab === 'ollama'" class="admin-scroll-area">
+            <div class="admin-grid">
+              
+              <!-- Cột trái: Bảng điều khiển -->
+              <div class="admin-card" style="grid-column: 1 / 2;">
+                <h3>⚙️ Cấu Hình Cỗ Máy AI</h3>
+                <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+                  <label class="fm-label">Model Engine (Gemma 3 / Qwen 2.5):</label>
+                  <select v-model="ollamaModel" class="fm-select">
+                    <option value="gemma3:4b">gemma3:4b (Mô hình Google mới - Khuyên dùng)</option>
+                    <option value="gemma3:12b">gemma3:12b (Sức mạnh vượt trội - RAM 12GB+)</option>
+                    <option value="qwen2.5:3b">qwen2.5:3b (Model cũ - RAM 6GB)</option>
+                    <option value="qwen2.5:7b">qwen2.5:7b (Model cũ - RAM 12GB+)</option>
+                  </select>
+                  <label class="fm-label">🎯 Chọn Danh Sách Tài Liệu (AI Tự Lướt Qua File Cũ):</label>
+                  <div style="max-height: 150px; overflow-y: auto; background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 5px; scrollbar-width: thin;">
+                    <div v-if="ingestionFiles.length === 0" style="color:#64748b; font-size:12px; padding:5px;">Chưa có dữ liệu. Hãy qua Tab [Quản Lý Đầu Vào] quét File trước.</div>
+                    <label v-for="cf in ingestionFiles" :key="cf.file_name" style="display:flex; align-items:center; gap:8px; padding:6px; font-size:12px; border-bottom:1px solid #1e293b; cursor:pointer; transition: all 0.2s;" :style="{ opacity: cf.status === 'completed' ? 0.4 : 1 }">
+                      <input type="checkbox" :value="cf.file_name" v-model="ollamaSelectedFiles">
+                      <span style="color:#e2e8f0; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ cf.file_name }}</span>
+                      <span :class="['status-badge', cf.status]" style="transform: scale(0.85); transform-origin: right; font-size:10px;">{{ formatStatus(cf.status) }}</span>
+                    </label>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-top:2px;">
+                    <button @click="ollamaSelectedFiles = ingestionFiles.map(f => f.file_name)" style="background:none; border:none; color:#3b82f6; font-size:11px; cursor:pointer; padding:0;">☑️ Tick Chọn Tất Cả</button>
+                    <button @click="ollamaSelectedFiles = []" style="background:none; border:none; color:#ef4444; font-size:11px; cursor:pointer; padding:0;">☒ Xoá Chọn</button>
+                  </div>
+
+                  <button @click="startOllamaPipeline" :disabled="ollamaStatus.is_running || adminLoading" class="admin-btn btn-purple" style="margin-top:10px; padding:12px; font-size:14px;">
+                    <span v-if="ollamaStatus.is_running">⏳ ĐANG XỬ LÝ...</span>
+                    <span v-else>▶️ KHỞI ĐỘNG LOCAL PIPELINE</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Cột phải: Tiến độ thời gian thực -->
+              <div class="admin-card" style="grid-column: 2 / 3;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <h3 style="margin:0"><span class="pulse-dot" v-if="ollamaStatus.is_running">🔴</span> 📡 Trạm Radar (Live Tracking)</h3>
+                  <span :class="['status-badge', ollamaStatus.is_running ? 'processing' : 'completed']">
+                    {{ ollamaStatus.is_running ? '🟢 ONLINE' : '⚪ OFFLINE' }}
+                  </span>
+                </div>
+                
+                <div style="margin-top:10px;">
+                  <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; color:#a5b4fc">
+                    <span>{{ ollamaStatus.current_book || 'Đang rảnh rỗi...' }}</span>
+                    <span>{{ ollamaStatus.progress_percent }}%</span>
+                  </div>
+                  <div class="progress-bar-bg" style="width:100%; height:12px; background:rgba(0,0,0,0.5);">
+                    <div class="progress-bar-fill" :style="`width: ${ollamaStatus.progress_percent}%`"></div>
+                  </div>
+                </div>
+
+                <!-- Terminal Giả lập -->
+                <div style="margin-top:15px; background:#0f172a; border:1px solid #334155; border-radius:6px; padding:10px; height:130px; overflow-y:auto; font-family:monospace; font-size:11px; color:#10b981; display:flex; flex-direction:column-reverse; scrollbar-width: thin;">
+                  <div v-for="(log, i) in ollamaLogsReversed" :key="i" style="padding:2px 0; line-height:1.4;">{{ log }}</div>
+                  <div v-if="ollamaLogsReversed.length === 0" style="color:#64748b; text-align:center; padding-top:40px;">// Không nhận được tín hiệu...</div>
+                </div>
+              </div>
+
+              <!-- Dưới cùng: File Manager JSON -->
+              <div class="admin-card" style="grid-column: 1 / -1; margin-top: 5px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 5px;">
+                  <h3>📦 Kho Dữ Liệu Vàng (JSON Graph Dumps)</h3>
+                  <div style="display:flex; gap:10px;">
+                    <button @click="fetchOllamaFiles" class="fm-refresh-btn" :disabled="adminLoading">↻ Làm Mới</button>
+                    <button @click="pushOllamaGit" :disabled="adminLoading || ollamaFiles.length === 0" class="admin-btn btn-green" style="padding:6px 14px; font-size:12px;">
+                      🚀 Đóng Gói Toàn Bộ & Đẩy Lên Server (Auto Git)
+                    </button>
+                  </div>
+                </div>
+
+                <div class="fm-table-wrap" style="max-height: 250px;">
+                  <table class="fm-table">
+                    <thead>
+                      <tr>
+                        <th>Tên File Sinh Ra</th>
+                        <th>Dung Lượng</th>
+                        <th>Khởi Tạo / Cập Nhật</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-if="ollamaFiles.length === 0">
+                        <td colspan="3" style="text-align:center; padding:20px; color:#64748b;">[Trống] Cỗ máy AI chưa nhả ra file nào...</td>
+                      </tr>
+                      <tr v-for="cf in ollamaFiles" :key="cf.name">
+                        <td class="col-name">{{ cf.name }}</td>
+                        <td style="color:#f472b6; font-weight:800; font-size:12px;">{{ cf.size }}</td>
+                        <td style="color:#94a3b8">{{ cf.updated_at }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -327,6 +428,11 @@
                               class="fm-action-btn btn-purple">
                         Bắt đầu Nạp
                       </button>
+                      <button v-if="cf.status === 'completed'"
+                              @click="openJsonPreview(cf.file_name)"
+                              class="fm-action-btn" style="background:#10b981; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);">
+                        👁️ Xem Data
+                      </button>
                     </td>
                   </tr>
                 </tbody>
@@ -335,6 +441,64 @@
             <p class="fm-note">💡 Ghi chú: Hãy mở Terminal chạy <code>php artisan queue:work</code> để Tiến trình AI hoạt động ngầm (Push Jobs xử lý từ từ chống bị Google chặn).</p>
           </div>
 
+        </div>
+      </div>
+    </transition>
+
+    <!-- Modal Xem Trước JSON (AI Verification) - Đè lên cao nhất -->
+    <transition name="modal-fade">
+      <div v-if="showJsonPreview" class="json-preview-overlay" @click.self="showJsonPreview = false">
+        <div class="json-preview-modal" style="max-width: 900px; width: 90%; max-height: 85vh; display: flex; flex-direction: column;">
+          <div class="modal-header">
+            <h2>👁️ Rà Soát Dữ Liệu AI: {{ previewBookName }}</h2>
+            <button class="close-btn" @click="showJsonPreview = false">×</button>
+          </div>
+          <div class="modal-body" style="flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 15px; background: #0b1120; padding: 15px;">
+            <div v-if="previewLoading" style="text-align: center; color: #3b82f6; padding: 20px;">
+              <div class="loader-ring" style="width: 30px; height: 30px; border-width: 3px; margin: 0 auto 10px;"></div>
+              Đang giải mã JSON từ ổ cứng...
+            </div>
+            <div v-else-if="previewError" style="color: #ef4444; padding: 20px; text-align: center; font-weight: bold;">{{ previewError }}</div>
+            <div v-else style="display: flex; gap: 15px; flex: 1; overflow: hidden;">
+              
+              <!-- Cột 1: Thực Thể (Nodes) -->
+              <div style="flex: 1; display: flex; flex-direction: column; border: 1px solid #1e293b; border-radius: 8px; background: #0f172a;">
+                <div style="padding: 10px; background: #1e293b; border-bottom: 1px solid #334155; font-weight: bold; color: #10b981; display:flex; justify-content:space-between; align-items:center;">
+                  <span>Thực Thể (Nodes)</span>
+                  <span style="background:rgba(16,185,129,0.2); padding:2px 8px; border-radius:12px; font-size:11px;">{{ previewNodes.length }} Tồn tại</span>
+                </div>
+                <div style="flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: thin;">
+                  <div v-if="previewNodes.length === 0" style="color:#64748b; font-size:12px; text-align:center; padding: 20px;">Trống</div>
+                  <div v-for="(n, i) in previewNodes" :key="'n'+i" style="padding: 8px; border-bottom: 1px solid #1e293b; font-size: 13px; display: flex; justify-content: space-between; align-items:center;">
+                    <span style="color: #e2e8f0; font-weight: 500;">{{ n.label }}</span>
+                    <span style="color: #94a3b8; font-size: 10px; background: #334155; padding: 3px 8px; border-radius: 6px; border: 1px solid #475569;">{{ n.group }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cột 2: Quan Hệ (Edges) -->
+              <div style="flex: 1.2; display: flex; flex-direction: column; border: 1px solid #1e293b; border-radius: 8px; background: #0f172a;">
+                <div style="padding: 10px; background: #1e293b; border-bottom: 1px solid #334155; font-weight: bold; color: #8b5cf6; display:flex; justify-content:space-between; align-items:center;">
+                  <span>Mối Quan Hệ (Edges)</span>
+                  <span style="background:rgba(139,92,246,0.2); padding:2px 8px; border-radius:12px; font-size:11px;">{{ previewEdges.length }} Bắt cầu</span>
+                </div>
+                <div style="flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: thin;">
+                  <div v-if="previewEdges.length === 0" style="color:#64748b; font-size:12px; text-align:center; padding: 20px;">Trống</div>
+                  <div v-for="(e, j) in previewEdges" :key="'e'+j" style="padding: 10px; border-bottom: 1px solid #1e293b; font-size: 13px; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+                      <span style="color: #10b981; font-weight: bold; background:rgba(16,185,129,0.1); padding:2px 6px; border-radius:4px;">{{ e.source }}</span>
+                      <span style="color: #ef4444; font-size: 11px; font-weight: 600;">➡️ {{ e.label }} ➡️</span>
+                      <span style="color: #3b82f6; font-weight: bold; background:rgba(59,130,246,0.1); padding:2px 6px; border-radius:4px;">{{ e.target }}</span>
+                    </div>
+                    <div v-if="e.metadata" style="font-size: 11px; color: #94a3b8; font-style: italic; text-align: center; border-top: 1px dashed #334155; padding-top: 4px; margin-top: 4px;">
+                      <span style="color:#64748b">Trích:</span> {{ e.metadata.source_verse || e.metadata.context || 'Không rõ bối cảnh' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     </transition>
@@ -357,7 +521,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import axios from 'axios'
 
 const networkContainer = ref(null)
@@ -379,6 +543,24 @@ const selectedCategory = ref('kinh-thanh')
 const ingestionFiles   = ref([])
 const pendingFilesCount= ref(0)
 const parseText        = ref('')
+
+const showJsonPreview  = ref(false)
+const previewLoading   = ref(false)
+const previewError     = ref('')
+const previewBookName  = ref('')
+const previewNodes     = ref([])
+const previewEdges     = ref([])
+
+// OLLAMA DASHBOARD
+const ollamaModel      = ref('gemma3:4b')
+const ollamaSelectedFiles = ref([])
+const ollamaStatus     = ref({ is_running: false, progress_percent: 0, current_book: '', logs: [] })
+const ollamaFiles      = ref([])
+const ollamaPolling    = ref(null)
+
+const ollamaLogsReversed = computed(() => {
+  return [...(ollamaStatus.value.logs || [])].reverse()
+})
 const parseResult      = ref(null)
 const parseError       = ref('')
 const parsingAI        = ref(false)
@@ -707,19 +889,53 @@ const formatStatus = (s) => {
   return s
 }
 
-import { watch } from 'vue'
-watch(showSettings, (val) => {
-  if (val && adminTab.value === 'files') {
-    fetchIngestionStatus()
+const openJsonPreview = async (fileName) => {
+  // fileName VD: 65_Giu-de_1.txt
+  let match = fileName.replace('.txt', '').match(/^(\d+_[A-Za-z0-9\-]+)/);
+  const bookName = match ? match[1] : fileName.replace('.txt', '');
+  
+  previewBookName.value = bookName;
+  previewNodes.value = [];
+  previewEdges.value = [];
+  previewError.value = '';
+  showJsonPreview.value = true;
+  previewLoading.value = true;
+
+  try {
+    const res = await axios.get(`/api/graph/admin/view-json?book=${bookName}`);
+    previewNodes.value = res.data.nodes || [];
+    previewEdges.value = res.data.edges || [];
+  } catch (err) {
+    previewError.value = err.response?.data?.error || 'Lỗi đọc file JSON từ Server';
+  } finally {
+    previewLoading.value = false;
   }
-  if (val && adminTab.value === 'settings') {
-    fetchApiKey()
+}
+
+watch(showSettings, (val) => {
+  if (val && adminTab.value === 'files') fetchIngestionStatus()
+  if (val && adminTab.value === 'settings') fetchApiKey()
+  if (val && adminTab.value === 'ollama') {
+    fetchOllamaStatus()
+    fetchOllamaFiles()
+    startOllamaPolling()
+  } else {
+    stopOllamaPolling()
   }
 })
 watch(adminTab, (val) => {
   if (val === 'files') fetchIngestionStatus()
   if (val === 'settings') fetchApiKey()
+  if (val === 'ollama') {
+    fetchOllamaStatus()
+    fetchOllamaFiles()
+    startOllamaPolling()
+  } else {
+    stopOllamaPolling()
+  }
 })
+
+onUnmounted(() => { stopOllamaPolling() })
 
 // Switch panel tab and auto-populate book name from node
 const switchPanelTab = (tab) => {
@@ -787,6 +1003,77 @@ const onSearch = () => {
       if (match && q) networkInstance.focus(n.id, { scale: 1.5, animation: { duration: 500, easingFunction: 'easeInOutQuad' } })
     })
   }, 300)
+}
+
+// ── Ollama Local Pipeline API ──
+const fetchOllamaStatus = async () => {
+  try {
+    const res = await axios.get('/api/graph/ollama/status')
+    ollamaStatus.value = res.data
+  } catch (e) {
+    console.error('Ollama tracking error:', e)
+  }
+}
+
+const fetchOllamaFiles = async () => {
+  try {
+    const res = await axios.get('/api/graph/ollama/files')
+    ollamaFiles.value = res.data
+  } catch (e) {
+    console.error('Lỗi lấy danh sách JSON:', e)
+  }
+}
+
+const startOllamaPolling = () => {
+  if (ollamaPolling.value) return
+  ollamaPolling.value = setInterval(() => {
+    fetchOllamaStatus()
+  }, 2000)
+}
+
+const stopOllamaPolling = () => {
+  if (ollamaPolling.value) {
+    clearInterval(ollamaPolling.value)
+    ollamaPolling.value = null
+  }
+}
+
+const startOllamaPipeline = async () => {
+  if (ollamaSelectedFiles.value.length === 0) {
+    if(!confirm('Chưa có File nào được đánh dấu tick ✔️. Bạn có muốn kích hoạt Lướt Toàn Bộ Thư Mục Kinh Thánh không?')) return;
+  }
+  adminLoading.value = true
+  try {
+    const res = await axios.post('/api/graph/ollama/start', {
+      files: ollamaSelectedFiles.value.length > 0 ? ollamaSelectedFiles.value : null,
+      model: ollamaModel.value
+    })
+    alert('✅ ' + res.data.message)
+    fetchOllamaStatus()
+    startOllamaPolling()
+  } catch (e) {
+    alert('⚠️ Lỗi: ' + (e.response?.data?.error || e.message))
+  } finally {
+    adminLoading.value = false
+  }
+}
+
+const pushOllamaGit = async () => {
+  if(!confirm('Xác nhận đóng gói JSON và đẩy toàn bộ lên Cloud (Github)? Không tắt tab này trong lúc tải.')) return
+  adminLoading.value = true
+  adminMsg.value = 'Đang đẩy data lên Hệ thống Cloud... Vui lòng không đóng cửa sổ!'
+  adminError.value = false
+  try {
+    const res = await axios.post('/api/graph/ollama/push')
+    adminMsg.value = '✅ ' + res.data.message
+    alert('Thành Công! Dữ liệu đã an toàn trên Cloud.')
+  } catch (e) {
+    adminError.value = true
+    adminMsg.value = '⚠️ Lỗi Git Push: ' + (e.response?.data?.message || e.message)
+    alert('Lỗi: ' + adminMsg.value)
+  } finally {
+    adminLoading.value = false
+  }
 }
 
 // ── Star Canvas ──
@@ -890,6 +1177,18 @@ onMounted(async () => {
 
 .focus-btn { margin-top: auto; padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 700; background: linear-gradient(135deg, rgba(129,140,248,0.2), rgba(168,85,247,0.2)); border: 1px solid rgba(129,140,248,0.3); color: #a5b4fc; cursor: pointer; transition: all .2s; }
 .focus-btn:hover { background: linear-gradient(135deg, rgba(129,140,248,0.35), rgba(168,85,247,0.35)); }
+
+/* Slide-over Admin Settings */
+.slide-over-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(3,6,20,0.6); backdrop-filter: blur(8px); display: flex; justify-content: flex-end; }
+.slide-over-panel { width: 90%; max-width: 800px; height: 100vh; background: #0d1225; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: -10px 0 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
+.slide-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 24px 28px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.slide-in-right-enter-active, .slide-in-right-leave-active { transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+.slide-in-right-enter-from, .slide-in-right-leave-to { opacity: 0; }
+.slide-in-right-enter-from .slide-over-panel, .slide-in-right-leave-to .slide-over-panel { transform: translateX(100%); }
+
+/* JSON Preview Modal (Top Layer) */
+.json-preview-overlay { position: fixed; inset: 0; z-index: 105; background: rgba(3,6,20,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.json-preview-modal { background: #0d1225; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; width: 100%; max-width: 1100px; height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.8); }
 
 /* AI Parser Modal */
 .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(3,6,20,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 20px; }

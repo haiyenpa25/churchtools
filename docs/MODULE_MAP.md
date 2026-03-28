@@ -9,20 +9,23 @@ Mô tả: Hệ thống nạp dữ liệu tốc độ cao tại Local (Máy tính
 {
   "Module": "Local_NLP_Pipeline",
   "EntryPoint": "App\\Console\\Commands\\RunOllamaPipelineCommand",
-  "Trigger": "php artisan bible:ollama-pipeline",
+  "Trigger": "php artisan bible:ollama-pipeline [--category=kinh-thanh] [--book=xyz] [--file=abc.txt]",
   "ExecutionFlow": [
-    "1. Đọc file từ storage/app/tai-lieu/kinh-thanh",
-    "2. Gửi đoạn văn cho SlidingWindowService (Cắt đè 250 từ)",
-    "3. Gửi tệp cắt cho OllamaInferenceService (Call http://localhost:11434)",
-    "4. Nhận JSON từ Qwen 2.5 và đẩy cho InMemoryResolutionService",
-    "5. Dò tìm Alias và Upsert vào mảng Hash Map (RAM)",
-    "6. Khi rảnh rỗi (Hết sách), xả RAM thông qua MemoryDumperService"
+    "1. Lắng nghe tham số mảng Arrays/Checkbox File từ Controller (OllamaController)",
+    "2. Đọc file từ storage/app/tai-lieu/kinh-thanh. Cân Hash MD5.",
+    "3. Nếu File trùng Hash với DB `bl_imported_files` -> SKIP, nhảy sang Bước 6. (Bởi ImportTrackerService)",
+    "4. Gửi đoạn văn cho SlidingWindowService (Cắt đè 250 từ)",
+    "5. Gửi tệp cắt cho OllamaInferenceService (Call http://localhost:11434, model Qwen 2.5)",
+    "6. Nạp lại Memory cũ (Hydrate) -> Nhận JSON từ Qwen 2.5 và đẩy cho InMemoryResolutionService",
+    "7. Dò tìm Alias và Upsert vào mảng Hash Map (RAM)",
+    "8. Khi rảnh rỗi (Hết sách), xả RAM thông qua MemoryDumperService (Sinh file JSON Dump)"
   ],
   "ImpactZone": [
     "storage/app/tai-lieu/",
-    "database/data/bible_dump/"
+    "database/data/bible_dump/",
+    "MySQL: bl_imported_files"
   ],
-  "BlastRadius": "Nếu đổi model trong OllamaInferenceService, cấu trúc Prompt có thể bị phá vỡ. Nếu thay đổi InMemoryResolutionService, Aliasing có thể bị trật nhịp."
+  "BlastRadius": "Nếu đổi model trong OllamaInferenceService, cấu trúc Prompt có thể bị phá vỡ. Nếu thay đổi Thuật toán Tracker, tính năng Chống trùng lặp sẽ sụp đổ, sinh ra File rác JSON."
 }
 ```
 

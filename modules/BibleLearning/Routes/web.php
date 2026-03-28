@@ -6,6 +6,7 @@ use Modules\BibleLearning\Http\Controllers\ApprovalController;
 use Modules\BibleLearning\Http\Controllers\EventController;
 use Modules\BibleLearning\Http\Controllers\FlashcardController;
 use Modules\BibleLearning\Http\Controllers\GraphController;
+use Modules\BibleLearning\Http\Controllers\OllamaController;
 use Modules\BibleLearning\Http\Controllers\PortalController;
 use Modules\BibleLearning\Http\Controllers\QuizController;
 
@@ -40,6 +41,13 @@ Route::middleware([])->group(function () {
     Route::any('/api/graph/admin/work-queue', [GraphController::class, 'adminWorkQueue']);
     Route::get('/api/graph/admin/get-key', [GraphController::class, 'adminGetKey']);
     Route::post('/api/graph/admin/save-key', [GraphController::class, 'adminSaveKey']);
+    Route::get('/api/graph/admin/view-json', [GraphController::class, 'adminViewJson']);
+
+    // OLLAMA LOCAL AI PIPELINE DASHBOARD (PHA 17)
+    Route::get('/api/graph/ollama/status', [OllamaController::class, 'getStatus']);
+    Route::post('/api/graph/ollama/start', [OllamaController::class, 'startPipeline']);
+    Route::get('/api/graph/ollama/files', [OllamaController::class, 'getFiles']);
+    Route::post('/api/graph/ollama/push', [OllamaController::class, 'commitAndPush']);
 
     // BIBLE TEXT & COMMENTARY (Local files)
     Route::get('/api/bible/text', [GraphController::class, 'getBibleText']);

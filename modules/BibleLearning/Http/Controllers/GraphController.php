@@ -353,4 +353,30 @@ class GraphController extends Controller
             'has_key' => ! empty($key),
         ]);
     }
+
+    /**
+     * API: Đọc thẳng dữ liệu File JSON (Nodes và Edges) không thông qua DB để UI Preview
+     */
+    public function adminViewJson(Request $request)
+    {
+        $book = $request->input('book'); // Ví dụ: '65_Giu-de'
+        if (! $book) {
+            return response()->json(['error' => 'Vui lòng cung cấp tham số book tương ứng tên Sách'], 400);
+        }
+
+        // Tệp sinh ra từ MemoryDumperService của Thuật Toán Local AI Pipeline là JSON Gộp
+        $jsonPath = database_path("data/bible_dump/ollama_graph_{$book}.json");
+
+        if (! File::exists($jsonPath)) {
+            return response()->json(['error' => "Chưa có dữ liệu JSON được AI trích xuất (ollama_graph_{$book}.json) nằm trong hệ thống!"], 404);
+        }
+
+        $payload = json_decode(File::get($jsonPath), true) ?? [];
+
+        return response()->json([
+            'book' => $book,
+            'nodes' => $payload['nodes'] ?? [],
+            'edges' => $payload['edges'] ?? [],
+        ]);
+    }
 }

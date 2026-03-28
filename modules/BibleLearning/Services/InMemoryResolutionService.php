@@ -119,6 +119,38 @@ class InMemoryResolutionService
         $this->edgeMap = [];
     }
 
+    /**
+     * Đồng bộ hoá Dữ Liệu Cũ vào RAM (Hydrate) để ngăn mất Data Mắt Xích khi bỏ qua (Skip) File.
+     */
+    public function hydrateMemoryFromJson(string $bookName): void
+    {
+        $fileName = 'ollama_graph_'.$bookName.'.json';
+        $fullPath = database_path('data/bible_dump/'.$fileName);
+
+        if (! file_exists($fullPath)) {
+            return;
+        }
+
+        $content = file_get_contents($fullPath);
+        $data = json_decode($content, true);
+
+        if (! $data || ! isset($data['nodes']) || ! isset($data['edges'])) {
+            return;
+        }
+
+        // Tái tạo lại NodeMap
+        foreach ($data['nodes'] as $node) {
+            $key = mb_strtolower($this->resolveAlias($node['label'], $bookName), 'UTF-8');
+            $this->nodeMap[$key] = $node;
+        }
+
+        // Tái tạo lại EdgeMap
+        foreach ($data['edges'] as $edge) {
+            $edgeHash = md5($edge['source'].$edge['target'].$edge['relationship']);
+            $this->edgeMap[$edgeHash] = $edge;
+        }
+    }
+
     public function getNodes(): array
     {
         return array_values($this->nodeMap);

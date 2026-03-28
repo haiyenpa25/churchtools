@@ -13,6 +13,11 @@
     <!-- Load CDN vis-network -->
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
+    <script>
+        // Cấp phát đường dẫn tuyệt đối cho Axios chạy độc lập với XAMPP Sub-folder
+        window.appUrl = "{{ url('') }}";
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50">
