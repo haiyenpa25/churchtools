@@ -8,27 +8,45 @@ class InMemoryResolutionService
 
     private array $edgeMap = [];
 
-    // Bảng Ánh Xạ Nhân Vật (Entity Aliasing) để gộp nhánh
+    // Bảng Ánh Xạ Nhân Vật Đa Tầng (Multi-level Contextual Aliasing)
     private array $aliasMap = [
-        'si-môn' => 'Phi-e-rơ',
-        'sê-pha' => 'Phi-e-rơ',
-        'áp-ram' => 'Áp-ra-ham',
-        'sa-rai' => 'Sa-ra',
-        'sau-lơ' => 'Phao-lô',
-        'nhã-ca' => 'Sa-lô-môn',
-        // Có thể mở rộng vô hạn ở đây hoặc nạp từ file JSON/Config
+        'global' => [
+            'si-môn' => 'Phi-e-rơ',
+            'sê-pha' => 'Phi-e-rơ',
+            'áp-ram' => 'Áp-ra-ham',
+            'sa-rai' => 'Sa-ra',
+            'sau-lơ' => 'Phao-lô',
+            'nhã-ca' => 'Sa-lô-môn',
+        ],
+        '01_Sang-the-ky' => [
+            'giô-sép' => 'Giô-sép (Con Gia-cốp)',
+        ],
+        '40_Ma-thi-o' => [
+            'giô-sép' => 'Giô-sép (Chồng Ma-ri)',
+            'ma-ri' => 'Ma-ri (Mẹ Chúa Giê-xu)',
+        ],
     ];
 
-    public function resolveAlias(string $name): string
+    public function resolveAlias(string $name, string $bookName): string
     {
         $key = mb_strtolower(trim($name), 'UTF-8');
 
-        return $this->aliasMap[$key] ?? trim($name);
+        // 1. Dò tìm Alias đặc thù theo Bối cảnh Sách (Local Context)
+        if (isset($this->aliasMap[$bookName][$key])) {
+            return $this->aliasMap[$bookName][$key];
+        }
+
+        // 2. Dò tìm Alias Toàn cầu (Global Context)
+        if (isset($this->aliasMap['global'][$key])) {
+            return $this->aliasMap['global'][$key];
+        }
+
+        return trim($name);
     }
 
-    public function upsertNode(string $name, string $group, string $desc, array $metadata = []): ?string
+    public function upsertNode(string $name, string $bookName, string $group, string $desc, array $metadata = []): ?string
     {
-        $resolvedName = $this->resolveAlias($name);
+        $resolvedName = $this->resolveAlias($name, $bookName);
         $key = mb_strtolower($resolvedName, 'UTF-8');
 
         if (empty($key)) {

@@ -21,6 +21,9 @@ class RunOllamaPipelineCommand extends Command
         InMemoryResolutionService $memory,
         MemoryDumperService $dumper
     ) {
+        // Mở khóa sức mạnh RAM: Cấp 2GB cho tiến trình Data Engineering
+        ini_set('memory_limit', '2G');
+
         $category = $this->option('category');
         $bookFilter = $this->option('book');
 
@@ -98,6 +101,7 @@ class RunOllamaPipelineCommand extends Command
                             if ($type === 'node') {
                                 $memory->upsertNode(
                                     $data['label'] ?? '',
+                                    $bookName,
                                     $data['group'] ?? 'unclassified',
                                     $data['description'] ?? '',
                                     ['source_verse' => $chapterName]
@@ -106,6 +110,9 @@ class RunOllamaPipelineCommand extends Command
                             } elseif ($type === 'edge') {
                                 $sourceKey = mb_strtolower($data['source_node_id'] ?? '', 'UTF-8');
                                 $targetKey = mb_strtolower($data['target_node_id'] ?? '', 'UTF-8');
+
+                                $sourceKey = empty($sourceKey) ? '' : $memory->resolveAlias($sourceKey, $bookName);
+                                $targetKey = empty($targetKey) ? '' : $memory->resolveAlias($targetKey, $bookName);
 
                                 $memory->upsertEdge(
                                     $sourceKey,
