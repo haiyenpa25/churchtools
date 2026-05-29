@@ -2108,6 +2108,7 @@ function app(){return{
 
   // ── ADVANCED ANALYTICS ──
   get adv(){
+    const fmt=v=>this.fmtS(v); // local alias — fmtS is a component method, must use this.fmtS inside getters
     const y=this.curY,m=this.curM;
     const txM=this.transactions.filter(t=>{const d=new Date(t.transaction_date);return d.getMonth()+1===m&&d.getFullYear()===y});
     const income=txM.filter(t=>t.type==='income').reduce((s,t)=>s+parseFloat(t.amount),0);
@@ -2163,22 +2164,17 @@ function app(){return{
     const otherIncome=Object.entries(incMap).filter(([n])=>!SALARY_KEYS.includes(n)).map(([name,total])=>({name,total,pct:income>0?Math.round(total/income*100):0})).sort((a,b)=>b.total-a.total);
 
     // Church analytics
-    const churchCats=['Phần Mười','Dâng Hiến','Dâng Đặc Biệt','Hiến Tế','Phục Vụ NT'];
-    const titheCats=['Phần Mười'];
-    const offeringCats=['Dâng Hiến','Dâng Đặc Biệt'];
-    const activityCats=['Hiến Tế','Phục Vụ NT','Nhạc Cụ NT','Âm Nhạc Thờ Phượng','Trại/Retreat NT'];
-    const titheAmt=txM.filter(t=>t.type==='expense'&&titheCats.some(c=>t.category.includes('Mười')||t.category.includes('Tithe'))).reduce((s,t)=>s+parseFloat(t.amount),0);
-    const offeringAmt=txM.filter(t=>t.type==='expense'&&(offeringCats.some(c=>t.category.includes('Dâng'))||t.category.includes('Hiến'))).reduce((s,t)=>s+parseFloat(t.amount),0);
-    const churchActivities=txM.filter(t=>t.type==='expense'&&activityCats.some(c=>t.category.includes(c.split(' ')[0]))).reduce((s,t)=>s+parseFloat(t.amount),0);
-    const churchTotal=txM.filter(t=>t.type==='expense'&&(t.category.includes('Mười')||t.category.includes('Dâng')||t.category.includes('Nhà Thờ')||t.category.includes('NT'))).reduce((s,t)=>s+parseFloat(t.amount),0);
+    const titheAmt=txM.filter(t=>t.type==='expense'&&(t.category.includes('Mười')||t.category.includes('Tithe'))).reduce((s,t)=>s+parseFloat(t.amount),0);
+    const offeringAmt=txM.filter(t=>t.type==='expense'&&(t.category.includes('Dâng')||t.category.includes('Hiến'))).reduce((s,t)=>s+parseFloat(t.amount),0);
+    const churchActivities=txM.filter(t=>t.type==='expense'&&(t.category.includes('Nhạc')||t.category.includes('Trại')||t.category.includes('Retreat')||t.category.includes('Phục Vụ NT'))).reduce((s,t)=>s+parseFloat(t.amount),0);
+    const churchTotal=txM.filter(t=>t.type==='expense'&&(t.category.includes('Mười')||t.category.includes('Dâng')||t.category.includes('Nhà Thờ')||t.category.includes('NT')||t.category.includes('Hiến'))).reduce((s,t)=>s+parseFloat(t.amount),0);
     const churchPct=income>0?Math.round(churchTotal/income*100):0;
 
     // Social breakdown
-    const SOCIAL_KEYS=['Gia Đình','Ba Mẹ Ruột','Ba Mẹ Vợ/Chồng','Con Cái','Anh Chị Em','Ông Bà','Xã Hội','Giúp Đỡ Người Khó','Tình Nguyện','Thăm Bệnh'];
+    const SOCIAL_KEYS=['Gia Đình','Ba Mẹ','Con Cái','Anh Chị','Ông Bà','Xã Hội','Giúp Đỡ','Tình Nguyện','Thăm Bệnh'];
     const socialMap={};
-    txM.filter(t=>t.type==='expense'&&SOCIAL_KEYS.some(k=>t.category.includes(k.split(' ')[0]))).forEach(t=>{
-      const key=t.category;
-      socialMap[key]=(socialMap[key]||0)+parseFloat(t.amount);
+    txM.filter(t=>t.type==='expense'&&SOCIAL_KEYS.some(k=>t.category.includes(k))).forEach(t=>{
+      socialMap[t.category]=(socialMap[t.category]||0)+parseFloat(t.amount);
     });
     const maxSocial=Math.max(...Object.values(socialMap),1);
     const socialBreakdown=Object.entries(socialMap).map(([cat,total])=>({cat,total,pct:Math.round(total/maxSocial*100)})).sort((a,b)=>b.total-a.total).slice(0,8);
@@ -2189,15 +2185,15 @@ function app(){return{
     const allCatKeys=new Set([...Object.keys(expMap),...Object.keys(prevExpMap)]);
     const catCompare=[...allCatKeys].map(cat=>({cat,cur:expMap[cat]||0,prev:prevExpMap[cat]||0,diff:(expMap[cat]||0)-(prevExpMap[cat]||0)})).filter(r=>r.cur>0||r.prev>0).sort((a,b)=>b.cur-a.cur).slice(0,10);
 
-    // Insights
+    // Insights (use fmt alias, NOT bare fmtS)
     const insights=[];
-    if(savingsRate>=20)insights.push({icon:'🎉',title:'Tiết kiệm tốt!',body:`Bạn đang tiết kiệm <b class="ic-highlight">${savingsRate}%</b> thu nhập tháng này — vượt chuẩn 20%. Duy trì phong độ nhé!`});
-    else if(savingsRate<0)insights.push({icon:'🚨',title:'Chi vượt thu!',body:`Chi phí vượt thu nhập <b class="ic-highlight">${fmtS(expense-income)}</b>. Cần cắt giảm ngay để tránh thâm hụt.`});
-    else insights.push({icon:'💡',title:'Gợi ý tiết kiệm',body:`Tỉ lệ tiết kiệm hiện tại <b class="ic-highlight">${savingsRate}%</b>. Mục tiêu lý tưởng là ≥20%. Cần tiết kiệm thêm <b class="ic-highlight">${fmtS(Math.max(0,income*0.2-(income-expense)))}</b>/tháng.`});
-    if(topExpCats.length>0)insights.push({icon:'📊',title:'Chi nhiều nhất',body:`Danh mục <b class="ic-highlight">${topExpCats[0].category}</b> chiếm nhiều nhất với <b class="ic-highlight">${fmtS(topExpCats[0].total)}</b> (${expense>0?(topExpCats[0].total/expense*100).toFixed(1):0}% tổng chi).`});
-    if(churchPct>0)insights.push({icon:'⛪',title:'Dâng hiến Nhà Thờ',body:`Tháng này dâng hiến <b class="ic-highlight">${fmtS(churchTotal)}</b> (${churchPct}% thu nhập).${titheAmt>=income*0.1?' ✅ Đã đủ phần mười.':` ⚠️ Phần mười còn thiếu <b class="ic-highlight">${fmtS(Math.max(0,income*0.1-titheAmt))}</b>.`}`});
-    if(burnRate>0){const daysLeft=daysInMonth-dayOfMonth;insights.push({icon:'🔥',title:'Dự báo chi tiêu',body:`Burn rate <b class="ic-highlight">${fmtS(burnRate)}/ngày</b>. Còn ${daysLeft} ngày — dự kiến chi thêm <b class="ic-highlight">${fmtS(burnRate*daysLeft)}</b>. Tổng ước tính: <b class="ic-highlight">${fmtS(forecastMonth)}</b>.`});}
-    if(expenseGrowth>30)insights.push({icon:'⚠️',title:'Chi tiêu tăng mạnh',body:`Chi phí tăng <b class="ic-highlight">${expenseGrowth}%</b> so tháng trước (+${fmtS(expense-prevExpense)}). Hãy xem lại danh mục chi tiêu lớn.`});
+    if(savingsRate>=20)insights.push({icon:'🎉',title:'Tiết kiệm tốt!',body:`Bạn đang tiết kiệm <b class="ic-highlight">${savingsRate}%</b> thu nhập — vượt chuẩn 20%. Tuyệt vời!`});
+    else if(savingsRate<0)insights.push({icon:'🚨',title:'Chi vượt thu!',body:`Chi phí vượt thu nhập <b class="ic-highlight">${fmt(expense-income)}</b>. Cần cắt giảm ngay!`});
+    else insights.push({icon:'💡',title:'Gợi ý tiết kiệm',body:`Tỉ lệ tiết kiệm <b class="ic-highlight">${savingsRate}%</b>. Mục tiêu ≥20%. Cần thêm <b class="ic-highlight">${fmt(Math.max(0,income*0.2-(income-expense)))}</b>/tháng.`});
+    if(topExpCats.length>0)insights.push({icon:'📊',title:'Chi nhiều nhất',body:`<b class="ic-highlight">${topExpCats[0].category}</b>: <b class="ic-highlight">${fmt(topExpCats[0].total)}</b> (${expense>0?(topExpCats[0].total/expense*100).toFixed(1):0}% tổng chi).`});
+    if(churchPct>0)insights.push({icon:'⛪',title:'Dâng hiến Nhà Thờ',body:`Đã dâng <b class="ic-highlight">${fmt(churchTotal)}</b> (${churchPct}% thu nhập).${titheAmt>=income*0.1?' ✅ Đủ phần mười.':` ⚠️ Còn thiếu <b class="ic-highlight">${fmt(Math.max(0,income*0.1-titheAmt))}</b>.`}`});
+    if(burnRate>0){const daysLeft=daysInMonth-dayOfMonth;insights.push({icon:'🔥',title:'Dự báo chi tiêu',body:`Burn rate <b class="ic-highlight">${fmt(burnRate)}/ngày</b>. Còn ${daysLeft} ngày → ước tính thêm <b class="ic-highlight">${fmt(burnRate*daysLeft)}</b>. Tổng dự báo: <b class="ic-highlight">${fmt(forecastMonth)}</b>.`});}
+    if(expenseGrowth>30)insights.push({icon:'⚠️',title:'Chi tiêu tăng mạnh',body:`Chi phí tăng <b class="ic-highlight">${expenseGrowth}%</b> (+${fmt(expense-prevExpense)}) so tháng trước.`});
 
     return{income,expense,prevIncome,prevExpense,incomeGrowth,expenseGrowth,savingsRate,burnRate,forecastMonth,topExpCats,heatmapCells,salarySources,totalSalary,salaryCount:salarySources.length,otherIncome,titheAmt,offeringAmt,churchActivities,churchTotal,churchPct,socialBreakdown,catCompare,insights};
   },
