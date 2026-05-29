@@ -447,6 +447,31 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
 .inv-sub{font-size:10px;color:var(--tx3);margin-top:1px}.inv-right{text-align:right;flex-shrink:0}
 .inv-val{font-size:13px;font-weight:800;color:var(--tx)}.inv-pct{font-size:11px;font-weight:700;margin-top:1px}
 .ip-p{color:var(--g)}.ip-n{color:var(--r)}.inv-del{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:12px;margin-top:2px;display:block;padding:2px}
+
+/* ── MONTH SELECTOR ── */
+.month-sel-wrap{padding:9px 14px 6px;border-bottom:1px solid var(--br);background:var(--bg2)}
+.month-sel-label{font-size:9px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between}
+.month-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.month-chips::-webkit-scrollbar{display:none}
+.mchip{
+  flex-shrink:0;padding:6px 12px;border-radius:99px;
+  background:var(--bg3);border:1.5px solid var(--br);
+  font-size:11px;font-weight:700;color:var(--tx2);
+  cursor:pointer;transition:all .18s;white-space:nowrap;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+}
+.mchip:active{transform:scale(.93)}
+.mchip.current-m{border-color:rgba(76,154,255,.4);color:var(--b);background:rgba(76,154,255,.08)}
+.mchip.sel-income{background:rgba(0,196,140,.15);border-color:var(--g);color:var(--g)}
+.mchip.sel-expense{background:rgba(255,77,109,.15);border-color:var(--r);color:var(--r)}
+.mchip-month{font-size:12px;font-weight:800}
+.mchip-year{font-size:9px;opacity:.7}
+.mchip-tag{font-size:8px;font-weight:700;padding:1px 5px;border-radius:99px;margin-top:1px}
+.mchip.current-m .mchip-tag{background:rgba(76,154,255,.2);color:var(--b)}
+.month-expand-btn{font-size:10px;font-weight:700;color:var(--g);cursor:pointer;white-space:nowrap;flex-shrink:0;padding:6px 4px}
+.month-custom-row{display:flex;gap:7px;margin-top:7px;align-items:center}
+.month-custom-sel{flex:1;background:var(--bg3);border:1.5px solid var(--br);border-radius:10px;padding:7px 9px;color:var(--tx);font-size:12px;font-family:inherit;outline:none;cursor:pointer;-webkit-appearance:none}
+.month-custom-sel:focus{border-color:var(--g)}
 </style>
 </head>
 <body>
@@ -866,9 +891,55 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
     <template x-if="form.type==='transfer'">
       <div class="dr"><div class="dr-ico">➡️</div><select class="dr-sel" x-model="form.toAcc"><option value="">Ví đích...</option><template x-for="a in accounts" :key="a.id"><option :value="a.id" x-text="a.name"></option></template></select></div>
     </template>
-    <div class="dr">
-      <div class="dr-ico">📅</div>
-      <input type="date" class="dr-in" x-model="form.date">
+    <!-- Month Quick Selector -->
+    <div class="month-sel-wrap">
+      <div class="month-sel-label">
+        <span>📅 Ghi nhận vào tháng</span>
+        <span class="month-expand-btn" @click="showMonthExpand=!showMonthExpand" x-text="showMonthExpand?'Thu gọn ‸':'Mở rộng ⌄'"></span>
+      </div>
+      <!-- Quick chips: -1, 0, +1, +2 -->
+      <div class="month-chips">
+        <template x-for="m in monthChips" :key="m.key">
+          <div class="mchip"
+            :class="[
+              m.isCurrent?'current-m':'',
+              form.month===m.key?(form.type==='income'?'sel-income':'sel-expense'):''
+            ]"
+            @click="selectMonth(m.key)">
+            <span class="mchip-month" x-text="'T'+m.month"></span>
+            <span class="mchip-year" x-text="m.year"></span>
+            <template x-if="m.isCurrent"><span class="mchip-tag">Hiện tại</span></template>
+            <template x-if="m.isPrev"><span class="mchip-tag" style="background:rgba(255,159,67,.15);color:var(--o)">Tước</span></template>
+            <template x-if="m.isNext"><span class="mchip-tag" style="background:rgba(123,92,250,.15);color:var(--p)">Tiếp</span></template>
+          </div>
+        </template>
+      </div>
+      <!-- Expanded: full month+year select -->
+      <div class="month-custom-row" x-show="showMonthExpand">
+        <span style="font-size:11px;color:var(--tx3);flex-shrink:0">Ấn định:</span>
+        <select class="month-custom-sel" x-model="customMonth" @change="applyCustomMonth()">
+          <template x-for="m in allMonthOptions" :key="m.key">
+            <option :value="m.key" x-text="'Tháng '+m.month+'/'+m.year"></option>
+          </template>
+        </select>
+      </div>
+      <!-- Current selection display -->
+      <div style="margin-top:6px;font-size:11px;color:var(--tx2)">
+        ➤ Giao dịch sẽ ghi vào:
+        <strong :style="form.type==='income'?'color:var(--g)':'color:var(--r)'" x-text="'Tháng '+form.month.split('-')[1]+'/'+form.month.split('-')[0]"></strong>
+        (ngày <span x-text="form.date.split('-')[2]"></span>)
+      </div>
+    </div>
+    <!-- Date row (hidden detail) -->
+    <div class="dr" x-show="showDateDetail">
+      <div class="dr-ico">📆</div>
+      <input type="date" class="dr-in" x-model="form.date" @change="syncMonthFromDate()">
+      <span style="font-size:11px;color:var(--tx3);cursor:pointer" @click="showDateDetail=false">Thu gọn</span>
+    </div>
+    <div class="dr" x-show="!showDateDetail" @click="showDateDetail=true" style="cursor:pointer">
+      <div class="dr-ico">📆</div>
+      <span style="font-size:13px;font-weight:500;color:var(--tx2);flex:1">Ngày <span x-text="parseInt(form.date.split('-')[2])"></span> trong tháng</span>
+      <span style="font-size:11px;color:var(--g)">Sửa ngày →</span>
     </div>
     <div class="dr">
       <div class="dr-ico">📝</div>
@@ -1240,9 +1311,9 @@ function app(){return{
   showAddScreen:false,showCatScreen:false,showFixedScreen:false,showAccMgrScreen:false,
   showAccSheet:false,showDebtSheet:false,showInvSheet:false,showBudgetSheet:false,showGoalSheet:false,
   showAddCatSheet:false,showAddSubCatSheet:false,showAddFixedSheet:false,
-  editingAcc:null,
+  editingAcc:null,showMonthExpand:false,showDateDetail:false,customMonth:'',
   numpad:'',
-  form:{type:'expense',acc:'',toAcc:'',category:'',subcat:'',date:new Date().toISOString().split('T')[0],note:'',recur:false,period:'monthly'},
+  form:{type:'expense',acc:'',toAcc:'',category:'',subcat:'',date:new Date().toISOString().split('T')[0],note:'',recur:false,period:'monthly',month:new Date().toISOString().slice(0,7)},
   aForm:{name:'',type:'cash',balance:''},
   dForm:{name:'',type:'lend',amount:'',due:'',note:''},
   iForm:{sym:'',type:'crypto',qty:'',bp:''},
@@ -1259,6 +1330,30 @@ function app(){return{
   toast:{show:false,msg:'',type:'success'},
 
   get mLabel(){return`Tháng ${this.curM}/${this.curY}`},
+
+  // Month chips: -2, -1, current, +1, +2, +3
+  get monthChips(){
+    const now=new Date();const chips=[];
+    for(let i=-1;i<=3;i++){
+      const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+      const y=d.getFullYear(),m=d.getMonth()+1;
+      const key=y+'-'+String(m).padStart(2,'0');
+      chips.push({key,year:y,month:m,isCurrent:i===0,isPrev:i===-1,isNext:i===1});
+    }
+    return chips;
+  },
+  // All months: 12 months back to 6 months ahead
+  get allMonthOptions(){
+    const now=new Date();const opts=[];
+    for(let i=-12;i<=6;i++){
+      const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+      const y=d.getFullYear(),m=d.getMonth()+1;
+      const key=y+'-'+String(m).padStart(2,'0');
+      opts.push({key,year:y,month:m});
+    }
+    return opts;
+  },
+
   get mStats(){const f=this.filtered;return{income:f.filter(t=>t.type==='income').reduce((s,t)=>s+parseFloat(t.amount),0),expense:f.filter(t=>t.type==='expense').reduce((s,t)=>s+parseFloat(t.amount),0)}},
   get filtered(){return this.transactions.filter(t=>{const d=new Date(t.transaction_date);return d.getMonth()+1===this.curM&&d.getFullYear()===this.curY})},
   get displayedTxs(){let l=this.filtered;if(this.txFilter!=='all')l=l.filter(t=>t.type===this.txFilter);if(this.search.trim()){const s=this.search.toLowerCase();l=l.filter(t=>(t.category||'').toLowerCase().includes(s)||(t.note||'').toLowerCase().includes(s))}return l},
@@ -1385,13 +1480,41 @@ function app(){return{
 
   openAdd(type){
     this.editingTx=null;
-    this.form={type,acc:this.accounts[0]?.id||'',toAcc:'',category:'',subcat:'',date:new Date().toISOString().split('T')[0],note:'',recur:false,period:'monthly'};
-    this.numpad='';this.showAddScreen=true;
+    const today=new Date().toISOString().split('T')[0];
+    const month=today.slice(0,7);
+    this.form={type,acc:this.accounts[0]?.id||'',toAcc:'',category:'',subcat:'',date:today,note:'',recur:false,period:'monthly',month};
+    this.numpad='';this.showMonthExpand=false;this.showDateDetail=false;
+    this.customMonth=month;this.showAddScreen=true;
   },
   editTx(tx){
     this.editingTx=tx;
-    this.form={type:tx.type,acc:tx.account_id,toAcc:tx.to_account_id||'',category:tx.category,subcat:'',date:(tx.transaction_date||'').split('T')[0],note:tx.note||'',recur:!!tx.is_recurring,period:tx.recurring_period||'monthly'};
-    this.numpad=String(Math.round(parseFloat(tx.amount)||0));this.showAddScreen=true;
+    const date=(tx.transaction_date||'').split('T')[0];
+    const month=date.slice(0,7);
+    this.form={type:tx.type,acc:tx.account_id,toAcc:tx.to_account_id||'',category:tx.category,subcat:'',date,note:tx.note||'',recur:!!tx.is_recurring,period:tx.recurring_period||'monthly',month};
+    this.numpad=String(Math.round(parseFloat(tx.amount)||0));
+    this.showMonthExpand=false;this.showDateDetail=false;this.customMonth=month;
+    this.showAddScreen=true;
+  },
+  // Month selector functions
+  selectMonth(key){
+    this.form.month=key;
+    // Keep same day-of-month, just change year-month
+    const day=this.form.date.split('-')[2]||'01';
+    const [y,m]=key.split('-');
+    // Clamp day to valid range for that month
+    const maxDay=new Date(parseInt(y),parseInt(m),0).getDate();
+    const clampedDay=String(Math.min(parseInt(day),maxDay)).padStart(2,'0');
+    this.form.date=`${key}-${clampedDay}`;
+    this.customMonth=key;
+  },
+  syncMonthFromDate(){
+    if(this.form.date){
+      this.form.month=this.form.date.slice(0,7);
+      this.customMonth=this.form.month;
+    }
+  },
+  applyCustomMonth(){
+    if(this.customMonth)this.selectMonth(this.customMonth);
   },
   numPress(k){
     if(k==='⌫')this.numpad=this.numpad.slice(0,-1);
