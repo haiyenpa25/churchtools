@@ -340,13 +340,57 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
 .tt.te{background:var(--r);color:#fff}.tt.ti{background:var(--g);color:#fff}.tt.tt2{background:var(--b);color:#fff}
 
 /* ── AMOUNT HERO ── */
-.amt-hero{background:var(--bg2);padding:14px 16px 12px;text-align:center;flex-shrink:0;border-bottom:1px solid var(--br)}
-.amt-cat-prev{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:8px}
+.amt-hero{
+  background:var(--bg2);padding:12px 16px 10px;
+  text-align:center;flex-shrink:0;border-bottom:1px solid var(--br);
+  cursor:pointer;transition:background .18s;
+}
+.amt-hero:active{background:var(--bg3)}
+.amt-cat-prev{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:6px}
 .acp-ico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .acp-name{font-size:11px;font-weight:600;color:var(--tx2)}.acp-sub{font-size:10px;color:var(--tx3)}
-.amt-val{font-size:38px;font-weight:900;letter-spacing:-1.5px;line-height:1;height:46px;display:flex;align-items:center;justify-content:center;transition:color .2s;overflow:hidden}
+.amt-val{font-size:36px;font-weight:900;letter-spacing:-1.5px;line-height:1;height:44px;display:flex;align-items:center;justify-content:center;transition:color .2s;overflow:hidden}
 .av-e{color:var(--r)}.av-i{color:var(--g)}.av-t{color:var(--b)}.av-0{color:var(--tx3)}
-.amt-cur{font-size:11px;color:var(--tx3);margin-top:4px}
+.amt-hint{font-size:10px;color:var(--tx3);margin-top:3px;display:flex;align-items:center;justify-content:center;gap:4px}
+.amt-hint-pill{background:var(--bg3);border:1px solid var(--br);border-radius:99px;padding:2px 9px;font-size:10px;font-weight:700}
+
+/* ── NUMPAD (collapsible) ── */
+.numpad-wrap{
+  flex-shrink:0;
+  max-height:0;overflow:hidden;
+  transition:max-height .32s cubic-bezier(.16,1,.3,1);
+}
+.numpad-wrap.open{max-height:260px}
+.numpad{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--br);border-top:1px solid var(--br)}
+
+/* ── SUBCAT BOTTOM SHEET ── */
+.subcat-sheet{
+  position:absolute;left:0;right:0;bottom:0;
+  background:var(--bg2);border-top:2px solid var(--br);
+  border-radius:20px 20px 0 0;
+  z-index:10;padding:0 16px 20px;
+  transform:translateY(100%);
+  transition:transform .28s cubic-bezier(.16,1,.3,1);
+  max-height:55vh;overflow-y:auto;
+}
+.subcat-sheet.open{transform:translateY(0)}
+.subcat-sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--br2);margin:10px auto 14px;cursor:pointer}
+.subcat-sheet-title{font-size:11px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.subcat-sheet-title::after{content:'';flex:1;height:1px;background:var(--br)}
+.subcat-big-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 16px;border-radius:12px;
+  background:var(--bg3);border:2px solid var(--br);
+  font-size:13px;font-weight:600;color:var(--tx);
+  cursor:pointer;transition:all .15s;
+  margin:0 6px 8px 0;
+}
+.subcat-big-chip:active{transform:scale(.94)}
+.subcat-big-chip.sel-i{background:rgba(0,196,140,.15);border-color:var(--g);color:var(--g)}
+.subcat-big-chip.sel-e{background:rgba(255,77,109,.15);border-color:var(--r);color:var(--r)}
+.subcat-big-chip .sbc-emoji{font-size:18px}
+.subcat-sheet-overlay{position:absolute;inset:0;z-index:9;background:rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .28s}
+.subcat-sheet-overlay.open{opacity:1;pointer-events:all}
 
 .cat-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px 0;min-height:0}
 .cat-sec-title{font-size:9px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
@@ -417,6 +461,16 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
   box-shadow:inset 0 1px 0 rgba(255,255,255,.2);
 }
 .nk-ok:active::after{background:rgba(0,0,0,.1)}
+.numpad-close-bar{
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg2);border-top:1px solid var(--br);padding:6px;
+  cursor:pointer;
+}
+.numpad-close-btn{
+  background:var(--bg3);border:1px solid var(--br);border-radius:99px;
+  padding:4px 20px;font-size:10px;font-weight:800;color:var(--tx3);
+  cursor:pointer;border:none;font-family:inherit;
+}
 
 /* ── CAT MANAGER SCREEN ── */
 .cat-type-tab{display:flex;background:var(--bg3);border-radius:11px;padding:3px;margin:10px 16px;gap:3px;flex-shrink:0}
@@ -995,8 +1049,8 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
     <div style="width:32px;font-size:10px;font-weight:700;color:var(--o);text-align:center;flex-shrink:0" x-text="editingTx?'SỬA':''"></div>
   </div>
 
-  <!-- Amount Display -->
-  <div class="amt-hero">
+  <!-- Amount Display (tap to open numpad) -->
+  <div class="amt-hero" @click="showNumpad=true">
     <div class="amt-cat-prev">
       <div class="acp-ico" :style="'background:'+catColor(catParent(form.category))+'22'"><span x-text="catEmoji(catParent(form.category))||'💸'"></span></div>
       <div><div class="acp-name" x-text="form.category||'Chọn danh mục'"></div><div class="acp-sub" x-text="form.subcat?('↳ '+form.subcat):''"></div></div>
@@ -1004,7 +1058,9 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
     <div class="amt-val" :class="numpad===''?'av-0':form.type==='expense'?'av-e':form.type==='income'?'av-i':'av-t'">
       <span x-text="numpad===''?'0₫':numFmt(parseFloat(numpad.replace(',','.'))||0)+'₫'"></span>
     </div>
-    <div class="amt-cur">Việt Nam Đồng (VNĐ)</div>
+    <div class="amt-hint">
+      <span class="amt-hint-pill" :style="showNumpad?'color:var(--r)':''" x-text="showNumpad?'▲ Ẩn bàn phím':'▼ Bấm để nhập số'"></span>
+    </div>
   </div>
 
   <!-- Categories -->
@@ -1023,22 +1079,7 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
             </div>
           </template>
         </div>
-        <template x-if="subCats(form.category).length>0">
-          <div>
-            <div class="cat-sec-title">Danh mục con</div>
-            <div class="subcat-row">
-              <div class="subcat-chip" :class="form.subcat===''?(form.type==='expense'?'active-e':'active'):''" @click="form.subcat=''">
-                <span class="sc-emoji">✨</span>Tất cả
-              </div>
-              <template x-for="sc in subCats(form.category)" :key="sc.name">
-                <div class="subcat-chip" :class="form.subcat===sc.name?(form.type==='expense'?'active-e':'active'):''" @click="form.subcat=sc.name">
-                  <span class="sc-emoji" x-text="sc.emoji||'›'"></span>
-                  <span x-text="sc.name"></span>
-                </div>
-              </template>
-            </div>
-          </div>
-        </template>
+        <!-- Subcat section: only shows as bottom sheet via JS -->
       </div>
     </template>
   </div><!-- /cat-scroll -->
@@ -1112,8 +1153,12 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
   </div>
   <div style="height:10px"></div>
 
-  <!-- Numpad -->
-  <div class="numpad">
+  <!-- Numpad (collapsible) -->
+  <div class="numpad-wrap" :class="showNumpad?'open':''">
+    <div class="numpad-close-bar" @click="showNumpad=false">
+      <button class="numpad-close-btn">▲ Ẩn bàn phím</button>
+    </div>
+    <div class="numpad">
     <button class="nk" @click="numPress('7')">7</button>
     <button class="nk" @click="numPress('8')">8</button>
     <button class="nk" @click="numPress('9')">9</button>
@@ -1131,8 +1176,40 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
     <button class="nk nk-spec" @click="numPress('0')">0</button>
     <button class="nk nk-spec" @click="numPress('C')">C</button>
     <button class="nk nk-spec" @click="numPress('⌫')">⌫</button>
+  </div><!-- /numpad grid -->
+  </div><!-- /numpad-wrap -->
+
+  <!-- ══ SUBCAT BOTTOM SHEET ══ -->
+  <div class="subcat-sheet-overlay" :class="showSubcatSheet?'open':''" @click="showSubcatSheet=false"></div>
+  <div class="subcat-sheet" :class="showSubcatSheet?'open':''">
+    <div class="subcat-sheet-handle" @click="showSubcatSheet=false"></div>
+    <div class="subcat-sheet-title">
+      <span x-text="catEmoji(form.category)||'📌'"></span>
+      <span x-text="form.category" style="color:var(--tx)"></span>
+      <span style="color:var(--tx3)">→ Chọn mục con</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap">
+      <div class="subcat-big-chip"
+        :class="form.subcat===''?(form.type==='income'?'sel-i':'sel-e'):''"
+        @click="form.subcat='';showSubcatSheet=false">
+        <span class="sbc-emoji">✨</span>
+        <span>Không chọn</span>
+      </div>
+      <template x-for="sc in subCats(form.category)" :key="sc.name">
+        <div class="subcat-big-chip"
+          :class="form.subcat===sc.name?(form.type==='income'?'sel-i':'sel-e'):''"
+          @click="form.subcat=sc.name;showSubcatSheet=false">
+          <span class="sbc-emoji" x-text="sc.emoji||'›'"></span>
+          <span x-text="sc.name"></span>
+        </div>
+      </template>
+    </div>
+    <div x-show="subCats(form.category).length===0" style="color:var(--tx3);font-size:12px;text-align:center;padding:14px 0">
+      Danh mục này không có mục con
+    </div>
   </div>
-</div>
+
+</div><!-- /screen Add TX -->
 
 <!-- ══════════════════════════════════
      SCREEN: CATEGORY MANAGER
@@ -1578,7 +1655,7 @@ function app(){return{
   showAccSheet:false,showDebtSheet:false,showInvSheet:false,showBudgetSheet:false,showGoalSheet:false,
   showAddCatSheet:false,showAddSubCatSheet:false,showAddFixedSheet:false,
   editingAcc:null,showMonthExpand:false,showDateDetail:false,customMonth:'',
-  txView:'list',calSelectedDay:'',
+  txView:'list',calSelectedDay:'',showNumpad:false,showSubcatSheet:false,
   numpad:'',
   form:{type:'expense',acc:'',toAcc:'',category:'',subcat:'',date:new Date().toISOString().split('T')[0],note:'',recur:false,period:'monthly',month:new Date().toISOString().slice(0,7)},
   aForm:{name:'',type:'cash',balance:''},
@@ -1696,7 +1773,18 @@ function app(){return{
   subCats(pn){const all=[...getCats('expense'),...getCats('income')];const p=all.find(c=>c.name===pn);return p?p.children||[]:[]},
   catEmoji(n){return catOf(n).emoji||'💸'},
   catColor(n){return catOf(n).color||'#636e72'},
-  selectCat(n){this.form.category=n;this.form.subcat=''},
+  selectCat(name){
+    this.form.category=name;
+    this.form.subcat='';
+    // Auto-open subcat sheet if this category has children
+    const cats=getCats(this.form.type==='expense'?'expense':'income');
+    const found=cats.find(c=>c.name===name);
+    if(found&&(found.children||[]).length>0){
+      this.showSubcatSheet=true;
+    } else {
+      this.showSubcatSheet=false;
+    }
+  },
 
   toggleCatGroup(n){const i=this.openCatGroups.indexOf(n);i>=0?this.openCatGroups.splice(i,1):this.openCatGroups.push(n)},
   addCategory(){
@@ -1803,6 +1891,7 @@ function app(){return{
     const month=today.slice(0,7);
     this.form={type,acc:this.accounts[0]?.id||'',toAcc:'',category:'',subcat:'',date:today,note:'',recur:false,period:'monthly',month};
     this.numpad='';this.showMonthExpand=false;this.showDateDetail=false;
+    this.showNumpad=false;this.showSubcatSheet=false;
     this.customMonth=month;this.showAddScreen=true;
   },
   editTx(tx){
@@ -1811,7 +1900,9 @@ function app(){return{
     const month=date.slice(0,7);
     this.form={type:tx.type,acc:tx.account_id,toAcc:tx.to_account_id||'',category:tx.category,subcat:'',date,note:tx.note||'',recur:!!tx.is_recurring,period:tx.recurring_period||'monthly',month};
     this.numpad=String(Math.round(parseFloat(tx.amount)||0));
-    this.showMonthExpand=false;this.showDateDetail=false;this.customMonth=month;
+    this.showMonthExpand=false;this.showDateDetail=false;
+    this.showNumpad=true;this.showSubcatSheet=false; // open numpad when editing
+    this.customMonth=month;
     this.showAddScreen=true;
   },
   // Month selector functions
