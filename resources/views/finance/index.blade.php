@@ -735,6 +735,11 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
   <div x-show="tab==='settings'">
     <div style="padding:12px 16px 6px"><span style="font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em">Quản lý danh mục & giao dịch</span></div>
     <div class="set-section">
+      <div class="set-item" @click="showAccMgrScreen=true">
+        <div class="si-ico" style="background:rgba(0,196,140,.15)">💳</div>
+        <div class="si-info"><div class="si-title">Quản lý ví & tài khoản</div><div class="si-sub" x-text="accounts.length+' ví · '+fmtS(ov.total_cash)"></div></div>
+        <span class="si-arrow">›</span>
+      </div>
       <div class="set-item" @click="showCatScreen=true">
         <div class="si-ico" style="background:rgba(255,159,67,.15)">📂</div>
         <div class="si-info"><div class="si-title">Quản lý danh mục</div><div class="si-sub">Thêm, sửa, xóa danh mục & danh mục con</div></div>
@@ -813,7 +818,10 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
       <div class="acp-ico" :style="'background:'+catColor(catParent(form.category))+'22'"><span x-text="catEmoji(catParent(form.category))||'💸'"></span></div>
       <div><div class="acp-name" x-text="form.category||'Chọn danh mục'"></div><div class="acp-sub" x-text="form.subcat?('↳ '+form.subcat):''"></div></div>
     </div>
-    <div class="amt-val" :class="numpad===''?'av-0':form.type==='expense'?'av-e':form.type==='income'?'av-i':'av-t'" x-text="numpad===''?'0₫':numpad.replace(/\B(?=(\d{3})+(?!\d))/g,'.')+'₫'"></div>
+    <div class="amt-val" :class="numpad===''?'av-0':form.type==='expense'?'av-e':form.type==='income'?'av-i':'av-t'">
+      <span x-text="numpad===''?'0₫':numFmt(parseFloat(numpad.replace(',','.'))||0)+'₫'"></span>
+    </div>
+    <div class="amt-cur">Việt Nam Đồng (VNĐ)</div>
   </div>
 
   <!-- Categories -->
@@ -884,7 +892,9 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
     <button class="nk" @click="numPress('7')">7</button>
     <button class="nk" @click="numPress('8')">8</button>
     <button class="nk" @click="numPress('9')">9</button>
-    <button class="nk nk-ok" @click="editingTx?updateTx():saveTx()" x-text="editingTx?'CẬP\nNHẬT':'LƯU'" style="white-space:pre-line"></button>
+    <button class="nk nk-ok" @click="editingTx?updateTx():saveTx()">
+      <span x-text="editingTx?'Cập\nnhật':'Lưu'" style="white-space:pre-line;line-height:1.3"></span>
+    </button>
     <button class="nk" @click="numPress('4')">4</button>
     <button class="nk" @click="numPress('5')">5</button>
     <button class="nk" @click="numPress('6')">6</button>
