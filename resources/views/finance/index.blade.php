@@ -990,6 +990,17 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
   <!-- STATS TAB -->
   <div x-show="tab==='stats'" x-init="$watch('tab', v=>v==='stats'&&loadStats())">
 
+    <!-- Month Navigator (shared across all stat sub-tabs) -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 0;gap:8px">
+      <div style="display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--br);border-radius:12px;padding:6px 10px;flex:1">
+        <button style="background:var(--bg3);border:none;border-radius:7px;width:26px;height:26px;cursor:pointer;color:var(--tx2);font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0" @click="curM===1?(curM=12,curY--):(curM--)">‹</button>
+        <span style="font-size:13px;font-weight:800;color:var(--tx);flex:1;text-align:center" x-text="'Tháng '+curM+' / '+curY"></span>
+        <button style="background:var(--bg3);border:none;border-radius:7px;width:26px;height:26px;cursor:pointer;color:var(--tx2);font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0" @click="curM===12?(curM=1,curY++):(curM++)">›</button>
+      </div>
+      <button style="background:var(--bg3);border:none;border-radius:10px;padding:7px 11px;font-size:10px;font-weight:700;color:var(--tx2);cursor:pointer;flex-shrink:0;font-family:inherit"
+        @click="curM=new Date().getMonth()+1;curY=new Date().getFullYear()">Hôm nay</button>
+    </div>
+
     <!-- Sub-tabs -->
     <div class="stat-tabs">
       <button class="stab" :class="statTab==='month'?'on':''" @click="statTab='month'">📅 Tháng này</button>
