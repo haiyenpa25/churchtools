@@ -306,24 +306,46 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
 .av-e{color:var(--r)}.av-i{color:var(--g)}.av-t{color:var(--b)}.av-0{color:var(--tx3)}
 .amt-cur{font-size:11px;color:var(--tx3);margin-top:4px}
 
-/* ── CATEGORY SCROLL (Add TX) ── */
-.cat-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px 6px;min-height:0}
-.cat-sec-title{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.cat-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px 0;min-height:0}
+.cat-sec-title{font-size:9px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .cat-sec-title::before{content:'';flex:1;height:1px;background:var(--br)}
-.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
-.ci{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 3px;border-radius:13px;cursor:pointer;border:2px solid transparent;background:var(--bg2);transition:all .15s}
+.cat-sec-title::after{content:'';flex:1;height:1px;background:var(--br)}
+.cat-group-label{font-size:9px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;padding:4px 2px 6px;display:flex;align-items:center;gap:5px}
+.cat-group-label span{color:var(--tx2)}
+/* 3-column grid for more categories visible at once */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.ci{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 2px 6px;border-radius:13px;
+  cursor:pointer;border:2px solid transparent;
+  background:var(--bg2);transition:all .15s;position:relative;
+}
 .ci:active{transform:scale(.9)}
 .ci.sel{border-color:var(--g);background:rgba(0,196,140,.1)}.ci.sel-e{border-color:var(--r);background:rgba(255,77,109,.1)}
-.ci-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
-.ci-lbl{font-size:9px;font-weight:600;color:var(--tx2);text-align:center;line-height:1.2;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ci-ico{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px}
+.ci-lbl{font-size:8.5px;font-weight:700;color:var(--tx2);text-align:center;line-height:1.2;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ci.sel .ci-lbl{color:var(--g)}.ci.sel-e .ci-lbl{color:var(--r)}
-.subcat-row{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0 10px}
-.subcat-chip{padding:5px 11px;border-radius:99px;background:var(--bg3);border:1.5px solid var(--br);font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap}
-.subcat-chip:active{transform:scale(.93)}.subcat-chip.active{background:rgba(0,196,140,.15);border-color:var(--g);color:var(--g)}.subcat-chip.active-e{background:rgba(255,77,109,.15);border-color:var(--r);color:var(--r)}
+/* sub-count badge */
+.ci-cnt{position:absolute;top:3px;right:3px;background:var(--bg4);color:var(--tx3);font-size:7px;font-weight:800;border-radius:99px;padding:1px 4px;line-height:1.4}
+.ci.sel .ci-cnt{background:rgba(0,196,140,.2);color:var(--g)}
+.ci.sel-e .ci-cnt{background:rgba(255,77,109,.2);color:var(--r)}
+/* Sub-category chips */
+.subcat-row{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 12px;padding:2px 0}
+.subcat-chip{
+  padding:7px 13px;border-radius:99px;
+  background:var(--bg3);border:1.5px solid var(--br);
+  font-size:12px;font-weight:600;color:var(--tx2);
+  cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.subcat-chip:active{transform:scale(.93)}
+.subcat-chip.active{background:rgba(0,196,140,.15);border-color:var(--g);color:var(--g)}
+.subcat-chip.active-e{background:rgba(255,77,109,.15);border-color:var(--r);color:var(--r)}
+.subcat-chip .sc-emoji{font-size:14px}
 
-/* ── TX DETAILS ROWS ── */
-.tx-details{background:var(--bg2);border-top:1px solid var(--br);flex-shrink:0}
-.dr{display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--br)}
+/* ── TX DETAILS ROWS (inside scroll) ── */
+.tx-details{background:var(--bg2);border:1px solid var(--br);border-radius:16px;margin:0 14px 10px}
+.dr{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--br)}
 .dr:last-child{border-bottom:none}
 .dr-ico{width:28px;height:28px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .dr-in{flex:1;background:none;border:none;outline:none;color:var(--tx);font-size:13px;font-weight:500;font-family:inherit;min-width:0}
@@ -859,6 +881,9 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
             <div class="ci" :class="form.category===cat.name?(form.type==='expense'?'sel-e':'sel'):''" @click="selectCat(cat.name)">
               <div class="ci-ico" :style="'background:'+cat.color+'22'"><span x-text="cat.emoji"></span></div>
               <span class="ci-lbl" x-text="cat.name"></span>
+              <template x-if="(cat.children||[]).length>0">
+                <span class="ci-cnt" x-text="(cat.children||[]).length"></span>
+              </template>
             </div>
           </template>
         </div>
@@ -866,10 +891,13 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
           <div>
             <div class="cat-sec-title">Danh mục con</div>
             <div class="subcat-row">
-              <div class="subcat-chip" :class="form.subcat===''?(form.type==='expense'?'active-e':'active'):''" @click="form.subcat=''">Không chọn</div>
+              <div class="subcat-chip" :class="form.subcat===''?(form.type==='expense'?'active-e':'active'):''" @click="form.subcat=''">
+                <span class="sc-emoji">✨</span>Tất cả
+              </div>
               <template x-for="sc in subCats(form.category)" :key="sc.name">
                 <div class="subcat-chip" :class="form.subcat===sc.name?(form.type==='expense'?'active-e':'active'):''" @click="form.subcat=sc.name">
-                  <span x-text="sc.emoji||'›'"></span><span x-text="sc.name"></span>
+                  <span class="sc-emoji" x-text="sc.emoji||'›'"></span>
+                  <span x-text="sc.name"></span>
                 </div>
               </template>
             </div>
@@ -877,15 +905,15 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
         </template>
       </div>
     </template>
-  </div>
+  </div><!-- /cat-scroll -->
 
-  <!-- Details -->
+  <!-- Details (inside scroll) -->
   <div class="tx-details">
     <div class="dr">
       <div class="dr-ico">💳</div>
       <select class="dr-sel" x-model="form.acc">
         <option value="">Chọn ví...</option>
-        <template x-for="a in accounts" :key="a.id"><option :value="a.id" x-text="a.name+' ('+fmtS(a.balance)+')'"></option></template>
+        <template x-for="a in accounts" :key="a.id"><option :value="a.id" x-text="a.name+' (≈ '+fmtS(a.balance)+')'"></option></template>
       </select>
     </div>
     <template x-if="form.type==='transfer'">
@@ -894,10 +922,9 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
     <!-- Month Quick Selector -->
     <div class="month-sel-wrap">
       <div class="month-sel-label">
-        <span>📅 Ghi nhận vào tháng</span>
-        <span class="month-expand-btn" @click="showMonthExpand=!showMonthExpand" x-text="showMonthExpand?'Thu gọn ‸':'Mở rộng ⌄'"></span>
+        <span>📅 Ghi vào tháng</span>
+        <span class="month-expand-btn" @click="showMonthExpand=!showMonthExpand" x-text="showMonthExpand?'Thu gọn':'Mở rộng ⌄'"></span>
       </div>
-      <!-- Quick chips: -1, 0, +1, +2 -->
       <div class="month-chips">
         <template x-for="m in monthChips" :key="m.key">
           <div class="mchip"
@@ -909,12 +936,11 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
             <span class="mchip-month" x-text="'T'+m.month"></span>
             <span class="mchip-year" x-text="m.year"></span>
             <template x-if="m.isCurrent"><span class="mchip-tag">Hiện tại</span></template>
-            <template x-if="m.isPrev"><span class="mchip-tag" style="background:rgba(255,159,67,.15);color:var(--o)">Tước</span></template>
+            <template x-if="m.isPrev"><span class="mchip-tag" style="background:rgba(255,159,67,.15);color:var(--o)">Trước</span></template>
             <template x-if="m.isNext"><span class="mchip-tag" style="background:rgba(123,92,250,.15);color:var(--p)">Tiếp</span></template>
           </div>
         </template>
       </div>
-      <!-- Expanded: full month+year select -->
       <div class="month-custom-row" x-show="showMonthExpand">
         <span style="font-size:11px;color:var(--tx3);flex-shrink:0">Ấn định:</span>
         <select class="month-custom-sel" x-model="customMonth" @change="applyCustomMonth()">
@@ -923,27 +949,18 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
           </template>
         </select>
       </div>
-      <!-- Current selection display -->
-      <div style="margin-top:6px;font-size:11px;color:var(--tx2)">
-        ➤ Giao dịch sẽ ghi vào:
-        <strong :style="form.type==='income'?'color:var(--g)':'color:var(--r)'" x-text="'Tháng '+form.month.split('-')[1]+'/'+form.month.split('-')[0]"></strong>
-        (ngày <span x-text="form.date.split('-')[2]"></span>)
+      <div style="margin-top:5px;font-size:11px;color:var(--tx2)">
+        ➤ Ghi vào: <strong :style="form.type==='income'?'color:var(--g)':'color:var(--r)'" x-text="'T'+form.month.split('-')[1]+'/'+form.month.split('-')[0]"></strong>
+        &nbsp;&middot;&nbsp; ngày <span x-text="form.date.split('-')[2]"></span>
+        &nbsp;&middot;&nbsp; <span style="color:var(--g);cursor:pointer;text-decoration:underline" @click="showDateDetail=!showDateDetail">Đổi ngày</span>
       </div>
-    </div>
-    <!-- Date row (hidden detail) -->
-    <div class="dr" x-show="showDateDetail">
-      <div class="dr-ico">📆</div>
-      <input type="date" class="dr-in" x-model="form.date" @change="syncMonthFromDate()">
-      <span style="font-size:11px;color:var(--tx3);cursor:pointer" @click="showDateDetail=false">Thu gọn</span>
-    </div>
-    <div class="dr" x-show="!showDateDetail" @click="showDateDetail=true" style="cursor:pointer">
-      <div class="dr-ico">📆</div>
-      <span style="font-size:13px;font-weight:500;color:var(--tx2);flex:1">Ngày <span x-text="parseInt(form.date.split('-')[2])"></span> trong tháng</span>
-      <span style="font-size:11px;color:var(--g)">Sửa ngày →</span>
+      <div x-show="showDateDetail" style="padding-top:6px">
+        <input type="date" style="width:100%;background:var(--bg3);border:1.5px solid var(--g);border-radius:10px;padding:7px 10px;color:var(--tx);font-family:inherit;font-size:13px;outline:none" x-model="form.date" @change="syncMonthFromDate()">
+      </div>
     </div>
     <div class="dr">
       <div class="dr-ico">📝</div>
-      <input type="text" class="dr-in" placeholder="Ghi chú..." x-model="form.note">
+      <input type="text" class="dr-in" placeholder="Ghi chú (không bắt buộc)..." x-model="form.note">
       <div class="recur-toggle" @click="form.recur=!form.recur">
         <div class="recur-chk" :class="form.recur?'checked':''" x-text="form.recur?'✓':''"></div>
         <span>Định kỳ</span>
@@ -957,6 +974,7 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
       </template>
     </div>
   </div>
+  <div style="height:10px"></div>
 
   <!-- Numpad -->
   <div class="numpad">
@@ -1277,24 +1295,123 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
 const CSRF='{{ csrf_token() }}';
 
 const DEF_CATS_E=[
-  {name:'Ăn uống',emoji:'🍜',color:'#ff6b6b',children:[{name:'Cơm trưa',emoji:'🍱'},{name:'Cà phê',emoji:'☕'},{name:'Ăn tối',emoji:'🍽️'},{name:'Ăn vặt',emoji:'🍕'}]},
-  {name:'Mua sắm',emoji:'🛒',color:'#ff9f43',children:[{name:'Quần áo',emoji:'👕'},{name:'Đồ dùng',emoji:'🏠'},{name:'Mỹ phẩm',emoji:'💄'}]},
-  {name:'Di chuyển',emoji:'🚗',color:'#54a0ff',children:[{name:'Xăng xe',emoji:'⛽'},{name:'Grab',emoji:'🛵'},{name:'Taxi',emoji:'🚕'}]},
-  {name:'Nhà ở',emoji:'🏠',color:'#5f27cd',children:[{name:'Tiền thuê',emoji:'🔑'},{name:'Điện nước',emoji:'💡'},{name:'Internet',emoji:'🌐'}]},
-  {name:'Sức khoẻ',emoji:'💊',color:'#00d2d3',children:[{name:'Thuốc',emoji:'💉'},{name:'Khám bệnh',emoji:'🏥'}]},
-  {name:'Giải trí',emoji:'🎮',color:'#c8d6e5',children:[{name:'Phim',emoji:'🎬'},{name:'Du lịch',emoji:'✈️'}]},
-  {name:'Giáo dục',emoji:'📚',color:'#786fa6',children:[{name:'Học phí',emoji:'🎓'},{name:'Sách vở',emoji:'📖'}]},
-  {name:'Tiện ích',emoji:'💡',color:'#ffeaa7',children:[]},
-  {name:'Quà tặng',emoji:'🎁',color:'#fdcb6e',children:[]},
-  {name:'Đầu tư',emoji:'📈',color:'#00c48c',children:[]},
-  {name:'Khác',emoji:'📦',color:'#636e72',children:[]},
+  /* ═══ NHÀ THỜ & TÂM LINH ═══ */
+  {name:'Nhà Thờ',emoji:'⛪',color:'#a29bfe',children:[
+    {name:'Phần Mười',emoji:'✝️'},{name:'Dâng Hiến',emoji:'🙏'},
+    {name:'Đóng Góp HT',emoji:'💒'},{name:'Sự Kiện NT',emoji:'🎺'},
+    {name:'Từ Thiện NT',emoji:'❤️‍🔥'},{name:'Tài Liệu Tâm Linh',emoji:'📖'},
+    {name:'Trại / Retreat',emoji:'🕊️'},{name:'Âm Nhạc Thờ Phượng',emoji:'🎵'},
+  ]},
+  /* ═══ GIA ĐÌNH ═══ */
+  {name:'Gia Đình',emoji:'👨‍👩‍👧‍👦',color:'#fd79a8',children:[
+    {name:'Ba Mẹ Ruột',emoji:'👴'},{name:'Ba Mẹ Vợ / Chồng',emoji:'👵'},
+    {name:'Con Cái',emoji:'👶'},{name:'Anh Chị Em',emoji:'🤝'},
+    {name:'Ông Bà',emoji:'🧓'},{name:'Quà Tặng GĐ',emoji:'🎁'},
+    {name:'Sinh Nhật',emoji:'🎂'},{name:'Du Lịch GĐ',emoji:'🏖️'},
+    {name:'Thuốc / Sức Khoẻ GĐ',emoji:'💊'},{name:'Học Phí Con',emoji:'📚'},
+    {name:'Tiệc Gia Đình',emoji:'🥳'},
+  ]},
+  /* ═══ XÃ HỘI / CỘNG ĐỒNG ═══ */
+  {name:'Xã Hội',emoji:'🤲',color:'#00b894',children:[
+    {name:'Giúp Đỡ Người Khó',emoji:'💝'},{name:'Thăm Người Bệnh',emoji:'🏥'},
+    {name:'Ủng Hộ Thiên Tai',emoji:'🌊'},{name:'Quà Cộng Đồng',emoji:'🎀'},
+    {name:'Tình Nguyện',emoji:'🙌'},{name:'Thăm Người Già',emoji:'👨‍🦳'},
+    {name:'Hỗ Trợ Trẻ Em',emoji:'🧒'},{name:'Quyên Góp',emoji:'📦'},
+  ]},
+  /* ═══ ĐẦU TƯ BẢN THÂN ═══ */
+  {name:'Bản Thân',emoji:'🚀',color:'#fdcb6e',children:[
+    {name:'Khóa Học Online',emoji:'🎓'},{name:'Sách & Tài Liệu',emoji:'📚'},
+    {name:'Hội Thảo / Workshop',emoji:'🎤'},{name:'Chứng Chỉ / Thi Cử',emoji:'📜'},
+    {name:'Phần Mềm Học',emoji:'💻'},{name:'Coaching / Mentoring',emoji:'🧠'},
+    {name:'Gym / Thể Dục',emoji:'🏋️'},{name:'Thiền / Yoga',emoji:'🧘'},
+    {name:'Khám Sức Khoẻ',emoji:'🩺'},{name:'Spa / Thư Giãn',emoji:'💆'},
+  ]},
+  /* ═══ ĂN UỐNG ═══ */
+  {name:'Ăn Uống',emoji:'🍜',color:'#ff6b6b',children:[
+    {name:'Cơm Trưa',emoji:'🍱'},{name:'Cà Phê',emoji:'☕'},
+    {name:'Ăn Tối',emoji:'🍽️'},{name:'Ăn Vặt',emoji:'🍕'},
+    {name:'Nước Uống',emoji:'🥤'},{name:'Đặt Đồ Ăn Online',emoji:'📱'},
+    {name:'Tiệc / Nhà Hàng',emoji:'🥂'},{name:'Bữa Sáng',emoji:'🥐'},
+  ]},
+  /* ═══ MUA SẮM ═══ */
+  {name:'Mua Sắm',emoji:'🛒',color:'#ff9f43',children:[
+    {name:'Quần Áo',emoji:'👕'},{name:'Đồ Dùng Nhà',emoji:'🏠'},
+    {name:'Mỹ Phẩm',emoji:'💄'},{name:'Vệ Sinh Cá Nhân',emoji:'🧴'},
+    {name:'Quà Bạn Bè',emoji:'🎁'},{name:'Sửa Chữa Đồ',emoji:'🔧'},
+    {name:'Điện Tử',emoji:'📱'},{name:'Thực Phẩm',emoji:'🥦'},
+  ]},
+  /* ═══ DI CHUYỂN ═══ */
+  {name:'Di Chuyển',emoji:'🚗',color:'#54a0ff',children:[
+    {name:'Xăng Xe',emoji:'⛽'},{name:'Grab / Xe Ôm',emoji:'🛵'},
+    {name:'Taxi',emoji:'🚕'},{name:'Xe Buýt',emoji:'🚌'},
+    {name:'Máy Bay',emoji:'✈️'},{name:'Đỗ Xe',emoji:'🅿️'},
+    {name:'Sửa Xe',emoji:'🔧'},{name:'Phí Cầu Đường',emoji:'🛣️'},
+  ]},
+  /* ═══ NHÀ Ở ═══ */
+  {name:'Nhà Ở',emoji:'🏠',color:'#5f27cd',children:[
+    {name:'Tiền Thuê',emoji:'🔑'},{name:'Điện Nước',emoji:'💡'},
+    {name:'Internet / TV',emoji:'🌐'},{name:'Sửa Chữa Nhà',emoji:'🔨'},
+    {name:'Nội Thất',emoji:'🛋️'},{name:'Vệ Sinh Nhà',emoji:'🧹'},
+    {name:'Bảo Hiểm Nhà',emoji:'🏡'},{name:'Thuế Đất',emoji:'📋'},
+  ]},
+  /* ═══ SỨC KHOẺ ═══ */
+  {name:'Sức Khoẻ',emoji:'💊',color:'#00d2d3',children:[
+    {name:'Thuốc',emoji:'💊'},{name:'Khám Bệnh',emoji:'🏥'},
+    {name:'Tiêm / Vaccine',emoji:'💉'},{name:'Nha Khoa',emoji:'🦷'},
+    {name:'Mắt Kính',emoji:'👁️'},{name:'Bảo Hiểm Y Tế',emoji:'🛡️'},
+  ]},
+  /* ═══ GIẢI TRÍ ═══ */
+  {name:'Giải Trí',emoji:'🎮',color:'#6c5ce7',children:[
+    {name:'Phim Ảnh',emoji:'🎬'},{name:'Âm Nhạc',emoji:'🎵'},
+    {name:'Game',emoji:'🎮'},{name:'Streaming',emoji:'📺'},
+    {name:'Du Lịch',emoji:'✈️'},{name:'Bơi Lội',emoji:'🏊'},
+    {name:'Thể Thao',emoji:'⚽'},{name:'Sở Thích',emoji:'🎨'},
+  ]},
+  /* ═══ TÀI CHÍNH ═══ */
+  {name:'Tài Chính',emoji:'💳',color:'#00c48c',children:[
+    {name:'Tiết Kiệm',emoji:'🐷'},{name:'Trả Nợ',emoji:'💸'},
+    {name:'Phí Ngân Hàng',emoji:'🏦'},{name:'Bảo Hiểm',emoji:'🛡️'},
+    {name:'Đầu Tư CK',emoji:'📈'},{name:'Thuế TNCN',emoji:'📋'},
+  ]},
+  /* ═══ TIỆN ÍCH ═══ */
+  {name:'Tiện Ích',emoji:'💡',color:'#ffeaa7',children:[
+    {name:'Điện Thoại',emoji:'📱'},{name:'Internet',emoji:'🌐'},
+    {name:'Điện',emoji:'💡'},{name:'Nước',emoji:'💧'},
+  ]},
+  {name:'Khác',emoji:'📦',color:'#636e72',children:[
+    {name:'Phí Dịch Vụ',emoji:'🔧'},{name:'Chi Không Rõ',emoji:'❓'},
+  ]},
 ];
 const DEF_CATS_I=[
-  {name:'Lương',emoji:'💰',color:'#00c48c',children:[{name:'Lương cơ bản',emoji:'💵'},{name:'Thưởng',emoji:'🎁'},{name:'Làm thêm',emoji:'⏰'}]},
-  {name:'Kinh doanh',emoji:'💼',color:'#54a0ff',children:[{name:'Bán hàng',emoji:'🛍️'},{name:'Dịch vụ',emoji:'🔧'}]},
-  {name:'Đầu tư',emoji:'📈',color:'#00e5a0',children:[{name:'Cổ tức',emoji:'📊'}]},
-  {name:'Hoàn tiền',emoji:'🔄',color:'#a29bfe',children:[]},
-  {name:'Thu nhập khác',emoji:'📦',color:'#636e72',children:[]},
+  /* ═══ LƯƠNG ═══ */
+  {name:'Lương',emoji:'💰',color:'#00c48c',children:[
+    {name:'Lương Cơ Bản',emoji:'💵'},{name:'Thưởng',emoji:'🎁'},
+    {name:'Làm Thêm Giờ',emoji:'⏰'},{name:'Hoa Hồng',emoji:'📊'},
+    {name:'Phụ Cấp',emoji:'🏷️'},{name:'Lương Tháng 13',emoji:'🎊'},
+  ]},
+  /* ═══ KINH DOANH ═══ */
+  {name:'Kinh Doanh',emoji:'💼',color:'#54a0ff',children:[
+    {name:'Bán Hàng',emoji:'🛍️'},{name:'Dịch Vụ',emoji:'🔧'},
+    {name:'Hợp Đồng',emoji:'🤝'},{name:'Tư Vấn',emoji:'💡'},
+    {name:'Freelance',emoji:'💻'},{name:'Sản Phẩm',emoji:'📦'},
+  ]},
+  /* ═══ ĐẦU TƯ ═══ */
+  {name:'Đầu Tư',emoji:'📈',color:'#00e5a0',children:[
+    {name:'Cổ Tức',emoji:'📊'},{name:'Lãi Tiết Kiệm',emoji:'🏦'},
+    {name:'Cho Thuê TS',emoji:'🏠'},{name:'Lãi Chứng Khoán',emoji:'📈'},
+    {name:'Crypto',emoji:'₿'},{name:'Lãi Trái Phiếu',emoji:'📜'},
+  ]},
+  /* ═══ THU NHẬP KHÁC ═══ */
+  {name:'Thu Nhập Khác',emoji:'💝',color:'#fd79a8',children:[
+    {name:'Quà Tiền Mặt',emoji:'🎁'},{name:'Hoàn Tiền',emoji:'🔄'},
+    {name:'Bán Đồ Cũ',emoji:'🛒'},{name:'Cashback',emoji:'💳'},
+    {name:'Hỗ Trợ GĐ',emoji:'👨‍👩‍👧‍👦'},{name:'Trợ Cấp',emoji:'🏛️'},
+  ]},
+  /* ═══ NHÀ THỜ ═══ */
+  {name:'Phúc Lợi NT',emoji:'⛪',color:'#a29bfe',children:[
+    {name:'Quà Hội Thánh',emoji:'🎁'},{name:'Hỗ Trợ Mục Vụ',emoji:'🙏'},
+    {name:'Học Bổng NT',emoji:'🎓'},
+  ]},
 ];
 function getCats(t){return JSON.parse(localStorage.getItem('mt_cats_'+t)||'null')||(t==='expense'?DEF_CATS_E:DEF_CATS_I)}
 function saveCats(t,a){localStorage.setItem('mt_cats_'+t,JSON.stringify(a))}
