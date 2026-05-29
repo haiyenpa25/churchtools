@@ -86,23 +86,60 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/finance/rates/update', [\App\Http\Controllers\FinanceController::class, 'updateRates'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.rates.update');
 });
 
-// Web Backdoor Auto Deploy Setup (Bypasses CLI php requirements on hosting - completely public to allow first-time migrations & seeding)
+// Web Backdoor Auto Deploy Setup
 Route::get('/api/finance/admin/deploy-setup', function () {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+    set_time_limit(120);
+
+    $output = '';
+    $errors = '';
+
+    // Step 1: Migrate
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        $output = "Migrate Output:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n\n";
-
-        // Seed the entire DatabaseSeeder (creates haiyenpa25 user & calls FinanceSeeder)
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-        $output .= "DatabaseSeeder Output:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n\n";
-
-        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-        $output .= "Optimize Clear Output:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n\n";
-
-        return "<pre>🚀 TRIỂN KHAI FINANCE PWA THÀNH CÔNG:\n\n" . $output . "</pre>";
-    } catch (\Exception $e) {
-        return "<pre>❌ LỖI TRIỂN KHAI:\n\n" . $e->getMessage() . "\n" . $e->getTraceAsString() . "</pre>";
+        $output .= "✅ MIGRATE:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n";
+    } catch (\Throwable $e) {
+        $errors .= "❌ MIGRATE LỖI: " . $e->getMessage() . "\n\n";
     }
+
+    // Step 2: Seed user haiyenpa25 only (không dùng DatabaseSeeder để tránh lỗi PptTemplateSeeder)
+    try {
+        // Tạo user haiyenpa25 thủ công nếu chưa có
+        $user = \App\Models\User::updateOrCreate(
+            ['email' => 'haiyenpa25'],
+            ['name' => 'Hải Yến', 'password' => bcrypt('Haiyen@2026')]
+        );
+        $output .= "✅ USER: Tài khoản haiyenpa25 đã sẵn sàng (ID: {$user->id})\n\n";
+    } catch (\Throwable $e) {
+        $errors .= "❌ USER LỖI: " . $e->getMessage() . "\n\n";
+    }
+
+    // Step 3: Seed Finance Data
+    try {
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'FinanceSeeder', '--force' => true]);
+        $output .= "✅ FINANCE SEEDER:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n";
+    } catch (\Throwable $e) {
+        $errors .= "❌ FINANCE SEEDER LỖI: " . $e->getMessage() . "\n\n";
+    }
+
+    // Step 4: Clear cache
+    try {
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        $output .= "✅ CACHE CLEAR:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n";
+    } catch (\Throwable $e) {
+        // optimize:clear không quan trọng, bỏ qua lỗi
+        $output .= "⚠️ Cache clear skipped.\n";
+    }
+
+    $status = empty($errors) ? "🚀 TRIỂN KHAI THÀNH CÔNG" : "⚠️ TRIỂN KHAI XONG (có một số lỗi)";
+
+    return response("<pre style='background:#0b0f19;color:#f1f5f9;padding:2rem;font-size:13px;line-height:1.6'>"
+        . "<b style='color:#f59e0b;font-size:16px'>{$status}</b>\n\n"
+        . ($errors ? "<b style='color:#f43f5e'>LỖI:</b>\n{$errors}" : "")
+        . "<b style='color:#10b981'>KẾT QUẢ:</b>\n{$output}"
+        . "\n<hr style='border-color:#333'>\n<a href='https://hyb.io.vn/login' style='color:#f59e0b'>→ Đăng nhập ngay</a></pre>", 200)
+        ->header('Content-Type', 'text/html; charset=utf-8');
 });
 
 // Song Library routes (keep open or protect as needed, keeping open for now to match old behavior)
