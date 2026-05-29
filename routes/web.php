@@ -84,6 +84,24 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/api/finance/investments/{id}', [\App\Http\Controllers\FinanceController::class, 'updateInvestment'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.investments.update');
     Route::delete('/api/finance/investments/{id}', [\App\Http\Controllers\FinanceController::class, 'deleteInvestment'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.investments.delete');
     Route::post('/api/finance/rates/update', [\App\Http\Controllers\FinanceController::class, 'updateRates'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.rates.update');
+    
+    // Web Backdoor Auto Deploy Setup (Bypasses CLI php requirements on hosting)
+    Route::get('/api/finance/admin/deploy-setup', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            $output = "Migrate Output:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n\n";
+
+            \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'FinanceSeeder', '--force' => true]);
+            $output .= "FinanceSeeder Output:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n\n";
+
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            $output .= "Optimize Clear Output:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n\n";
+
+            return "<pre>🚀 TRIỂN KHAI FINANCE PWA THÀNH CÔNG:\n\n" . $output . "</pre>";
+        } catch (\Exception $e) {
+            return "<pre>❌ LỖI TRIỂN KHAI:\n\n" . $e->getMessage() . "\n" . $e->getTraceAsString() . "</pre>";
+        }
+    });
 });
 
 // Song Library routes (keep open or protect as needed, keeping open for now to match old behavior)
