@@ -238,7 +238,74 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
 .vt-btn{flex:1;text-align:center;padding:6px 4px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;transition:all .18s;border:none;background:transparent;color:var(--tx3);font-family:inherit}
 .vt-btn.active{background:var(--bg2);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.25)}
 
-/* ── STATS ── */
+/* ── STATS SUB-TABS ── */
+.stat-tabs{display:flex;gap:4px;padding:10px 16px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.stat-tabs::-webkit-scrollbar{display:none}
+.stab{flex-shrink:0;padding:6px 14px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:var(--bg3);color:var(--tx3);font-family:inherit;transition:all .2s}
+.stab.on{background:linear-gradient(135deg,var(--gl),var(--g));color:#fff;box-shadow:0 2px 8px var(--gg)}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 16px 0}
+.kpi-card{background:var(--bg2);border:1px solid var(--br);border-radius:16px;padding:12px 14px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;opacity:.07}
+.kpi-income::before{background:var(--g)}.kpi-expense::before{background:var(--r)}
+.kpi-save::before{background:var(--b)}.kpi-burn::before{background:var(--o)}
+.kpi-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:4px}
+.kpi-val{font-size:18px;font-weight:900;line-height:1;margin-bottom:3px}
+.kpi-income .kpi-val{color:var(--g)}.kpi-expense .kpi-val{color:var(--r)}
+.kpi-save .kpi-val{color:var(--b)}.kpi-burn .kpi-val{color:var(--o)}
+.kpi-trend{font-size:10px;font-weight:700;display:flex;align-items:center;gap:3px}
+.kpi-up{color:var(--g)}.kpi-down{color:var(--r)}.kpi-flat{color:var(--tx3)}
+.kpi-sub{font-size:9px;color:var(--tx3);margin-top:2px}
+
+/* ── STATS SECTION HEADER ── */
+.stat-sec{margin:12px 16px 0}
+.stat-sec-hdr{font-size:10px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.stat-sec-hdr span{font-size:11px;font-weight:700;color:var(--tx2);text-transform:none;letter-spacing:0}
+
+/* ── INCOME SOURCE BARS ── */
+.inc-src-bar{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.inc-src-bar:last-child{border-bottom:none}
+.isb-name{font-size:12px;font-weight:600;color:var(--tx);flex-shrink:0;width:115px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.isb-bar-wrap{flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.isb-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gl),var(--g));transition:width .7s cubic-bezier(.16,1,.3,1)}
+.isb-amt{font-size:11px;font-weight:800;color:var(--g);flex-shrink:0;min-width:62px;text-align:right}
+
+/* ── COMPARE TABLE ── */
+.cmp-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.cmp-row:last-child{border-bottom:none}
+.cmp-ico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.cmp-name{flex:1;font-size:12px;font-weight:600;color:var(--tx);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp-cur{font-size:12px;font-weight:800;color:var(--tx);min-width:70px;text-align:right}
+.cmp-diff{font-size:10px;font-weight:700;min-width:50px;text-align:right}
+.cmp-up{color:var(--g)}.cmp-down{color:var(--r)}.cmp-eq{color:var(--tx3)}
+
+/* ── HEATMAP ── */
+.heatmap-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:6px}
+.hmap-cell{aspect-ratio:1;border-radius:5px;background:var(--bg4);transition:all .2s}
+.hmap-cell.l0{background:var(--bg4)}
+.hmap-cell.l1{background:rgba(0,196,140,.2)}
+.hmap-cell.l2{background:rgba(0,196,140,.45)}
+.hmap-cell.l3{background:rgba(0,196,140,.7)}
+.hmap-cell.l4{background:var(--g)}
+.hmap-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px}
+.hmap-dow-lbl{text-align:center;font-size:8px;font-weight:700;color:var(--tx3)}
+
+/* ── CHURCH ANALYTICS ── */
+.church-ring{display:flex;align-items:center;gap:14px;padding:10px 0}
+.ring-chart{position:relative;width:80px;height:80px;flex-shrink:0}
+.ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:var(--g)}
+.church-stats{flex:1}
+.cs-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0}
+.cs-lbl{font-size:11px;color:var(--tx2)}.cs-val{font-size:12px;font-weight:800;color:var(--g)}
+
+/* ── INSIGHT CARD ── */
+.insight-card{background:linear-gradient(135deg,rgba(123,92,250,.1),rgba(76,154,255,.08));border:1px solid rgba(123,92,250,.2);border-radius:16px;padding:12px 14px;margin-bottom:8px}
+.ic-title{font-size:11px;font-weight:800;color:var(--p);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.ic-body{font-size:12px;color:var(--tx2);line-height:1.5}
+.ic-highlight{color:var(--tx);font-weight:700}
+
+/* ── STATS SUMMARY (keep for home) ── */
 .stats-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:12px 16px 0}
 .ss-card{background:var(--bg2);border:1px solid var(--br);border-radius:13px;padding:9px}
 .ss-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
@@ -255,6 +322,7 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
 .cr-bar-wrap{height:3px;background:var(--bg4);border-radius:2px;margin-top:4px;overflow:hidden}
 .cr-bar{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.16,1,.3,1)}
 .cr-amount{font-size:12px;font-weight:800;flex-shrink:0}.cr-pct{font-size:10px;color:var(--tx3);text-align:right;margin-top:2px}
+
 
 /* ── GOALS ── */
 .goal-item{background:var(--bg2);border:1px solid var(--br);border-radius:16px;padding:13px 15px;margin:7px 16px 0}
@@ -920,34 +988,298 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
   </div>
 
   <!-- STATS TAB -->
-  <div x-show="tab==='stats'">
-    <div class="stats-summary">
-      <div class="ss-card ss-income"><div class="ss-label">Thu nhập</div><div class="ss-val" x-text="fmtS(stats.total_income||0)"></div></div>
-      <div class="ss-card ss-expense"><div class="ss-label">Chi phí</div><div class="ss-val" x-text="fmtS(stats.total_expense||0)"></div></div>
-      <div class="ss-card ss-rate"><div class="ss-label">Tiết kiệm</div><div class="ss-val" x-text="(stats.savings_rate||0)+'%'"></div></div>
+  <div x-show="tab==='stats'" x-init="$watch('tab', v=>v==='stats'&&loadStats())">
+
+    <!-- Sub-tabs -->
+    <div class="stat-tabs">
+      <button class="stab" :class="statTab==='month'?'on':''" @click="statTab='month'">📅 Tháng này</button>
+      <button class="stab" :class="statTab==='compare'?'on':''" @click="statTab='compare'">📊 So sánh</button>
+      <button class="stab" :class="statTab==='church'?'on':''" @click="statTab='church'">⛪ Nhà Thờ</button>
+      <button class="stab" :class="statTab==='salary'?'on':''" @click="statTab='salary'">💰 Lương</button>
+      <button class="stab" :class="statTab==='insights'?'on':''" @click="statTab='insights'">🧠 Insights</button>
     </div>
-    <div class="chart-wrap" style="margin-top:10px">
-      <div class="chart-hdr"><span class="chart-title">Xu hướng 6 tháng</span><div class="chart-leg"><div class="cl-item"><div class="cl-dot" style="background:var(--g)"></div>Thu</div><div class="cl-item"><div class="cl-dot" style="background:var(--r)"></div>Chi</div></div></div>
-      <div style="height:100px"><canvas id="trendChart"></canvas></div>
-    </div>
-    <div class="chart-wrap" style="margin-top:9px">
-      <div class="chart-hdr"><span class="chart-title">Chi phí theo danh mục</span></div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <div style="width:110px;height:110px;flex-shrink:0"><canvas id="donutChart"></canvas></div>
-        <div style="flex:1;min-width:0">
-          <template x-if="(stats.by_category||[]).length===0"><div style="color:var(--tx3);font-size:11px;text-align:center;padding:16px 0">Không có dữ liệu</div></template>
-          <template x-for="(cat,i) in (stats.by_category||[]).slice(0,5)" :key="cat.category">
-            <div class="cat-rank-item">
-              <span class="cr-rank" x-text="i+1"></span>
-              <div class="cr-ico" :style="'background:'+catColor(catParent(cat.category))+'22'" x-text="catEmoji(catParent(cat.category))"></div>
-              <div class="cr-info"><div class="cr-name" x-text="cat.category"></div><div class="cr-bar-wrap"><div class="cr-bar" :style="'width:'+(stats.total_expense>0?(cat.total/stats.total_expense*100):0)+'%;background:'+catColor(catParent(cat.category))"></div></div></div>
-              <div><div class="cr-amount" :style="'color:'+catColor(catParent(cat.category))" x-text="fmtS(cat.total)"></div><div class="cr-pct" x-text="stats.total_expense>0?(cat.total/stats.total_expense*100).toFixed(1)+'%':'0%'"></div></div>
-            </div>
-          </template>
+
+    <!-- ══ TAB: THÁNG NÀY ══ -->
+    <div x-show="statTab==='month'">
+      <!-- KPI Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-income">
+          <div class="kpi-label">💰 Thu nhập</div>
+          <div class="kpi-val" x-text="fmtS(adv.income)"></div>
+          <div class="kpi-trend" :class="adv.incomeGrowth>0?'kpi-up':adv.incomeGrowth<0?'kpi-down':'kpi-flat'">
+            <span x-text="adv.incomeGrowth>0?'▲':'▼'"></span>
+            <span x-text="Math.abs(adv.incomeGrowth)+'% so tháng trước'"></span>
+          </div>
+        </div>
+        <div class="kpi-card kpi-expense">
+          <div class="kpi-label">💸 Chi phí</div>
+          <div class="kpi-val" x-text="fmtS(adv.expense)"></div>
+          <div class="kpi-trend" :class="adv.expenseGrowth<0?'kpi-up':adv.expenseGrowth>0?'kpi-down':'kpi-flat'">
+            <span x-text="adv.expenseGrowth>0?'▲':'▼'"></span>
+            <span x-text="Math.abs(adv.expenseGrowth)+'% so tháng trước'"></span>
+          </div>
+        </div>
+        <div class="kpi-card kpi-save">
+          <div class="kpi-label">🏦 Tiết kiệm</div>
+          <div class="kpi-val" x-text="adv.savingsRate+'%'"></div>
+          <div class="kpi-sub" x-text="fmtS(adv.income-adv.expense)+' còn lại'"></div>
+        </div>
+        <div class="kpi-card kpi-burn">
+          <div class="kpi-label">🔥 Burn/ngày</div>
+          <div class="kpi-val" x-text="fmtS(adv.burnRate)"></div>
+          <div class="kpi-sub" x-text="'Dự báo: '+fmtS(adv.forecastMonth)"></div>
         </div>
       </div>
+
+      <!-- Chart xu hướng 6 tháng -->
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">📈 Xu hướng 6 tháng<span x-text="curY"></span></div>
+        <div class="chart-wrap" style="margin:0">
+          <div class="chart-hdr"><span class="chart-title">Thu nhập vs Chi phí</span><div class="chart-leg"><div class="cl-item"><div class="cl-dot" style="background:var(--g)"></div>Thu</div><div class="cl-item"><div class="cl-dot" style="background:var(--r)"></div>Chi</div></div></div>
+          <div style="height:110px"><canvas id="trendChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Chi phí theo nhóm lớn (donut) -->
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">🍩 Chi phí theo nhóm</div>
+        <div class="chart-wrap" style="margin:0">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:100px;height:100px;flex-shrink:0"><canvas id="donutChart"></canvas></div>
+            <div style="flex:1;min-width:0">
+              <template x-for="(cat,i) in adv.topExpCats.slice(0,6)" :key="cat.category">
+                <div class="cat-rank-item" style="padding:5px 0">
+                  <span class="cr-rank" x-text="i+1"></span>
+                  <div class="cr-ico" :style="'background:'+catColor(catParent(cat.category))+'22'" x-text="catEmoji(catParent(cat.category))"></div>
+                  <div class="cr-info">
+                    <div class="cr-name" x-text="cat.category"></div>
+                    <div class="cr-bar-wrap"><div class="cr-bar" :style="'width:'+(adv.expense>0?(cat.total/adv.expense*100):0)+'%;background:'+catColor(catParent(cat.category))"></div></div>
+                  </div>
+                  <div><div class="cr-amount" :style="'color:'+catColor(catParent(cat.category))" x-text="fmtS(cat.total)"></div><div class="cr-pct" x-text="adv.expense>0?(cat.total/adv.expense*100).toFixed(1)+'%':'0%'"></div></div>
+                </div>
+              </template>
+              <div x-show="adv.topExpCats.length===0" style="color:var(--tx3);font-size:11px;padding:12px 0;text-align:center">Chưa có dữ liệu</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heatmap chi tiêu -->
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">🗓️ Mật độ chi tiêu trong tháng</div>
+        <div class="chart-wrap" style="margin:0;padding:10px 12px">
+          <div class="hmap-dow">
+            <div class="hmap-dow-lbl">CN</div><div class="hmap-dow-lbl">T2</div>
+            <div class="hmap-dow-lbl">T3</div><div class="hmap-dow-lbl">T4</div>
+            <div class="hmap-dow-lbl">T5</div><div class="hmap-dow-lbl">T6</div>
+            <div class="hmap-dow-lbl">T7</div>
+          </div>
+          <div class="heatmap-grid">
+            <template x-for="cell in adv.heatmapCells" :key="cell.key">
+              <div class="hmap-cell" :class="'l'+cell.level" :title="cell.dateStr+': '+fmtS(cell.amount)"></div>
+            </template>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:7px;font-size:9px;color:var(--tx3)">
+            <span>Ít</span>
+            <div class="hmap-cell l0" style="width:12px;height:12px;aspect-ratio:unset;border-radius:3px"></div>
+            <div class="hmap-cell l1" style="width:12px;height:12px;aspect-ratio:unset;border-radius:3px"></div>
+            <div class="hmap-cell l2" style="width:12px;height:12px;aspect-ratio:unset;border-radius:3px"></div>
+            <div class="hmap-cell l3" style="width:12px;height:12px;aspect-ratio:unset;border-radius:3px"></div>
+            <div class="hmap-cell l4" style="width:12px;height:12px;aspect-ratio:unset;border-radius:3px"></div>
+            <span>Nhiều</span>
+          </div>
+        </div>
+      </div>
+      <div class="pb"></div>
     </div>
-    <div class="pb"></div>
+
+    <!-- ══ TAB: SO SÁNH ══ -->
+    <div x-show="statTab==='compare'">
+      <!-- Month selector for stats -->
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px 4px">
+        <button style="background:var(--bg3);border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;color:var(--tx2);font-size:14px" @click="curM===1?(curM=12,curY--):(curM--)">‹</button>
+        <span style="font-size:13px;font-weight:800;color:var(--tx);flex:1;text-align:center" x-text="'Tháng '+curM+'/'+curY+' vs Tháng '+(curM===1?12:curM-1)+'/'+(curM===1?curY-1:curY)"></span>
+        <button style="background:var(--bg3);border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;color:var(--tx2);font-size:14px" @click="curM===12?(curM=1,curY++):(curM++)">›</button>
+      </div>
+
+      <!-- So sánh tổng quan -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-income">
+          <div class="kpi-label">Thu tháng này</div>
+          <div class="kpi-val" x-text="fmtS(adv.income)"></div>
+          <div class="kpi-sub">Tháng trước: <b x-text="fmtS(adv.prevIncome)"></b></div>
+        </div>
+        <div class="kpi-card kpi-expense">
+          <div class="kpi-label">Chi tháng này</div>
+          <div class="kpi-val" x-text="fmtS(adv.expense)"></div>
+          <div class="kpi-sub">Tháng trước: <b x-text="fmtS(adv.prevExpense)"></b></div>
+        </div>
+      </div>
+
+      <!-- So sánh từng danh mục -->
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">📋 Chi phí theo danh mục — so sánh</div>
+        <div class="chart-wrap" style="margin:0;padding:8px 12px">
+          <template x-for="row in adv.catCompare" :key="row.cat">
+            <div class="cmp-row">
+              <div class="cmp-ico" :style="'background:'+catColor(catParent(row.cat))+'22'" x-text="catEmoji(catParent(row.cat))"></div>
+              <div class="cmp-name" x-text="row.cat"></div>
+              <div class="cmp-cur" x-text="fmtS(row.cur)"></div>
+              <div class="cmp-diff" :class="row.diff<0?'cmp-up':row.diff>0?'cmp-down':'cmp-eq'"
+                x-text="row.diff===0?'=':(row.diff>0?'+':'')+fmtS(row.diff)"></div>
+            </div>
+          </template>
+          <div x-show="adv.catCompare.length===0" style="color:var(--tx3);font-size:11px;padding:16px;text-align:center">Chưa đủ dữ liệu 2 tháng</div>
+        </div>
+      </div>
+
+      <!-- Biểu đồ xu hướng -->
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">📈 Xu hướng 6 tháng</div>
+        <div class="chart-wrap" style="margin:0">
+          <div style="height:100px"><canvas id="trendChart2"></canvas></div>
+        </div>
+      </div>
+      <div class="pb"></div>
+    </div>
+
+    <!-- ══ TAB: NHÀ THỜ ══ -->
+    <div x-show="statTab==='church'">
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-income">
+          <div class="kpi-label">⛪ Tổng dâng hiến</div>
+          <div class="kpi-val" x-text="fmtS(adv.churchTotal)"></div>
+          <div class="kpi-sub" x-text="adv.churchPct+'% thu nhập'"></div>
+        </div>
+        <div class="kpi-card kpi-save">
+          <div class="kpi-label">📖 Phần mười</div>
+          <div class="kpi-val" x-text="fmtS(adv.titheAmt)"></div>
+          <div class="kpi-sub" x-text="'Chuẩn 10%: '+fmtS(adv.income*0.1)"></div>
+        </div>
+      </div>
+
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">⛪ Phân tích dâng hiến Nhà Thờ</div>
+        <div class="chart-wrap" style="margin:0;padding:12px">
+          <div class="church-ring">
+            <div class="ring-chart">
+              <canvas id="churchDonut" width="80" height="80"></canvas>
+              <div class="ring-pct" x-text="adv.churchPct+'%'"></div>
+            </div>
+            <div class="church-stats">
+              <div class="cs-row"><span class="cs-lbl">Phần Mười</span><span class="cs-val" x-text="fmtS(adv.titheAmt)"></span></div>
+              <div class="cs-row"><span class="cs-lbl">Dâng Hiến</span><span class="cs-val" x-text="fmtS(adv.offeringAmt)"></span></div>
+              <div class="cs-row"><span class="cs-lbl">Hoạt động NT</span><span class="cs-val" x-text="fmtS(adv.churchActivities)"></span></div>
+              <div class="cs-row" style="border-top:1px solid var(--br);margin-top:4px;padding-top:4px">
+                <span class="cs-lbl" style="font-weight:700">Tổng cộng</span>
+                <span class="cs-val" style="font-size:14px" x-text="fmtS(adv.churchTotal)"></span>
+              </div>
+            </div>
+          </div>
+          <!-- Thông điệp tỉ lệ phần mười -->
+          <div x-show="adv.income>0" style="background:rgba(0,196,140,.07);border:1px solid rgba(0,196,140,.15);border-radius:12px;padding:10px 12px;margin-top:6px">
+            <div style="font-size:11px;font-weight:700;color:var(--g);margin-bottom:4px">📖 Phân tích phần mười</div>
+            <div style="font-size:12px;color:var(--tx2);line-height:1.5">
+              Thu nhập tháng này: <b x-text="fmtS(adv.income)"></b><br>
+              Phần mười 10%: <b x-text="fmtS(adv.income*0.1)"></b><br>
+              Đã dâng: <b :style="adv.titheAmt>=adv.income*0.1?'color:var(--g)':'color:var(--o)'" x-text="fmtS(adv.titheAmt)"></b>
+              <span :style="adv.titheAmt>=adv.income*0.1?'color:var(--g)':'color:var(--o)'"
+                x-text="adv.titheAmt>=adv.income*0.1?' ✅ Đủ phần mười':' ⚠️ Còn thiếu '+fmtS(adv.income*0.1-adv.titheAmt)">
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chi cho xã hội -->
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">🤲 Chi xã hội & gia đình</div>
+        <div class="chart-wrap" style="margin:0;padding:8px 12px">
+          <template x-for="row in adv.socialBreakdown" :key="row.cat">
+            <div class="inc-src-bar">
+              <div class="isb-name" x-text="row.cat"></div>
+              <div class="isb-bar-wrap"><div class="isb-bar" :style="'width:'+row.pct+'%;background:linear-gradient(90deg,#7b5cfa,#4c9aff)'"></div></div>
+              <div class="isb-amt" style="color:var(--p)" x-text="fmtS(row.total)"></div>
+            </div>
+          </template>
+          <div x-show="adv.socialBreakdown.length===0" style="color:var(--tx3);font-size:11px;padding:12px;text-align:center">Chưa có giao dịch xã hội</div>
+        </div>
+      </div>
+      <div class="pb"></div>
+    </div>
+
+    <!-- ══ TAB: LƯƠNG ══ -->
+    <div x-show="statTab==='salary'">
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-income">
+          <div class="kpi-label">💰 Tổng lương tháng</div>
+          <div class="kpi-val" x-text="fmtS(adv.totalSalary)"></div>
+          <div class="kpi-sub" x-text="adv.salaryCount+' công ty đã trả'"></div>
+        </div>
+        <div class="kpi-card kpi-save">
+          <div class="kpi-label">📊 TB mỗi nguồn</div>
+          <div class="kpi-val" x-text="adv.salaryCount>0?fmtS(adv.totalSalary/adv.salaryCount):'0₫'"></div>
+          <div class="kpi-sub">Trên tổng số công ty</div>
+        </div>
+      </div>
+
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">🏢 Lương từng công ty</div>
+        <div class="chart-wrap" style="margin:0;padding:10px 12px">
+          <template x-for="src in adv.salarySources" :key="src.name">
+            <div class="inc-src-bar">
+              <div class="isb-name" x-text="src.name.replace('Lương ','')"></div>
+              <div class="isb-bar-wrap"><div class="isb-bar" :style="'width:'+src.pct+'%'"></div></div>
+              <div class="isb-amt" x-text="fmtS(src.total)"></div>
+            </div>
+          </template>
+          <div x-show="adv.salarySources.length===0" style="color:var(--tx3);font-size:11px;padding:16px;text-align:center">
+            Chưa có giao dịch lương tháng này
+          </div>
+        </div>
+      </div>
+
+      <!-- Lương 6 tháng gần đây -->
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">📈 Lương tháng gần đây</div>
+        <div class="chart-wrap" style="margin:0">
+          <div style="height:100px"><canvas id="salaryChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Các nguồn thu khác -->
+      <div class="stat-sec">
+        <div class="stat-sec-hdr">💼 Nguồn thu khác</div>
+        <div class="chart-wrap" style="margin:0;padding:8px 12px">
+          <template x-for="src in adv.otherIncome" :key="src.name">
+            <div class="inc-src-bar">
+              <div class="isb-name" x-text="src.name"></div>
+              <div class="isb-bar-wrap"><div class="isb-bar" :style="'width:'+src.pct+'%;background:linear-gradient(90deg,#7b5cfa,#4c9aff)'"></div></div>
+              <div class="isb-amt" style="color:var(--p)" x-text="fmtS(src.total)"></div>
+            </div>
+          </template>
+          <div x-show="adv.otherIncome.length===0" style="color:var(--tx3);font-size:11px;padding:12px;text-align:center">Không có</div>
+        </div>
+      </div>
+      <div class="pb"></div>
+    </div>
+
+    <!-- ══ TAB: INSIGHTS ══ -->
+    <div x-show="statTab==='insights'" style="padding:12px 16px">
+      <template x-for="insight in adv.insights" :key="insight.title">
+        <div class="insight-card">
+          <div class="ic-title"><span x-text="insight.icon"></span><span x-text="insight.title"></span></div>
+          <div class="ic-body" x-html="insight.body"></div>
+        </div>
+      </template>
+      <div x-show="adv.insights.length===0" style="text-align:center;color:var(--tx3);padding:32px 0">
+        <div style="font-size:40px;margin-bottom:10px">🧠</div>
+        <div style="font-size:13px;font-weight:700">Cần thêm dữ liệu để phân tích</div>
+        <div style="font-size:11px;margin-top:4px">Thêm giao dịch để nhận insights</div>
+      </div>
+      <div class="pb"></div>
+    </div>
+
   </div>
 
   <!-- DEBTS TAB -->
@@ -1655,7 +1987,7 @@ function app(){return{
   showAccSheet:false,showDebtSheet:false,showInvSheet:false,showBudgetSheet:false,showGoalSheet:false,
   showAddCatSheet:false,showAddSubCatSheet:false,showAddFixedSheet:false,
   editingAcc:null,showMonthExpand:false,showDateDetail:false,customMonth:'',
-  txView:'list',calSelectedDay:'',showNumpad:false,showSubcatSheet:false,
+  txView:'list',calSelectedDay:'',showNumpad:false,showSubcatSheet:false,statTab:'month',
   numpad:'',
   form:{type:'expense',acc:'',toAcc:'',category:'',subcat:'',date:new Date().toISOString().split('T')[0],note:'',recur:false,period:'monthly',month:new Date().toISOString().slice(0,7)},
   aForm:{name:'',type:'cash',balance:''},
@@ -1762,6 +2094,102 @@ function app(){return{
   get fixedItemsSorted(){return[...this.fixedItems].sort((a,b)=>(a.day||0)-(b.day||0))},
   get fixedIncome(){return this.fixedItems.filter(f=>f.type==='income').reduce((s,f)=>s+parseFloat(f.amount),0)},
   get fixedExpense(){return this.fixedItems.filter(f=>f.type==='expense').reduce((s,f)=>s+parseFloat(f.amount),0)},
+
+  // ── ADVANCED ANALYTICS ──
+  get adv(){
+    const y=this.curY,m=this.curM;
+    const txM=this.transactions.filter(t=>{const d=new Date(t.transaction_date);return d.getMonth()+1===m&&d.getFullYear()===y});
+    const income=txM.filter(t=>t.type==='income').reduce((s,t)=>s+parseFloat(t.amount),0);
+    const expense=txM.filter(t=>t.type==='expense').reduce((s,t)=>s+parseFloat(t.amount),0);
+
+    // Previous month
+    const pm=m===1?12:m-1,py=m===1?y-1:y;
+    const txPrev=this.transactions.filter(t=>{const d=new Date(t.transaction_date);return d.getMonth()+1===pm&&d.getFullYear()===py});
+    const prevIncome=txPrev.filter(t=>t.type==='income').reduce((s,t)=>s+parseFloat(t.amount),0);
+    const prevExpense=txPrev.filter(t=>t.type==='expense').reduce((s,t)=>s+parseFloat(t.amount),0);
+
+    const incomeGrowth=prevIncome>0?Math.round((income-prevIncome)/prevIncome*100):0;
+    const expenseGrowth=prevExpense>0?Math.round((expense-prevExpense)/prevExpense*100):0;
+    const savingsRate=income>0?Math.round((income-expense)/income*100):0;
+
+    // Burn rate & forecast
+    const today=new Date();
+    const dayOfMonth=y===today.getFullYear()&&m===today.getMonth()+1?today.getDate():new Date(y,m,0).getDate();
+    const burnRate=dayOfMonth>0?Math.round(expense/dayOfMonth):0;
+    const daysInMonth=new Date(y,m,0).getDate();
+    const forecastMonth=burnRate*daysInMonth;
+
+    // Top expense categories
+    const expMap={};
+    txM.filter(t=>t.type==='expense').forEach(t=>{expMap[t.category]=(expMap[t.category]||0)+parseFloat(t.amount)});
+    const topExpCats=Object.entries(expMap).map(([category,total])=>({category,total})).sort((a,b)=>b.total-a.total);
+
+    // Heatmap (days of current month)
+    const dayExpMap={};
+    txM.filter(t=>t.type==='expense').forEach(t=>{
+      const d=(t.transaction_date||'').split('T')[0];
+      dayExpMap[d]=(dayExpMap[d]||0)+parseFloat(t.amount);
+    });
+    const maxDay=Math.max(...Object.values(dayExpMap),1);
+    const firstDow=new Date(y,m-1,1).getDay();
+    const daysInM=new Date(y,m,0).getDate();
+    const heatmapCells=[];
+    for(let i=0;i<firstDow;i++)heatmapCells.push({key:'e'+i,level:0,amount:0,dateStr:''});
+    for(let d=1;d<=daysInM;d++){
+      const dateStr=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const amt=dayExpMap[dateStr]||0;
+      const ratio=amt/maxDay;
+      const level=amt===0?0:ratio<0.25?1:ratio<0.5?2:ratio<0.75?3:4;
+      heatmapCells.push({key:dateStr,level,amount:amt,dateStr});
+    }
+
+    // Income sources
+    const incMap={};
+    txM.filter(t=>t.type==='income').forEach(t=>{incMap[t.category]=(incMap[t.category]||0)+parseFloat(t.amount)});
+    const SALARY_KEYS=['Lương Conasi','Lương Bách Vạn Thành','Lương Bình An Thịnh','Lương Tú Hưng Điền','Lương GrandDaisy','Lương Thái Bảo Minh','Lương Cơ Bản'];
+    const salarySources=Object.entries(incMap).filter(([n])=>SALARY_KEYS.includes(n)).map(([name,total])=>({name,total,pct:income>0?Math.round(total/income*100):0})).sort((a,b)=>b.total-a.total);
+    const totalSalary=salarySources.reduce((s,x)=>s+x.total,0);
+    const otherIncome=Object.entries(incMap).filter(([n])=>!SALARY_KEYS.includes(n)).map(([name,total])=>({name,total,pct:income>0?Math.round(total/income*100):0})).sort((a,b)=>b.total-a.total);
+
+    // Church analytics
+    const churchCats=['Phần Mười','Dâng Hiến','Dâng Đặc Biệt','Hiến Tế','Phục Vụ NT'];
+    const titheCats=['Phần Mười'];
+    const offeringCats=['Dâng Hiến','Dâng Đặc Biệt'];
+    const activityCats=['Hiến Tế','Phục Vụ NT','Nhạc Cụ NT','Âm Nhạc Thờ Phượng','Trại/Retreat NT'];
+    const titheAmt=txM.filter(t=>t.type==='expense'&&titheCats.some(c=>t.category.includes('Mười')||t.category.includes('Tithe'))).reduce((s,t)=>s+parseFloat(t.amount),0);
+    const offeringAmt=txM.filter(t=>t.type==='expense'&&(offeringCats.some(c=>t.category.includes('Dâng'))||t.category.includes('Hiến'))).reduce((s,t)=>s+parseFloat(t.amount),0);
+    const churchActivities=txM.filter(t=>t.type==='expense'&&activityCats.some(c=>t.category.includes(c.split(' ')[0]))).reduce((s,t)=>s+parseFloat(t.amount),0);
+    const churchTotal=txM.filter(t=>t.type==='expense'&&(t.category.includes('Mười')||t.category.includes('Dâng')||t.category.includes('Nhà Thờ')||t.category.includes('NT'))).reduce((s,t)=>s+parseFloat(t.amount),0);
+    const churchPct=income>0?Math.round(churchTotal/income*100):0;
+
+    // Social breakdown
+    const SOCIAL_KEYS=['Gia Đình','Ba Mẹ Ruột','Ba Mẹ Vợ/Chồng','Con Cái','Anh Chị Em','Ông Bà','Xã Hội','Giúp Đỡ Người Khó','Tình Nguyện','Thăm Bệnh'];
+    const socialMap={};
+    txM.filter(t=>t.type==='expense'&&SOCIAL_KEYS.some(k=>t.category.includes(k.split(' ')[0]))).forEach(t=>{
+      const key=t.category;
+      socialMap[key]=(socialMap[key]||0)+parseFloat(t.amount);
+    });
+    const maxSocial=Math.max(...Object.values(socialMap),1);
+    const socialBreakdown=Object.entries(socialMap).map(([cat,total])=>({cat,total,pct:Math.round(total/maxSocial*100)})).sort((a,b)=>b.total-a.total).slice(0,8);
+
+    // Category compare vs prev month
+    const prevExpMap={};
+    txPrev.filter(t=>t.type==='expense').forEach(t=>{prevExpMap[t.category]=(prevExpMap[t.category]||0)+parseFloat(t.amount)});
+    const allCatKeys=new Set([...Object.keys(expMap),...Object.keys(prevExpMap)]);
+    const catCompare=[...allCatKeys].map(cat=>({cat,cur:expMap[cat]||0,prev:prevExpMap[cat]||0,diff:(expMap[cat]||0)-(prevExpMap[cat]||0)})).filter(r=>r.cur>0||r.prev>0).sort((a,b)=>b.cur-a.cur).slice(0,10);
+
+    // Insights
+    const insights=[];
+    if(savingsRate>=20)insights.push({icon:'🎉',title:'Tiết kiệm tốt!',body:`Bạn đang tiết kiệm <b class="ic-highlight">${savingsRate}%</b> thu nhập tháng này — vượt chuẩn 20%. Duy trì phong độ nhé!`});
+    else if(savingsRate<0)insights.push({icon:'🚨',title:'Chi vượt thu!',body:`Chi phí vượt thu nhập <b class="ic-highlight">${fmtS(expense-income)}</b>. Cần cắt giảm ngay để tránh thâm hụt.`});
+    else insights.push({icon:'💡',title:'Gợi ý tiết kiệm',body:`Tỉ lệ tiết kiệm hiện tại <b class="ic-highlight">${savingsRate}%</b>. Mục tiêu lý tưởng là ≥20%. Cần tiết kiệm thêm <b class="ic-highlight">${fmtS(Math.max(0,income*0.2-(income-expense)))}</b>/tháng.`});
+    if(topExpCats.length>0)insights.push({icon:'📊',title:'Chi nhiều nhất',body:`Danh mục <b class="ic-highlight">${topExpCats[0].category}</b> chiếm nhiều nhất với <b class="ic-highlight">${fmtS(topExpCats[0].total)}</b> (${expense>0?(topExpCats[0].total/expense*100).toFixed(1):0}% tổng chi).`});
+    if(churchPct>0)insights.push({icon:'⛪',title:'Dâng hiến Nhà Thờ',body:`Tháng này dâng hiến <b class="ic-highlight">${fmtS(churchTotal)}</b> (${churchPct}% thu nhập).${titheAmt>=income*0.1?' ✅ Đã đủ phần mười.':` ⚠️ Phần mười còn thiếu <b class="ic-highlight">${fmtS(Math.max(0,income*0.1-titheAmt))}</b>.`}`});
+    if(burnRate>0){const daysLeft=daysInMonth-dayOfMonth;insights.push({icon:'🔥',title:'Dự báo chi tiêu',body:`Burn rate <b class="ic-highlight">${fmtS(burnRate)}/ngày</b>. Còn ${daysLeft} ngày — dự kiến chi thêm <b class="ic-highlight">${fmtS(burnRate*daysLeft)}</b>. Tổng ước tính: <b class="ic-highlight">${fmtS(forecastMonth)}</b>.`});}
+    if(expenseGrowth>30)insights.push({icon:'⚠️',title:'Chi tiêu tăng mạnh',body:`Chi phí tăng <b class="ic-highlight">${expenseGrowth}%</b> so tháng trước (+${fmtS(expense-prevExpense)}). Hãy xem lại danh mục chi tiêu lớn.`});
+
+    return{income,expense,prevIncome,prevExpense,incomeGrowth,expenseGrowth,savingsRate,burnRate,forecastMonth,topExpCats,heatmapCells,salarySources,totalSalary,salaryCount:salarySources.length,otherIncome,titheAmt,offeringAmt,churchActivities,churchTotal,churchPct,socialBreakdown,catCompare,insights};
+  },
 
   getBudget(c){return(JSON.parse(localStorage.getItem('mt_budgets')||'{}'))[c]||''},
   setBudget(c,v){const b=JSON.parse(localStorage.getItem('mt_budgets')||'{}');v?b[c]=parseFloat(v):delete b[c];localStorage.setItem('mt_budgets',JSON.stringify(b))},
