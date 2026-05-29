@@ -168,6 +168,42 @@ class FinanceController extends Controller
         }
     }
 
+    public function updateTransaction(Request $request, $id)
+    {
+        $uid = $this->uid();
+        $tx  = FinanceTransaction::where('user_id', $uid)->findOrFail($id);
+        $data = $request->validate([
+            'category'         => 'sometimes|string|max:100',
+            'amount'           => 'sometimes|numeric|gt:0',
+            'transaction_date' => 'sometimes|date',
+            'note'             => 'nullable|string|max:255',
+            'is_recurring'     => 'nullable|boolean',
+            'recurring_period' => 'nullable|in:daily,weekly,monthly,yearly',
+        ]);
+
+        // If amount changed, adjust account balance
+        if (isset($data['amount']) && $data['amount'] != $tx->amount) {
+            $src = FinanceAccount::where('user_id', $uid)->find($tx->account_id);
+            if ($src) {
+                DB::beginTransaction();
+                try {
+                    $diff = $data['amount'] - $tx->amount;
+                    if ($tx->type === 'income')  $src->increment('balance', $diff);
+                    if ($tx->type === 'expense') $src->decrement('balance', $diff);
+                    $tx->update($data);
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+                }
+            }
+        } else {
+            $tx->update($data);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Cập nhật giao dịch thành công!', 'transaction' => $tx->fresh()]);
+    }
+
     /* ═══ DEBTS ═══ */
     public function getDebts()
     {

@@ -85,6 +85,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/api/finance/accounts/{id}',        [\App\Http\Controllers\FinanceController::class, 'deleteAccount'])->withoutMiddleware([ValidateCsrfToken::class]);
     Route::post('/api/finance/transactions',            [\App\Http\Controllers\FinanceController::class, 'storeTransaction'])->withoutMiddleware([ValidateCsrfToken::class]);
     Route::delete('/api/finance/transactions/{id}',    [\App\Http\Controllers\FinanceController::class, 'deleteTransaction'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::patch('/api/finance/transactions/{id}',     [\App\Http\Controllers\FinanceController::class, 'updateTransaction'])->withoutMiddleware([ValidateCsrfToken::class]);
     Route::post('/api/finance/debts',                  [\App\Http\Controllers\FinanceController::class, 'storeDebt'])->withoutMiddleware([ValidateCsrfToken::class]);
     Route::patch('/api/finance/debts/{id}/toggle',     [\App\Http\Controllers\FinanceController::class, 'toggleDebtStatus'])->withoutMiddleware([ValidateCsrfToken::class]);
     Route::post('/api/finance/debts/{id}/toggle',      [\App\Http\Controllers\FinanceController::class, 'toggleDebtStatus'])->withoutMiddleware([ValidateCsrfToken::class]);
