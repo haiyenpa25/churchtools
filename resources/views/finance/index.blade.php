@@ -1521,6 +1521,9 @@ const DEF_CATS_E=[
 const DEF_CATS_I=[
   /* ═══ LƯƠNG ═══ */
   {name:'Lương',emoji:'💰',color:'#00c48c',children:[
+    {name:'Lương Conasi',emoji:'🏢'},{name:'Lương Bách Vạn Thành',emoji:'🏗️'},
+    {name:'Lương Bình An Thịnh',emoji:'🏠'},{name:'Lương Tú Hưng Điền',emoji:'🌿'},
+    {name:'Lương GrandDaisy',emoji:'🌸'},{name:'Lương Thái Bảo Minh',emoji:'💎'},
     {name:'Lương Cơ Bản',emoji:'💵'},{name:'Thưởng',emoji:'🎁'},
     {name:'Làm Thêm Giờ',emoji:'⏰'},{name:'Hoa Hồng',emoji:'📊'},
     {name:'Phụ Cấp',emoji:'🏷️'},{name:'Lương Tháng 13',emoji:'🎊'},
@@ -1549,7 +1552,7 @@ const DEF_CATS_I=[
     {name:'Học Bổng NT',emoji:'🎓'},
   ]},
 ];
-const CAT_VERSION=6; // bump this to force-reset all users to new categories
+const CAT_VERSION=7; // bump this to force-reset all users to new categories
 function getCats(t){
   const ver=parseInt(localStorage.getItem('mt_cat_ver')||'0');
   // Auto-migrate: if version is old, clear old cats so new defaults load
