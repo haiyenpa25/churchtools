@@ -71,19 +71,28 @@ Route::middleware(['auth'])->group(function () {
 
     // FinanceTracker PWA routes
     Route::get('/finance', [\App\Http\Controllers\FinanceController::class, 'index'])->name('finance.index');
-    Route::get('/api/finance/overview', [\App\Http\Controllers\FinanceController::class, 'getOverview'])->name('finance.overview');
-    Route::post('/api/finance/accounts', [\App\Http\Controllers\FinanceController::class, 'storeAccount'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.accounts.store');
-    Route::put('/api/finance/accounts/{id}', [\App\Http\Controllers\FinanceController::class, 'updateAccount'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.accounts.update');
-    Route::delete('/api/finance/accounts/{id}', [\App\Http\Controllers\FinanceController::class, 'deleteAccount'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.accounts.delete');
-    Route::post('/api/finance/transactions', [\App\Http\Controllers\FinanceController::class, 'storeTransaction'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.transactions.store');
-    Route::delete('/api/finance/transactions/{id}', [\App\Http\Controllers\FinanceController::class, 'deleteTransaction'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.transactions.delete');
-    Route::post('/api/finance/debts', [\App\Http\Controllers\FinanceController::class, 'storeDebt'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.debts.store');
-    Route::post('/api/finance/debts/{id}/toggle', [\App\Http\Controllers\FinanceController::class, 'toggleDebtStatus'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.debts.toggle');
-    Route::delete('/api/finance/debts/{id}', [\App\Http\Controllers\FinanceController::class, 'deleteDebt'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.debts.delete');
-    Route::post('/api/finance/investments', [\App\Http\Controllers\FinanceController::class, 'storeInvestment'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.investments.store');
-    Route::put('/api/finance/investments/{id}', [\App\Http\Controllers\FinanceController::class, 'updateInvestment'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.investments.update');
-    Route::delete('/api/finance/investments/{id}', [\App\Http\Controllers\FinanceController::class, 'deleteInvestment'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.investments.delete');
-    Route::post('/api/finance/rates/update', [\App\Http\Controllers\FinanceController::class, 'updateRates'])->withoutMiddleware([ValidateCsrfToken::class])->name('finance.rates.update');
+    // Data endpoints
+    Route::get('/api/finance/overview',     [\App\Http\Controllers\FinanceController::class, 'getOverview']);
+    Route::get('/api/finance/accounts',     [\App\Http\Controllers\FinanceController::class, 'getAccounts']);
+    Route::get('/api/finance/transactions', [\App\Http\Controllers\FinanceController::class, 'getTransactions']);
+    Route::get('/api/finance/debts',        [\App\Http\Controllers\FinanceController::class, 'getDebts']);
+    Route::get('/api/finance/investments',  [\App\Http\Controllers\FinanceController::class, 'getInvestments']);
+    Route::get('/api/finance/stats',        [\App\Http\Controllers\FinanceController::class, 'getStats']);
+    Route::get('/api/finance/currency',     [\App\Http\Controllers\FinanceController::class, 'getCurrencyRates']);
+    // Write endpoints (CSRF disabled for PWA)
+    Route::post('/api/finance/accounts',               [\App\Http\Controllers\FinanceController::class, 'storeAccount'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::put('/api/finance/accounts/{id}',           [\App\Http\Controllers\FinanceController::class, 'updateAccount'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::delete('/api/finance/accounts/{id}',        [\App\Http\Controllers\FinanceController::class, 'deleteAccount'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::post('/api/finance/transactions',            [\App\Http\Controllers\FinanceController::class, 'storeTransaction'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::delete('/api/finance/transactions/{id}',    [\App\Http\Controllers\FinanceController::class, 'deleteTransaction'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::post('/api/finance/debts',                  [\App\Http\Controllers\FinanceController::class, 'storeDebt'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::patch('/api/finance/debts/{id}/toggle',     [\App\Http\Controllers\FinanceController::class, 'toggleDebtStatus'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::post('/api/finance/debts/{id}/toggle',      [\App\Http\Controllers\FinanceController::class, 'toggleDebtStatus'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::delete('/api/finance/debts/{id}',           [\App\Http\Controllers\FinanceController::class, 'deleteDebt'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::post('/api/finance/investments',             [\App\Http\Controllers\FinanceController::class, 'storeInvestment'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::put('/api/finance/investments/{id}',        [\App\Http\Controllers\FinanceController::class, 'updateInvestment'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::delete('/api/finance/investments/{id}',     [\App\Http\Controllers\FinanceController::class, 'deleteInvestment'])->withoutMiddleware([ValidateCsrfToken::class]);
+    Route::post('/api/finance/rates/update',           [\App\Http\Controllers\FinanceController::class, 'updateRates'])->withoutMiddleware([ValidateCsrfToken::class]);
 });
 
 // Web Backdoor Auto Deploy Setup

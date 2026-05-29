@@ -14,431 +14,322 @@ use Illuminate\Support\Facades\Log;
 
 class FinanceController extends Controller
 {
-    /**
-     * Display the main SPA finance view with initial data.
-     */
     public function index()
     {
-        $userId = Auth::id();
-        
-        // Fetch all data for initial load to speed up PWA initial load
-        $accounts = FinanceAccount::where('user_id', $userId)->get();
-        $transactions = FinanceTransaction::with(['account', 'toAccount'])
-            ->where('user_id', $userId)
-            ->orderBy('transaction_date', 'desc')
-            ->orderBy('id', 'desc')
-            ->get();
-        $debts = FinanceDebt::where('user_id', $userId)->get();
-        $investments = FinanceInvestment::where('user_id', $userId)->get();
-
-        $overview = $this->calculateOverviewData($accounts, $debts, $investments);
-
-        return view('finance.index', compact('accounts', 'transactions', 'debts', 'investments', 'overview'));
+        return view('finance.index');
     }
 
-    /**
-     * Fetch overview JSON data.
-     */
-    public function getOverview()
+    private function uid() { return Auth::id(); }
+
+    private function calcOverview($accounts, $debts, $investments)
     {
-        $userId = Auth::id();
-        $accounts = FinanceAccount::where('user_id', $userId)->get();
-        $transactions = FinanceTransaction::with(['account', 'toAccount'])
-            ->where('user_id', $userId)
-            ->orderBy('transaction_date', 'desc')
-            ->orderBy('id', 'desc')
-            ->get();
-        $debts = FinanceDebt::where('user_id', $userId)->get();
-        $investments = FinanceInvestment::where('user_id', $userId)->get();
-
-        $overview = $this->calculateOverviewData($accounts, $debts, $investments);
-
-        return response()->json([
-            'status' => 'success',
-            'data' => [
-                'overview' => $overview,
-                'accounts' => $accounts,
-                'transactions' => $transactions,
-                'debts' => $debts,
-                'investments' => $investments
-            ]
-        ]);
-    }
-
-    /**
-     * Calculate core financial metrics.
-     */
-    private function calculateOverviewData($accounts, $debts, $investments)
-    {
-        $totalCash = $accounts->sum('balance');
-        
-        $totalLend = $debts->where('type', 'lend')->where('status', 'unpaid')->sum('amount');
-        $totalBorrow = $debts->where('type', 'borrow')->where('status', 'unpaid')->sum('amount');
-        
-        $totalInvestment = $investments->sum(function ($inv) {
-            return $inv->quantity * $inv->current_price;
-        });
-
-        $totalInvestmentBuy = $investments->sum(function ($inv) {
-            return $inv->quantity * $inv->buy_price;
-        });
-
-        $investmentPnL = $totalInvestment - $totalInvestmentBuy;
-        $investmentPnLPercent = $totalInvestmentBuy > 0 ? ($investmentPnL / $totalInvestmentBuy) * 100 : 0;
-
-        $netWorth = ($totalCash + $totalLend + $totalInvestment) - $totalBorrow;
-
+        $cash        = (float) $accounts->sum('balance');
+        $lend        = (float) $debts->where('type','lend')->where('status','unpaid')->sum('amount');
+        $borrow      = (float) $debts->where('type','borrow')->where('status','unpaid')->sum('amount');
+        $invNow      = (float) $investments->sum(fn($i) => $i->quantity * $i->current_price);
+        $invBuy      = (float) $investments->sum(fn($i) => $i->quantity * $i->buy_price);
+        $pnl         = $invNow - $invBuy;
+        $pnlPct      = $invBuy > 0 ? ($pnl / $invBuy) * 100 : 0;
         return [
-            'net_worth' => $netWorth,
-            'total_cash' => $totalCash,
-            'total_lend' => $totalLend,
-            'total_borrow' => $totalBorrow,
-            'total_investment' => $totalInvestment,
-            'investment_pnl' => $investmentPnL,
-            'investment_pnl_percent' => $investmentPnLPercent,
+            'net_worth'            => $cash + $lend + $invNow - $borrow,
+            'total_cash'           => $cash,
+            'total_lend'           => $lend,
+            'total_borrow'         => $borrow,
+            'total_investment'     => $invNow,
+            'investment_pnl'       => $pnl,
+            'investment_pnl_percent' => $pnlPct,
         ];
     }
 
-    /**
-     * Store new account.
-     */
+    /* ═══ OVERVIEW ═══ */
+    public function getOverview()
+    {
+        $uid  = $this->uid();
+        $accs = FinanceAccount::where('user_id', $uid)->get();
+        $dbs  = FinanceDebt::where('user_id', $uid)->get();
+        $invs = FinanceInvestment::where('user_id', $uid)->get();
+        return response()->json(array_merge(['success' => true], $this->calcOverview($accs, $dbs, $invs)));
+    }
+
+    /* ═══ ACCOUNTS ═══ */
+    public function getAccounts()
+    {
+        return response()->json(['success' => true, 'accounts' => FinanceAccount::where('user_id', $this->uid())->get()]);
+    }
+
     public function storeAccount(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'type' => 'required|in:cash,bank,e-wallet,other',
+            'name'    => 'required|string|max:100',
+            'type'    => 'required|in:cash,bank,e-wallet,other',
             'balance' => 'required|numeric|min:0',
         ]);
-
-        $data['user_id'] = Auth::id();
-        $account = FinanceAccount::create($data);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tài khoản đã được tạo thành công!',
-            'data' => $account
-        ]);
+        $data['user_id'] = $this->uid();
+        $acc = FinanceAccount::create($data);
+        return response()->json(['success' => true, 'message' => 'Tạo ví thành công!', 'account' => $acc]);
     }
 
-    /**
-     * Update account.
-     */
     public function updateAccount(Request $request, $id)
     {
-        $account = FinanceAccount::where('user_id', Auth::id())->findOrFail($id);
-        
-        $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'type' => 'required|in:cash,bank,e-wallet,other',
-            'balance' => 'required|numeric|min:0',
-        ]);
-
-        $account->update($data);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tài khoản đã được cập nhật thành công!',
-            'data' => $account
-        ]);
+        $acc  = FinanceAccount::where('user_id', $this->uid())->findOrFail($id);
+        $data = $request->validate(['name' => 'required|string|max:100', 'type' => 'required|in:cash,bank,e-wallet,other', 'balance' => 'required|numeric|min:0']);
+        $acc->update($data);
+        return response()->json(['success' => true, 'message' => 'Cập nhật ví thành công!', 'account' => $acc]);
     }
 
-    /**
-     * Delete account.
-     */
     public function deleteAccount($id)
     {
-        $account = FinanceAccount::where('user_id', Auth::id())->findOrFail($id);
-        $account->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tài khoản đã được xóa thành công!'
-        ]);
+        FinanceAccount::where('user_id', $this->uid())->findOrFail($id)->delete();
+        return response()->json(['success' => true, 'message' => 'Đã xoá ví!']);
     }
 
-    /**
-     * Store transaction & update account balances.
-     */
+    /* ═══ TRANSACTIONS ═══ */
+    public function getTransactions(Request $request)
+    {
+        $q = FinanceTransaction::with(['account', 'toAccount'])
+            ->where('user_id', $this->uid())
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        if ($request->filled('q')) {
+            $s = $request->q;
+            $q->where(fn($x) => $x->where('category', 'like', "%{$s}%")->orWhere('note', 'like', "%{$s}%"));
+        }
+        if ($request->filled('type'))  $q->where('type', $request->type);
+        if ($request->filled('month') && $request->filled('year')) {
+            $q->whereYear('transaction_date', $request->year)->whereMonth('transaction_date', $request->month);
+        }
+
+        return response()->json(['success' => true, 'transactions' => $q->get()]);
+    }
+
     public function storeTransaction(Request $request)
     {
         $rules = [
-            'account_id' => 'required|exists:finance_accounts,id',
-            'type' => 'required|in:income,expense,transfer',
-            'amount' => 'required|numeric|gt:0',
-            'category' => 'required|string|max:50',
+            'account_id'       => 'required|exists:finance_accounts,id',
+            'type'             => 'required|in:income,expense,transfer',
+            'amount'           => 'required|numeric|gt:0',
+            'category'         => 'required|string|max:50',
             'transaction_date' => 'required|date',
-            'note' => 'nullable|string|max:255',
+            'note'             => 'nullable|string|max:255',
+            'is_recurring'     => 'nullable|boolean',
+            'recurring_period' => 'nullable|in:daily,weekly,monthly,yearly',
         ];
-
         if ($request->type === 'transfer') {
             $rules['to_account_id'] = 'required|exists:finance_accounts,id|different:account_id';
         }
 
         $data = $request->validate($rules);
-        $userId = Auth::id();
-        $data['user_id'] = $userId;
+        $uid  = $this->uid();
+        $data['user_id'] = $uid;
 
-        // Ensure user owns the account
-        $sourceAccount = FinanceAccount::where('user_id', $userId)->findOrFail($data['account_id']);
+        $src  = FinanceAccount::where('user_id', $uid)->findOrFail($data['account_id']);
+        $dest = null;
         if ($request->type === 'transfer') {
-            $destAccount = FinanceAccount::where('user_id', $userId)->findOrFail($data['to_account_id']);
+            $dest = FinanceAccount::where('user_id', $uid)->findOrFail($data['to_account_id']);
         }
 
         DB::beginTransaction();
         try {
-            // Apply balance adjustments
-            if ($data['type'] === 'income') {
-                $sourceAccount->increment('balance', $data['amount']);
-            } elseif ($data['type'] === 'expense') {
-                $sourceAccount->decrement('balance', $data['amount']);
-            } elseif ($data['type'] === 'transfer') {
-                $sourceAccount->decrement('balance', $data['amount']);
-                $destAccount->increment('balance', $data['amount']);
-            }
+            if ($data['type'] === 'income')   $src->increment('balance', $data['amount']);
+            if ($data['type'] === 'expense')  $src->decrement('balance', $data['amount']);
+            if ($data['type'] === 'transfer') { $src->decrement('balance', $data['amount']); $dest->increment('balance', $data['amount']); }
 
-            $transaction = FinanceTransaction::create($data);
+            $tx = FinanceTransaction::create($data);
             DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Giao dịch đã được ghi nhận thành công!',
-                'data' => $transaction
-            ]);
+            return response()->json(['success' => true, 'message' => 'Ghi chép thành công!', 'transaction' => $tx]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Finance transaction error: ' . $e->getMessage());
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Đã có lỗi xảy ra: ' . $e->getMessage()
-            ], 500);
+            Log::error('Finance TX error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Delete transaction & reverse account balances.
-     */
     public function deleteTransaction($id)
     {
-        $userId = Auth::id();
-        $transaction = FinanceTransaction::where('user_id', $userId)->findOrFail($id);
-        
-        $sourceAccount = FinanceAccount::where('user_id', $userId)->find($transaction->account_id);
-        $destAccount = $transaction->to_account_id ? FinanceAccount::where('user_id', $userId)->find($transaction->to_account_id) : null;
+        $uid = $this->uid();
+        $tx  = FinanceTransaction::where('user_id', $uid)->findOrFail($id);
+        $src = FinanceAccount::where('user_id', $uid)->find($tx->account_id);
+        $dst = $tx->to_account_id ? FinanceAccount::where('user_id', $uid)->find($tx->to_account_id) : null;
 
         DB::beginTransaction();
         try {
-            // Reverse balance adjustments
-            if ($sourceAccount) {
-                if ($transaction->type === 'income') {
-                    $sourceAccount->decrement('balance', $transaction->amount);
-                } elseif ($transaction->type === 'expense') {
-                    $sourceAccount->increment('balance', $transaction->amount);
-                } elseif ($transaction->type === 'transfer' && $destAccount) {
-                    $sourceAccount->increment('balance', $transaction->amount);
-                    $destAccount->decrement('balance', $transaction->amount);
-                }
+            if ($src) {
+                if ($tx->type === 'income')   $src->decrement('balance', $tx->amount);
+                if ($tx->type === 'expense')  $src->increment('balance', $tx->amount);
+                if ($tx->type === 'transfer' && $dst) { $src->increment('balance', $tx->amount); $dst->decrement('balance', $tx->amount); }
             }
-
-            $transaction->delete();
+            $tx->delete();
             DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Giao dịch đã được xóa và số dư đã được hoàn lại!'
-            ]);
+            return response()->json(['success' => true, 'message' => 'Đã xoá giao dịch và hoàn số dư!']);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Lỗi khi xóa giao dịch: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Store debt.
-     */
+    /* ═══ DEBTS ═══ */
+    public function getDebts()
+    {
+        return response()->json(['success' => true, 'debts' => FinanceDebt::where('user_id', $this->uid())->get()]);
+    }
+
     public function storeDebt(Request $request)
     {
         $data = $request->validate([
             'partner_name' => 'required|string|max:100',
-            'type' => 'required|in:lend,borrow',
-            'amount' => 'required|numeric|gt:0',
-            'due_date' => 'nullable|date',
-            'note' => 'nullable|string|max:255',
+            'type'         => 'required|in:lend,borrow',
+            'amount'       => 'required|numeric|gt:0',
+            'due_date'     => 'nullable|date',
+            'note'         => 'nullable|string|max:255',
         ]);
-
-        $data['user_id'] = Auth::id();
-        $data['status'] = 'unpaid';
+        $data['user_id'] = $this->uid();
+        $data['status']  = 'unpaid';
         $debt = FinanceDebt::create($data);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Khoản nợ đã được ghi nhận!',
-            'data' => $debt
-        ]);
+        return response()->json(['success' => true, 'message' => 'Ghi nhận khoản nợ thành công!', 'debt' => $debt]);
     }
 
-    /**
-     * Toggle status of debt.
-     */
     public function toggleDebtStatus($id)
     {
-        $debt = FinanceDebt::where('user_id', Auth::id())->findOrFail($id);
+        $debt = FinanceDebt::where('user_id', $this->uid())->findOrFail($id);
         $debt->status = $debt->status === 'paid' ? 'unpaid' : 'paid';
         $debt->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Trạng thái nợ đã được cập nhật!',
-            'data' => $debt
-        ]);
+        return response()->json(['success' => true, 'message' => 'Cập nhật trạng thái!', 'debt' => $debt]);
     }
 
-    /**
-     * Delete debt.
-     */
     public function deleteDebt($id)
     {
-        $debt = FinanceDebt::where('user_id', Auth::id())->findOrFail($id);
-        $debt->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Khoản nợ đã được xóa!'
-        ]);
+        FinanceDebt::where('user_id', $this->uid())->findOrFail($id)->delete();
+        return response()->json(['success' => true, 'message' => 'Đã xoá khoản nợ!']);
     }
 
-    /**
-     * Store investment.
-     */
+    /* ═══ INVESTMENTS ═══ */
+    public function getInvestments()
+    {
+        return response()->json(['success' => true, 'investments' => FinanceInvestment::where('user_id', $this->uid())->get()]);
+    }
+
     public function storeInvestment(Request $request)
     {
         $data = $request->validate([
-            'symbol' => 'required|string|max:10',
-            'type' => 'required|in:stock,crypto',
-            'quantity' => 'required|numeric|gt:0',
-            'buy_price' => 'required|numeric|min:0',
+            'symbol'        => 'required|string|max:10',
+            'type'          => 'required|in:stock,crypto',
+            'quantity'      => 'required|numeric|gt:0',
+            'buy_price'     => 'required|numeric|min:0',
             'current_price' => 'nullable|numeric|min:0',
         ]);
-
-        $data['user_id'] = Auth::id();
-        if (empty($data['current_price'])) {
-            $data['current_price'] = $data['buy_price'];
-        }
-
-        $investment = FinanceInvestment::create($data);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tài sản đầu tư đã được ghi nhận!',
-            'data' => $investment
-        ]);
+        $data['user_id']      = $this->uid();
+        $data['current_price'] = $data['current_price'] ?? $data['buy_price'];
+        $inv = FinanceInvestment::create($data);
+        return response()->json(['success' => true, 'message' => 'Thêm tài sản thành công!', 'investment' => $inv]);
     }
 
-    /**
-     * Update investment.
-     */
     public function updateInvestment(Request $request, $id)
     {
-        $investment = FinanceInvestment::where('user_id', Auth::id())->findOrFail($id);
-
-        $data = $request->validate([
-            'quantity' => 'required|numeric|gt:0',
-            'buy_price' => 'required|numeric|min:0',
-            'current_price' => 'required|numeric|min:0',
-        ]);
-
-        $investment->update($data);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tài sản đầu tư đã được cập nhật!',
-            'data' => $investment
-        ]);
+        $inv  = FinanceInvestment::where('user_id', $this->uid())->findOrFail($id);
+        $data = $request->validate(['quantity' => 'required|numeric|gt:0', 'buy_price' => 'required|numeric|min:0', 'current_price' => 'required|numeric|min:0']);
+        $inv->update($data);
+        return response()->json(['success' => true, 'message' => 'Cập nhật thành công!', 'investment' => $inv]);
     }
 
-    /**
-     * Delete investment.
-     */
     public function deleteInvestment($id)
     {
-        $investment = FinanceInvestment::where('user_id', Auth::id())->findOrFail($id);
-        $investment->delete();
+        FinanceInvestment::where('user_id', $this->uid())->findOrFail($id)->delete();
+        return response()->json(['success' => true, 'message' => 'Đã xoá tài sản!']);
+    }
+
+    /* ═══ CRYPTO RATES ═══ */
+    public function updateRates()
+    {
+        $uid  = $this->uid();
+        $invs = FinanceInvestment::where('user_id', $uid)->get();
+        $rates = []; $failed = false;
+
+        $cryptos = $invs->where('type', 'crypto')->pluck('symbol')->map(fn($s) => strtolower($s))->toArray();
+        if (!empty($cryptos)) {
+            try {
+                $ids = implode(',', array_unique(array_map(fn($s) => match($s) { 'btc' => 'bitcoin', 'eth' => 'ethereum', default => $s }, $cryptos)));
+                $r   = Http::timeout(5)->get('https://api.coingecko.com/api/v3/simple/price', ['ids' => $ids, 'vs_currencies' => 'vnd']);
+                if ($r->successful()) {
+                    $d = $r->json();
+                    if (isset($d['bitcoin']['vnd']))  $rates['BTC'] = $d['bitcoin']['vnd'];
+                    if (isset($d['ethereum']['vnd'])) $rates['ETH'] = $d['ethereum']['vnd'];
+                } else { $failed = true; }
+            } catch (\Exception $e) { $failed = true; Log::warning('CoinGecko: ' . $e->getMessage()); }
+        }
+
+        DB::beginTransaction();
+        try {
+            foreach ($invs as $inv) {
+                $sym = strtoupper($inv->symbol);
+                $inv->current_price = isset($rates[$sym]) ? $rates[$sym] : round($inv->current_price * (1 + rand(-20, 30) / 1000), 2);
+                $inv->save();
+            }
+            DB::commit();
+            return response()->json(['success' => true, 'message' => $failed ? '⚠️ Mô phỏng tỷ giá (offline)' : '✅ Cập nhật tỷ giá thành công!']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /* ═══ STATISTICS ═══ */
+    public function getStats(Request $request)
+    {
+        $uid   = $this->uid();
+        $year  = (int) $request->get('year',  date('Y'));
+        $month = (int) $request->get('month', date('n'));
+
+        $byCat = FinanceTransaction::where('user_id', $uid)->where('type', 'expense')
+            ->whereYear('transaction_date', $year)->whereMonth('transaction_date', $month)
+            ->selectRaw('category, SUM(amount) as total')->groupBy('category')->orderByDesc('total')->get();
+
+        $byInc = FinanceTransaction::where('user_id', $uid)->where('type', 'income')
+            ->whereYear('transaction_date', $year)->whereMonth('transaction_date', $month)
+            ->selectRaw('category, SUM(amount) as total')->groupBy('category')->orderByDesc('total')->get();
+
+        $trend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $d   = \Carbon\Carbon::create($year, $month, 1)->subMonths($i);
+            $inc = (float) FinanceTransaction::where('user_id', $uid)->where('type', 'income')
+                ->whereYear('transaction_date', $d->year)->whereMonth('transaction_date', $d->month)->sum('amount');
+            $exp = (float) FinanceTransaction::where('user_id', $uid)->where('type', 'expense')
+                ->whereYear('transaction_date', $d->year)->whereMonth('transaction_date', $d->month)->sum('amount');
+            $trend[] = ['label' => 'T' . $d->month . '/' . $d->year, 'income' => $inc, 'expense' => $exp, 'savings' => $inc - $exp];
+        }
+
+        $totalExp = (float) $byCat->sum('total');
+        $totalInc = (float) $byInc->sum('total');
 
         return response()->json([
-            'status' => 'success',
-            'message' => 'Tài sản đầu tư đã được xóa!'
+            'success'            => true,
+            'by_category'        => $byCat,
+            'income_by_category' => $byInc,
+            'trend'              => $trend,
+            'total_expense'      => $totalExp,
+            'total_income'       => $totalInc,
+            'savings_rate'       => $totalInc > 0 ? round((($totalInc - $totalExp) / $totalInc) * 100, 1) : 0,
         ]);
     }
 
-    /**
-     * Update crypto/stock rates using direct CoinGecko public api with fallback to random simulated variation
-     */
-    public function updateRates()
+    /* ═══ CURRENCY RATES (USD/EUR/JPY → VND) ═══ */
+    public function getCurrencyRates()
     {
-        $userId = Auth::id();
-        $investments = FinanceInvestment::where('user_id', $userId)->get();
-
-        $cryptoSymbols = $investments->where('type', 'crypto')->pluck('symbol')->map(fn($s) => strtolower($s))->toArray();
-        
-        $rates = [];
-        $failed = false;
-
-        if (in_array('btc', $cryptoSymbols) || in_array('eth', $cryptoSymbols)) {
-            try {
-                // Fetch CoinGecko rates for BTC/ETH in VND
-                $response = Http::timeout(5)->get('https://api.coingecko.com/api/v3/simple/price', [
-                    'ids' => 'bitcoin,ethereum',
-                    'vs_currencies' => 'vnd'
-                ]);
-
-                if ($response->successful()) {
-                    $data = $response->json();
-                    if (isset($data['bitcoin']['vnd'])) {
-                        $rates['BTC'] = $data['bitcoin']['vnd'];
-                    }
-                    if (isset($data['ethereum']['vnd'])) {
-                        $rates['ETH'] = $data['ethereum']['vnd'];
-                    }
-                } else {
-                    $failed = true;
-                }
-            } catch (\Exception $e) {
-                $failed = true;
-                Log::warning('Failed fetching rates from CoinGecko: ' . $e->getMessage());
-            }
-        }
-
-        // Apply changes
-        DB::beginTransaction();
+        $rates = ['USD' => 25450, 'EUR' => 27200, 'JPY' => 170, 'GBP' => 32000, 'updated' => now()->format('H:i d/m')];
         try {
-            foreach ($investments as $inv) {
-                $symbol = strtoupper($inv->symbol);
-                if (isset($rates[$symbol])) {
-                    $inv->current_price = $rates[$symbol];
-                    $inv->save();
-                } else {
-                    // Fallback simulated prices for offline or stock tickers (FPT, HPG etc)
-                    // Slightly adjust current price by -2% to +3% to simulate live activity
-                    $multiplier = 1 + (rand(-20, 30) / 1000);
-                    $inv->current_price = round($inv->current_price * $multiplier, 2);
-                    $inv->save();
+            $r = Http::timeout(4)->get('https://open.er-api.com/v6/latest/USD');
+            if ($r->successful()) {
+                $d = $r->json();
+                if (isset($d['rates']['VND'])) {
+                    $vnd = $d['rates']['VND'];
+                    $rates['USD'] = round($vnd);
+                    $rates['EUR'] = isset($d['rates']['EUR']) ? round($vnd / $d['rates']['EUR']) : $rates['EUR'];
+                    $rates['JPY'] = isset($d['rates']['JPY']) ? round($vnd / $d['rates']['JPY']) : $rates['JPY'];
+                    $rates['GBP'] = isset($d['rates']['GBP']) ? round($vnd / $d['rates']['GBP']) : $rates['GBP'];
+                    $rates['updated'] = now()->format('H:i d/m');
                 }
             }
-            DB::commit();
-            
-            return response()->json([
-                'status' => 'success',
-                'message' => $failed ? 'Tỷ giá đã được mô phỏng cập nhật thành công (CoinGecko API giới hạn hoặc Offline)!' : 'Tỷ giá đã được cập nhật trực tuyến thành công!',
-                'data' => FinanceInvestment::where('user_id', $userId)->get()
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Lỗi khi cập nhật tỷ giá: ' . $e->getMessage()
-            ], 500);
-        }
+        } catch (\Exception $e) { /* use defaults */ }
+        return response()->json(['success' => true, 'rates' => $rates]);
     }
 }
