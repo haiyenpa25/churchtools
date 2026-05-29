@@ -196,6 +196,48 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
 .tx-actions{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
 .tx-act-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:2px;color:var(--tx3);line-height:1}
 
+/* ── CALENDAR VIEW ── */
+.cal-wrap{background:var(--bg2);border-radius:16px;margin:10px 16px 6px;overflow:hidden;border:1px solid var(--br)}
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 8px}
+.cal-title{font-size:14px;font-weight:800;color:var(--tx)}
+.cal-nav{display:flex;align-items:center;gap:3px}
+.cal-nav-btn{background:var(--bg3);border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;color:var(--tx2);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.cal-nav-btn:active{transform:scale(.88)}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);padding:0 10px;margin-bottom:3px}
+.cal-dow-lbl{text-align:center;font-size:9px;font-weight:800;color:var(--tx3);padding:3px 0;text-transform:uppercase}
+.cal-dow-lbl.sun{color:#ff6b6b33}.cal-dow-lbl.sat{color:#a29bfe55}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 10px 10px}
+.cal-day{
+  aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;cursor:pointer;
+  transition:all .18s;position:relative;padding:2px;
+}
+.cal-day:active{transform:scale(.88)}
+.cal-day.empty{cursor:default}
+.cal-day.today .cdn{background:var(--g);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.cal-day.selected{background:rgba(76,154,255,.15);border:1.5px solid rgba(76,154,255,.4)}
+.cal-day.has-tx{background:var(--bg3)}
+.cal-day.other-month .cdn{opacity:.25}
+.cdn{font-size:11px;font-weight:700;color:var(--tx2);line-height:1}
+.cal-dots{display:flex;gap:2px;margin-top:2px;align-items:center;justify-content:center;height:6px}
+.cal-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.cal-dot.di{background:var(--g)}
+.cal-dot.de{background:var(--r)}
+/* Day summary popup */
+.cal-day-popup{margin:0 16px 10px;background:var(--bg2);border:1px solid var(--br);border-radius:14px;padding:11px 14px;animation:fadeSlide .2s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.cdp-date{font-size:11px;font-weight:800;color:var(--tx3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+.cdp-stats{display:flex;gap:8px;margin-bottom:8px}
+.cdp-stat{flex:1;border-radius:10px;padding:7px 9px}
+.cdp-stat.inc{background:rgba(0,196,140,.1)}.cdp-stat.exp{background:rgba(255,77,109,.1)}
+.cdp-stat-lbl{font-size:8px;font-weight:800;color:var(--tx3);text-transform:uppercase}
+.cdp-stat-val{font-size:13px;font-weight:800;margin-top:1px}
+.cdp-stat.inc .cdp-stat-val{color:var(--g)}.cdp-stat.exp .cdp-stat-val{color:var(--r)}
+/* View toggle */
+.view-toggle{display:flex;background:var(--bg3);border-radius:10px;padding:3px;gap:2px}
+.vt-btn{flex:1;text-align:center;padding:6px 4px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;transition:all .18s;border:none;background:transparent;color:var(--tx3);font-family:inherit}
+.vt-btn.active{background:var(--bg2);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+
 /* ── STATS ── */
 .stats-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:12px 16px 0}
 .ss-card{background:var(--bg2);border:1px solid var(--br);border-radius:13px;padding:9px}
@@ -701,32 +743,126 @@ input,select,button,textarea{font-family:'Inter',sans-serif;-webkit-tap-highligh
 
   <!-- TRANSACTIONS TAB -->
   <div x-show="tab==='transactions'">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:10px 16px 4px">
+    <!-- Month nav + view toggle -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 4px;gap:10px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <button style="background:var(--bg3);border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;color:var(--tx2);font-size:14px;display:flex;align-items:center;justify-content:center" @click="curM===1?(curM=12,curY--):(curM--)">‹</button>
+        <span style="font-size:13px;font-weight:800;color:var(--tx);min-width:80px;text-align:center" x-text="'Tháng '+curM+'/'+curY"></span>
+        <button style="background:var(--bg3);border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;color:var(--tx2);font-size:14px;display:flex;align-items:center;justify-content:center" @click="curM===12?(curM=1,curY++):(curM++)">›</button>
+      </div>
+      <div class="view-toggle">
+        <button class="vt-btn" :class="txView==='list'?'active':''" @click="txView='list'">&#9776; Danh sách</button>
+        <button class="vt-btn" :class="txView==='calendar'?'active':''" @click="txView='calendar'">&#128197; Lịch</button>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:4px 16px 6px">
       <div style="background:rgba(0,196,140,.1);border:1px solid rgba(0,196,140,.2);border-radius:11px;padding:9px"><div style="font-size:9px;font-weight:700;color:var(--g);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em">↓ THU</div><div style="font-size:14px;font-weight:800;color:var(--g)" x-text="fmtS(mStats.income)"></div></div>
       <div style="background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.2);border-radius:11px;padding:9px"><div style="font-size:9px;font-weight:700;color:var(--r);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em">↑ CHI</div><div style="font-size:14px;font-weight:800;color:var(--r)" x-text="fmtS(mStats.expense)"></div></div>
       <div style="background:var(--bg2);border:1px solid var(--br);border-radius:11px;padding:9px"><div style="font-size:9px;font-weight:700;color:var(--tx3);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em">⚖ CÒN</div><div style="font-size:14px;font-weight:800;color:var(--tx)" x-text="fmtS(mStats.income-mStats.expense)"></div></div>
     </div>
-    <template x-if="displayedTxs.length===0"><div style="padding:36px 20px;text-align:center;color:var(--tx3)"><div style="font-size:44px;opacity:.25;margin-bottom:10px">📋</div><div style="font-size:13px;font-weight:700;color:var(--tx2)">Không tìm thấy giao dịch</div></div></template>
-    <template x-for="g in displayedGroups" :key="g.date">
-      <div class="tx-grp-wrap">
-        <div class="tx-dh"><span class="tx-dl" :class="g.label==='Hôm nay'?'today':g.label==='Hôm qua'?'yest':''" x-text="g.label"></span><span class="tx-dn" x-text="fmtS(g.net)"></span></div>
-        <template x-for="tx in g.items" :key="tx.id">
-          <div class="tx-row">
-            <div class="tx-ico" :style="'background:'+catColor(catParent(tx.category))+'22'" x-text="catEmoji(catParent(tx.category))"></div>
+
+    <!-- ══ CALENDAR VIEW ══ -->
+    <div x-show="txView==='calendar'">
+      <div class="cal-wrap">
+        <!-- Days of week header -->
+        <div class="cal-dow">
+          <div class="cal-dow-lbl sun">CN</div>
+          <div class="cal-dow-lbl">T2</div>
+          <div class="cal-dow-lbl">T3</div>
+          <div class="cal-dow-lbl">T4</div>
+          <div class="cal-dow-lbl">T5</div>
+          <div class="cal-dow-lbl">T6</div>
+          <div class="cal-dow-lbl sat">T7</div>
+        </div>
+        <!-- Calendar grid -->
+        <div class="cal-grid">
+          <template x-for="cell in calGrid" :key="cell.key">
+            <div class="cal-day"
+              :class="[
+                cell.empty?'empty':'',
+                cell.isToday?'today':'',
+                cell.hasTx?'has-tx':'',
+                !cell.empty&&calSelectedDay===cell.dateStr?'selected':'',
+                cell.otherMonth?'other-month':''
+              ]"
+              @click="!cell.empty&&selectCalDay(cell.dateStr)">
+              <span class="cdn" x-text="cell.day"></span>
+              <div class="cal-dots" x-show="cell.hasTx">
+                <div class="cal-dot di" x-show="cell.hasIncome"></div>
+                <div class="cal-dot de" x-show="cell.hasExpense"></div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- Selected day popup -->
+      <div class="cal-day-popup" x-show="calSelectedDay" x-cloak>
+        <div class="cdp-date" x-text="calDayLabel"></div>
+        <div class="cdp-stats">
+          <div class="cdp-stat inc">
+            <div class="cdp-stat-lbl">↓ Thu nhập</div>
+            <div class="cdp-stat-val" x-text="fmtS(calDayStats.income)"></div>
+          </div>
+          <div class="cdp-stat exp">
+            <div class="cdp-stat-lbl">↑ Chi phí</div>
+            <div class="cdp-stat-val" x-text="fmtS(calDayStats.expense)"></div>
+          </div>
+        </div>
+        <!-- Txs for selected day -->
+        <template x-for="tx in calDayTxs" :key="tx.id">
+          <div class="tx-row" style="padding:6px 0">
+            <div class="tx-ico" style="width:32px;height:32px;font-size:16px" :style="'background:'+catColor(catParent(tx.category))+'22'" x-text="catEmoji(catParent(tx.category))"></div>
             <div class="tx-body" @click="editTx(tx)">
               <div class="tx-cat" x-text="tx.category"></div>
-              <div class="tx-meta"><span class="tx-acc-tag" x-text="tx.account?tx.account.name:''"></span><span class="tx-note" x-text="tx.note||'Không có ghi chú'"></span><template x-if="tx.is_recurring"><span class="tx-recur">🔄</span></template></div>
+              <div class="tx-meta"><span class="tx-note" x-text="tx.note||''"></span></div>
             </div>
             <div class="tx-amount" :class="tx.type" x-text="(tx.type==='income'?'+':tx.type==='expense'?'-':'⇄')+fmtS(tx.amount)"></div>
-            <div class="tx-actions">
-              <button class="tx-act-btn" @click="editTx(tx)">✏️</button>
-              <button class="tx-act-btn" @click="delTx(tx)">🗑</button>
-            </div>
           </div>
         </template>
+        <div x-show="calDayTxs.length===0" style="text-align:center;color:var(--tx3);font-size:11px;padding:6px 0">Không có giao dịch</div>
       </div>
-    </template>
-    <div class="pb"></div>
+      <div class="pb"></div>
+    </div>
+
+    <!-- ══ LIST VIEW ══ -->
+    <div x-show="txView==='list'">
+      <!-- Search + filter -->
+      <div style="display:flex;gap:7px;align-items:center;padding:2px 16px 8px">
+        <div style="flex:1;background:var(--bg2);border:1px solid var(--br);border-radius:11px;display:flex;align-items:center;gap:7px;padding:7px 11px">
+          <span style="font-size:13px;opacity:.4">&#128269;</span>
+          <input type="text" style="flex:1;background:none;border:none;outline:none;color:var(--tx);font-size:12px;font-family:inherit" placeholder="Tìm giao dịch..." x-model="search">
+        </div>
+        <select style="background:var(--bg2);border:1px solid var(--br);border-radius:11px;padding:7px 9px;color:var(--tx);font-size:11px;font-weight:700;font-family:inherit;outline:none;cursor:pointer" x-model="txFilter">
+          <option value="all">Tất cả</option>
+          <option value="income">↓ Thu</option>
+          <option value="expense">↑ Chi</option>
+          <option value="transfer">⇄ Chuyển</option>
+        </select>
+      </div>
+      <template x-if="displayedTxs.length===0"><div style="padding:36px 20px;text-align:center;color:var(--tx3)"><div style="font-size:44px;opacity:.25;margin-bottom:10px">&#128203;</div><div style="font-size:13px;font-weight:700;color:var(--tx2)">Không tìm thấy giao dịch</div></div></template>
+      <template x-for="g in displayedGroups" :key="g.date">
+        <div class="tx-grp-wrap">
+          <div class="tx-dh"><span class="tx-dl" :class="g.label==='Hôm nay'?'today':g.label==='Hôm qua'?'yest':''" x-text="g.label"></span><span class="tx-dn" x-text="fmtS(g.net)"></span></div>
+          <template x-for="tx in g.items" :key="tx.id">
+            <div class="tx-row">
+              <div class="tx-ico" :style="'background:'+catColor(catParent(tx.category))+'22'" x-text="catEmoji(catParent(tx.category))"></div>
+              <div class="tx-body" @click="editTx(tx)">
+                <div class="tx-cat" x-text="tx.category"></div>
+                <div class="tx-meta"><span class="tx-acc-tag" x-text="tx.account?tx.account.name:''"></span><span class="tx-note" x-text="tx.note||''"></span><template x-if="tx.is_recurring"><span class="tx-recur">🔄</span></template></div>
+              </div>
+              <div class="tx-amount" :class="tx.type" x-text="(tx.type==='income'?'+':tx.type==='expense'?'-':'⇄')+fmtS(tx.amount)"></div>
+              <div class="tx-actions">
+                <button class="tx-act-btn" @click="editTx(tx)">✏️</button>
+                <button class="tx-act-btn" @click="delTx(tx)">🗑</button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+      <div class="pb"></div>
+    </div>
   </div>
 
   <!-- STATS TAB -->
@@ -1439,6 +1575,7 @@ function app(){return{
   showAccSheet:false,showDebtSheet:false,showInvSheet:false,showBudgetSheet:false,showGoalSheet:false,
   showAddCatSheet:false,showAddSubCatSheet:false,showAddFixedSheet:false,
   editingAcc:null,showMonthExpand:false,showDateDetail:false,customMonth:'',
+  txView:'list',calSelectedDay:'',
   numpad:'',
   form:{type:'expense',acc:'',toAcc:'',category:'',subcat:'',date:new Date().toISOString().split('T')[0],note:'',recur:false,period:'monthly',month:new Date().toISOString().slice(0,7)},
   aForm:{name:'',type:'cash',balance:''},
@@ -1486,6 +1623,58 @@ function app(){return{
   get displayedTxs(){let l=this.filtered;if(this.txFilter!=='all')l=l.filter(t=>t.type===this.txFilter);if(this.search.trim()){const s=this.search.toLowerCase();l=l.filter(t=>(t.category||'').toLowerCase().includes(s)||(t.note||'').toLowerCase().includes(s))}return l},
   get displayedGroups(){return this.groupTxs(this.displayedTxs)},
   get grouped(){return this.groupTxs(this.filtered)},
+
+  // ── CALENDAR COMPUTED ──
+  get calGrid(){
+    const y=this.curY,m=this.curM;
+    const firstDay=new Date(y,m-1,1).getDay(); // 0=Sun
+    const daysInMonth=new Date(y,m,0).getDate();
+    const today=new Date().toISOString().split('T')[0];
+    // Build a day→{hasIncome,hasExpense} map from filtered transactions
+    const dayMap={};
+    this.filtered.forEach(t=>{
+      const d=(t.transaction_date||'').split('T')[0];
+      if(!dayMap[d])dayMap[d]={income:false,expense:false};
+      if(t.type==='income')dayMap[d].income=true;
+      if(t.type==='expense')dayMap[d].expense=true;
+    });
+    const cells=[];
+    // Empty cells before first day
+    for(let i=0;i<firstDay;i++)cells.push({key:'e'+i,empty:true});
+    // Day cells
+    for(let d=1;d<=daysInMonth;d++){
+      const dateStr=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const info=dayMap[dateStr]||{};
+      cells.push({
+        key:dateStr,day:d,dateStr,empty:false,
+        isToday:dateStr===today,
+        hasTx:!!dayMap[dateStr],
+        hasIncome:!!info.income,hasExpense:!!info.expense,
+        otherMonth:false
+      });
+    }
+    return cells;
+  },
+  get calDayTxs(){
+    if(!this.calSelectedDay)return[];
+    return this.transactions.filter(t=>(t.transaction_date||'').split('T')[0]===this.calSelectedDay);
+  },
+  get calDayStats(){
+    const txs=this.calDayTxs;
+    return{
+      income:txs.filter(t=>t.type==='income').reduce((s,t)=>s+parseFloat(t.amount),0),
+      expense:txs.filter(t=>t.type==='expense').reduce((s,t)=>s+parseFloat(t.amount),0),
+    };
+  },
+  get calDayLabel(){
+    if(!this.calSelectedDay)return'';
+    const d=new Date(this.calSelectedDay+'T00:00:00');
+    return d.toLocaleDateString('vi-VN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  },
+  selectCalDay(dateStr){
+    this.calSelectedDay=this.calSelectedDay===dateStr?'':dateStr;
+  },
+
   get budgets(){const r=JSON.parse(localStorage.getItem('mt_budgets')||'{}');return Object.entries(r).filter(([,v])=>v>0).map(([cat,limit])=>{const spent=this.filtered.filter(t=>t.type==='expense'&&t.category===cat).reduce((s,t)=>s+parseFloat(t.amount),0);return{cat,limit:parseFloat(limit),spent,pct:(spent/parseFloat(limit))*100}})},
   get overBudgets(){return this.budgets.filter(b=>b.pct>=90)},
   get goals(){return JSON.parse(localStorage.getItem('mt_goals')||'[]')},
