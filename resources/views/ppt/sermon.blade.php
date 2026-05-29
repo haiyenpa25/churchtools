@@ -89,7 +89,7 @@
 
         <!-- Export Button -->
         <button @click="generatePpt()" :disabled="isExporting"
-            class="bg-gradient-to-br from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black font-bold text-sm px-5 py-2 rounded-lg transition-all hover:-translate-y-0.5 shadow-[0_4px_16px_rgba(246,173,85,0.25)] flex items-center gap-2 disabled:opacity-60 disabled:cursor-wait">
+            class="bg-gradient-to-br from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black font-bold text-sm px-5 py-2 rounded-lg transition-all hover:-translate-y-0.5 shadow-[0_4px_16px_rgba(246,173,85,0.25)] flex items-center gap-2 disabled:opacity-60 disabled:cursor-wait mr-2">
             <template x-if="!isExporting">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             </template>
@@ -98,6 +98,14 @@
             </template>
             <span x-text="isExporting ? exportStatus : 'Xuất Dual PPTX'"></span>
         </button>
+
+        <!-- Logout Button -->
+        <form action="{{ route('logout') }}" method="POST" style="margin: 0; display: inline;">
+            @csrf
+            <button type="submit" class="bg-red-950/40 hover:bg-red-950/60 text-red-400 border border-red-900/30 hover:border-red-500/50 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+                Đăng xuất 🚪
+            </button>
+        </form>
     </div>
 </header>
 

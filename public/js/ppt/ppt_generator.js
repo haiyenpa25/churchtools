@@ -27,6 +27,7 @@ function pptGenerator() {
         showAdvanced: false,
         isLoading: false,
         isExtracting: false,
+        draggingPpt: false,
         isSuccess: false,
         isError: false,
         errorMessage: '',
@@ -285,6 +286,45 @@ function pptGenerator() {
             } finally {
                 this.isExtracting = false;
                 event.target.value = '';
+            }
+        },
+
+        // ── PPTX Live Conversion Tab Handlers ──────────────────────────────
+        async handlePptSelect(event) {
+            let file = event.target.files[0];
+            if (file) {
+                await this.convertPptFile(file);
+            }
+        },
+
+        async handlePptDrop(event) {
+            this.draggingPpt = false;
+            let file = event.dataTransfer.files[0];
+            if (file) {
+                await this.convertPptFile(file);
+            }
+        },
+
+        async convertPptFile(file) {
+            this.isExtracting = true;
+            this.isLoading = true;
+            let fd = new FormData();
+            fd.append('file', file);
+            try {
+                let res = await fetch('/ChurchTool/public/api/ppt/extract', { method: 'POST', body: fd });
+                let data = await res.json();
+                if (data.status === 'success') {
+                    this.form.text = data.text;
+                    // Auto parse text to blocks and show preview step 2!
+                    await this.parseTextToBlocks();
+                } else {
+                    alert('Lỗi trích xuất: ' + data.message);
+                }
+            } catch (e) {
+                alert('Không thể trích xuất chữ: ' + e.message);
+            } finally {
+                this.isExtracting = false;
+                this.isLoading = false;
             }
         },
 

@@ -17,13 +17,25 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => bcrypt('password'),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'haiyenpa25'],
+            [
+                'name' => 'Hải Yến',
+                'password' => bcrypt('Haiyen@2026'),
+            ]
+        );
 
         $this->call([
             PptTemplateSeeder::class,
+            FinanceSeeder::class,
         ]);
     }
 }

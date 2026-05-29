@@ -17,8 +17,18 @@
         <div class="logo-icon">✝</div>
         Church<span>Tools</span>
     </a>
-    <div class="nav-links">
+    <div class="nav-links" style="display: flex; align-items: center; gap: 1rem;">
         <a href="#tools">Công cụ</a>
+        @auth
+            <span style="font-size: 0.85rem; color: var(--gold2); font-weight: 600; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.25rem;">👋 {{ Auth::user()->name }}</span>
+            <a href="{{ url('/ppt') }}" style="background: var(--teal); color: white; padding: 0.4rem 0.9rem; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 0.825rem; transition: background 0.2s;" onmouseover="this.style.background='var(--teal2)'" onmouseout="this.style.background='var(--teal)'">Vào Slide 💻</a>
+            <form action="{{ route('logout') }}" method="POST" style="margin: 0; display: inline;">
+                @csrf
+                <button type="submit" style="background: transparent; border: 1px solid rgba(255,255,255,0.12); color: var(--muted); padding: 0.4rem 0.9rem; border-radius: 8px; font-weight: 600; font-size: 0.825rem; cursor: pointer; transition: all 0.2s; font-family: inherit;" onmouseover="this.style.color='#fff';this.style.borderColor='rgba(220,38,38,0.4)';this.style.background='rgba(220,38,38,0.15)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='rgba(255,255,255,0.12)';this.style.background='transparent'">Đăng xuất 🚪</button>
+            </form>
+        @else
+            <a href="{{ url('/login') }}" style="background: var(--teal); color: white; padding: 0.4rem 0.9rem; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 0.825rem; box-shadow: 0 4px 12px rgba(26,107,90,0.2); transition: background 0.2s;" onmouseover="this.style.background='var(--teal2)'" onmouseout="this.style.background='var(--teal)'">Đăng nhập 🔑</a>
+        @endauth
     </div>
 </nav>
 
@@ -27,7 +37,11 @@
     <div class="hero-badge">✝ Phục Vụ Hội Thánh · {{ date('Y') }}</div>
     <h1>Bộ Công Cụ Số<br>Cho Hội Thánh</h1>
     <p>Tự động hoá thiết kế slide, quản lý nội dung phụng vụ, và phục vụ livestream — được xây dựng dành riêng cho người hầu việc Chúa.</p>
-    <a href="{{ url('/ppt') }}" class="hero-btn">🎵 Dùng thử PPT Livestream ngay</a>
+    @auth
+        <a href="{{ url('/ppt') }}" class="hero-btn">🚀 Vào Hệ Thống Slide Ngay</a>
+    @else
+        <a href="{{ url('/login') }}" class="hero-btn">🔑 Đăng nhập để sử dụng</a>
+    @endauth
 </section>
 
 <!-- STATS -->

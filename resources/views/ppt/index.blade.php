@@ -10,10 +10,16 @@
 
     <div class="container mx-auto relative z-10 max-w-4xl pt-10">
 
-        {{-- Header --}}
         <header class="text-center mb-12">
             <div class="flex justify-between items-start mb-2">
-                <a href="/ChurchTool/public/" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">← Portal</a>
+                <div class="flex items-center gap-2">
+                    <a href="/ChurchTool/public/" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">← Portal</a>
+                    <span class="text-gray-700">|</span>
+                    <form action="{{ route('logout') }}" method="POST" style="margin: 0; display: inline;">
+                        @csrf
+                        <button type="submit" class="text-xs text-red-500/80 hover:text-red-400 font-semibold transition-colors bg-transparent border-0 cursor-pointer p-0">Đăng xuất 🚪</button>
+                    </form>
+                </div>
                 <div class="flex items-center gap-2">
                     <a href="/ChurchTool/public/ppt/sermon"
                        class="inline-flex items-center gap-1.5 bg-gray-800/80 hover:bg-gray-700 border border-gray-700 hover:border-yellow-500 text-gray-300 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200">

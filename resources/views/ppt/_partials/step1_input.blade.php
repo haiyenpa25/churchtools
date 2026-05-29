@@ -165,6 +165,11 @@
                 :class="inputType === 'text' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-500 hover:text-gray-300'">
             📝 Nhập chữ (Bulk Text)
         </button>
+        <button type="button" @click="inputType = 'pptx'" 
+                class="pb-2 text-sm font-semibold transition"
+                :class="inputType === 'pptx' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-500 hover:text-gray-300'">
+            📄 Chuyển đổi file PPTX
+        </button>
     </div>
 
     {{-- TAB 1: LIBRARY --}}
@@ -259,6 +264,36 @@
         <textarea x-model="form.text" rows="12"
                   class="w-full bg-gray-900 border border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-gray-600 custom-scrollbar"
                   placeholder="Dán bài hát tự do, Kinh Thánh hoặc bài giảng vào đây..."></textarea>
+    </div>
+
+    {{-- TAB 3: PPTX CONVERSION --}}
+    <div x-show="inputType === 'pptx'" class="mb-4" x-transition.opacity>
+        <div class="border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer bg-gray-800/20"
+             :class="draggingPpt ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 hover:border-gray-500'"
+             @dragover.prevent @dragenter.prevent="draggingPpt=true" @dragleave="draggingPpt=false"
+             @drop.prevent="handlePptDrop($event)"
+             @click="$refs.pptConvertFile.click()">
+            
+            <input type="file" x-ref="pptConvertFile" @change="handlePptSelect($event)" class="hidden" accept=".pptx,.ppt">
+            
+            <div class="text-4xl mb-3" x-text="isExtracting ? '⏳' : '📄'"></div>
+            <h3 class="text-base font-bold text-gray-200 mb-1" x-text="isExtracting ? 'Đang chuyển đổi slide...' : 'Kéo thả file PPTX cũ vào đây'"></h3>
+            <p class="text-xs text-gray-500 mb-5 leading-relaxed">
+                Hệ thống sẽ bòn rút chữ sạch sẽ từ slide cũ và tự động phân loại,<br>dựng khung chiếu live (lời bài hát) siêu tốc.
+            </p>
+            
+            <div class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-6 rounded-xl transition shadow-lg shadow-blue-500/10 disabled:opacity-50"
+                 :class="isExtracting ? 'opacity-50 cursor-wait' : ''">
+                <span x-show="!isExtracting">Chọn file từ máy tính</span>
+                <span x-show="isExtracting" class="animate-pulse flex items-center gap-2">
+                    <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    Đang xử lý & phân tích...
+                </span>
+            </div>
+        </div>
     </div>
 
     {{-- Universal Generate Button --}}
