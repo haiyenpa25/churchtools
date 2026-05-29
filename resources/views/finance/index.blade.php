@@ -3,1155 +3,1943 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FinanceTracker - Quản lý tài chính cá nhân</title>
-    
-    <!-- PWA Settings -->
+    <title>MoneyTracker — Quản Lý Tài Chính</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#f59e0b">
+    <meta name="theme-color" content="#00c48c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Finance">
+    <meta name="apple-mobile-web-app-title" content="MoneyTracker">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-
-    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        darkBg: '#0b0f19',
-                        darkCard: 'rgba(17, 24, 39, 0.7)',
-                        goldAccent: '#f59e0b',
-                        emeraldAccent: '#10b981',
-                        roseAccent: '#ef4444',
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- Chart.js & Alpine.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <style>
-        body {
-            background-color: #0b0f19;
-            color: #f3f4f6;
-            -webkit-tap-highlight-color: transparent;
-        }
-        /* Custom Glassmorphism scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.02);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(245, 158, 11, 0.2);
-            border-radius: 4px;
-        }
-        .glass-card {
-            background: rgba(17, 24, 39, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .bottom-nav-active {
-            color: #f59e0b;
-            text-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
-        }
-        .animate-slide-up {
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --green:  #00c48c;
+        --green2: #00a876;
+        --green3: #00e5a0;
+        --red:    #ff5252;
+        --red2:   #ff1744;
+        --blue:   #448aff;
+        --yellow: #ffd740;
+        --bg:     #0d1117;
+        --bg2:    #161b22;
+        --bg3:    #1c2128;
+        --card:   rgba(22,27,34,0.95);
+        --border: rgba(255,255,255,0.08);
+        --text:   #f0f6fc;
+        --muted:  #8b949e;
+        --muted2: #6e7681;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+    body {
+        font-family: 'Outfit', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        -webkit-tap-highlight-color: transparent;
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+    }
+
+    /* ===== APP SHELL ===== */
+    #app {
+        width: 100%;
+        max-width: 430px;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 80px rgba(0,196,140,0.06);
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,196,140,0.2); border-radius: 4px; }
+
+    /* ===== HEADER ===== */
+    .app-header {
+        background: var(--bg2);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 16px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 20;
+    }
+
+    .header-month {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .month-nav-btn {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.15s;
+    }
+    .month-nav-btn:active { background: rgba(0,196,140,0.15); color: var(--green); transform: scale(0.92); }
+
+    .month-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .header-icon-btn {
+        width: 32px; height: 32px;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+    .header-icon-btn:active { background: rgba(255,82,82,0.1); color: var(--red); transform: scale(0.92); }
+
+    .online-dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: pulse-dot 2s infinite;
+        box-shadow: 0 0 6px var(--green);
+    }
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .app-content {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+
+    /* ===== WALLET SWIPER ===== */
+    .wallet-section {
+        padding: 16px 0 0;
+    }
+
+    .wallet-swiper {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding: 0 16px 12px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .wallet-swiper::-webkit-scrollbar { display: none; }
+
+    .wallet-card {
+        flex-shrink: 0;
+        width: 200px;
+        border-radius: 20px;
+        padding: 18px 16px;
+        scroll-snap-align: start;
+        cursor: pointer;
+        transition: transform 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+    .wallet-card:active { transform: scale(0.96); }
+
+    .wallet-card::before {
+        content: '';
+        position: absolute;
+        top: -20px; right: -20px;
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+    }
+
+    .wc-green  { background: linear-gradient(135deg, #00c48c, #00a876); }
+    .wc-blue   { background: linear-gradient(135deg, #448aff, #2979ff); }
+    .wc-purple { background: linear-gradient(135deg, #7c4dff, #651fff); }
+    .wc-red    { background: linear-gradient(135deg, #ff5252, #d50000); }
+    .wc-orange { background: linear-gradient(135deg, #ff9100, #ff6d00); }
+    .wc-teal   { background: linear-gradient(135deg, #1de9b6, #00bfa5); }
+
+    .wallet-card .wc-type {
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .wallet-card .wc-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.9);
+        margin-bottom: 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .wallet-card .wc-balance {
+        font-size: 20px;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1;
+    }
+
+    .wallet-card .wc-currency {
+        font-size: 10px;
+        color: rgba(255,255,255,0.6);
+        margin-top: 3px;
+    }
+
+    .wallet-add-card {
+        flex-shrink: 0;
+        width: 100px;
+        border-radius: 20px;
+        border: 2px dashed rgba(255,255,255,0.12);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 600;
+        transition: all 0.2s;
+        scroll-snap-align: start;
+    }
+    .wallet-add-card:active { border-color: var(--green); color: var(--green); transform: scale(0.96); }
+    .wallet-add-card .add-icon { font-size: 22px; }
+
+    /* ===== MONTH SUMMARY ===== */
+    .month-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 0 16px 16px;
+    }
+
+    .summary-card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 12px 14px;
+    }
+
+    .summary-card .sc-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .summary-card .sc-value {
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .sc-income .sc-label { color: var(--green); }
+    .sc-income .sc-value { color: var(--green); }
+    .sc-expense .sc-label { color: var(--red); }
+    .sc-expense .sc-value { color: var(--red); }
+
+    /* ===== SECTION TITLE ===== */
+    .section-title {
+        padding: 0 16px 10px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .section-more {
+        font-size: 11px;
+        color: var(--green);
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    /* ===== CHART ===== */
+    .chart-card {
+        margin: 0 16px 16px;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 16px;
+    }
+
+    .chart-card canvas { width: 100% !important; }
+
+    .chart-legend {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 12px;
+    }
+
+    .chart-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+    }
+
+    .legend-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+    }
+
+    /* ===== TRANSACTION GROUPS ===== */
+    .tx-group {
+        margin: 0 16px 4px;
+    }
+
+    .tx-group-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0 7px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 4px;
+    }
+
+    .tx-group-date {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+    }
+
+    .tx-group-date.today { color: var(--green); }
+    .tx-group-date.yesterday { color: var(--yellow); }
+
+    .tx-group-total {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+    }
+
+    .tx-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        cursor: pointer;
+        transition: background 0.1s;
+        border-radius: 8px;
+        padding-left: 4px;
+        padding-right: 4px;
+        margin: 0 -4px;
+    }
+    .tx-item:last-child { border-bottom: none; }
+    .tx-item:active { background: rgba(255,255,255,0.03); }
+
+    .tx-cat-icon {
+        width: 44px; height: 44px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .tx-info { flex: 1; min-width: 0; }
+
+    .tx-cat-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tx-note {
+        font-size: 11px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 2px;
+    }
+
+    .tx-account-tag {
+        font-size: 10px;
+        color: var(--muted2);
+        margin-top: 2px;
+    }
+
+    .tx-amount {
+        font-size: 14px;
+        font-weight: 700;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .tx-amount.income { color: var(--green); }
+    .tx-amount.expense { color: var(--red); }
+    .tx-amount.transfer { color: var(--blue); }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--muted);
+    }
+
+    .empty-state .es-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+    .empty-state .es-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .empty-state .es-desc { font-size: 12px; opacity: 0.7; }
+
+    /* ===== BOTTOM NAVIGATION ===== */
+    .bottom-nav {
+        flex-shrink: 0;
+        background: var(--bg2);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+        position: relative;
+        z-index: 20;
+    }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        padding: 4px 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 12px;
+        background: none;
+        border: none;
+        color: var(--muted2);
+        font-family: inherit;
+    }
+
+    .nav-item:active { transform: scale(0.9); }
+    .nav-item.active { color: var(--green); }
+
+    .nav-item .nav-icon { font-size: 20px; line-height: 1; }
+    .nav-item .nav-label { font-size: 10px; font-weight: 600; }
+
+    /* FAB — Center Button */
+    .fab-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .fab {
+        width: 54px; height: 54px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--green3), var(--green));
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #fff;
+        font-size: 24px;
+        box-shadow: 0 6px 20px rgba(0,196,140,0.45);
+        margin-top: -24px;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    .fab:active { transform: scale(0.92); box-shadow: 0 3px 12px rgba(0,196,140,0.3); }
+
+    /* ===== SCREENS (full-height panels) ===== */
+    .screen {
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .screen.open { transform: translateY(0); }
+
+    /* ===== ADD TRANSACTION SCREEN ===== */
+    .add-tx-screen {}
+
+    .add-tx-header {
+        background: var(--bg2);
+        border-bottom: 1px solid var(--border);
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+
+    .add-tx-close {
+        width: 32px; height: 32px;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .add-tx-close:active { background: rgba(255,82,82,0.15); color: var(--red); }
+
+    .add-tx-type-tabs {
+        display: flex;
+        background: var(--bg3);
+        border-radius: 12px;
+        padding: 3px;
+        gap: 2px;
+    }
+
+    .type-tab {
+        flex: 1;
+        text-align: center;
+        padding: 7px 10px;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        font-family: inherit;
+    }
+
+    .type-tab.active-expense { background: var(--red); color: #fff; }
+    .type-tab.active-income  { background: var(--green); color: #fff; }
+    .type-tab.active-transfer { background: var(--blue); color: #fff; }
+
+    /* Amount Display */
+    .amount-display {
+        background: var(--bg2);
+        padding: 20px 20px 16px;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .amount-display .amount-label {
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 600;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .amount-display .amount-value {
+        font-size: 38px;
+        font-weight: 800;
+        line-height: 1;
+        color: var(--text);
+        min-height: 46px;
+        word-break: break-all;
+    }
+
+    .amount-display .amount-value.expense-color { color: var(--red); }
+    .amount-display .amount-value.income-color { color: var(--green); }
+    .amount-display .amount-value.transfer-color { color: var(--blue); }
+
+    /* Category Picker */
+    .cat-picker-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 16px;
+    }
+
+    .cat-section-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 10px;
+        margin-top: 4px;
+    }
+
+    .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .cat-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        padding: 10px 4px;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.15s;
+        background: var(--bg2);
+        border: 2px solid transparent;
+    }
+    .cat-btn:active { transform: scale(0.92); }
+    .cat-btn.selected { border-color: var(--green); background: rgba(0,196,140,0.1); }
+    .cat-btn.selected-expense { border-color: var(--red); background: rgba(255,82,82,0.1); }
+
+    .cat-btn .cat-emoji { font-size: 22px; line-height: 1; }
+    .cat-btn .cat-label { font-size: 10px; font-weight: 600; color: var(--muted); text-align: center; line-height: 1.2; }
+    .cat-btn.selected .cat-label { color: var(--green); }
+    .cat-btn.selected-expense .cat-label { color: var(--red); }
+
+    /* Add TX Details */
+    .add-tx-details {
+        padding: 12px 16px;
+        background: var(--bg2);
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .detail-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .detail-icon {
+        width: 32px; height: 32px;
+        border-radius: 10px;
+        background: var(--bg3);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--muted);
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .detail-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+    }
+
+    .detail-input::placeholder { color: var(--muted2); }
+
+    .detail-select {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        -webkit-appearance: none;
+    }
+
+    /* Numpad */
+    .numpad {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    .numpad-key {
+        background: var(--bg2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 0;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.1s;
+        border: none;
+        color: var(--text);
+        font-family: inherit;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .numpad-key:active { background: rgba(255,255,255,0.06); }
+    .numpad-key.key-ok {
+        background: var(--green);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        grid-row: span 2;
+    }
+    .numpad-key.key-ok:active { background: var(--green2); }
+    .numpad-key.key-del { color: var(--muted); font-size: 20px; }
+    .numpad-key.key-00 { font-size: 15px; }
+
+    /* ===== MODALS (bottom sheet) ===== */
+    .bottom-sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 60;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .bottom-sheet {
+        width: 100%;
+        max-width: 430px;
+        background: var(--bg2);
+        border-radius: 24px 24px 0 0;
+        border-top: 1px solid var(--border);
+        padding: 20px 20px max(20px, env(safe-area-inset-bottom));
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .sheet-handle {
+        width: 36px; height: 4px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 2px;
+        margin: -8px auto 18px;
+    }
+
+    .sheet-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 18px;
+    }
+
+    .form-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+    }
+
+    .form-input {
+        width: 100%;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        color: var(--text);
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s;
+        margin-bottom: 14px;
+    }
+    .form-input:focus { border-color: var(--green); }
+
+    .form-select {
+        width: 100%;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        color: var(--text);
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        margin-bottom: 14px;
+        -webkit-appearance: none;
+        cursor: pointer;
+    }
+
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, var(--green), var(--green2));
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 14px;
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-shadow: 0 4px 16px rgba(0,196,140,0.3);
+    }
+    .btn-submit:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(0,196,140,0.2); }
+
+    /* ===== DEBTS TAB ===== */
+    .debt-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 16px 16px 0;
+    }
+
+    .debt-summary-card {
+        border-radius: 16px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .dsc-lend { background: rgba(0,196,140,0.1); border: 1px solid rgba(0,196,140,0.2); }
+    .dsc-borrow { background: rgba(255,82,82,0.1); border: 1px solid rgba(255,82,82,0.2); }
+
+    .dsc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .dsc-lend .dsc-label { color: var(--green); }
+    .dsc-borrow .dsc-label { color: var(--red); }
+
+    .dsc-value { font-size: 16px; font-weight: 800; color: var(--text); }
+    .dsc-count { font-size: 10px; color: var(--muted); }
+
+    .debt-item {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px;
+        margin: 8px 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .debt-avatar {
+        width: 42px; height: 42px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+        font-weight: 800;
+        flex-shrink: 0;
+        color: #fff;
+    }
+    .debt-lend-av { background: linear-gradient(135deg, var(--green), var(--green2)); }
+    .debt-borrow-av { background: linear-gradient(135deg, var(--red), var(--red2)); }
+
+    .debt-info { flex: 1; min-width: 0; }
+    .debt-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .debt-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .debt-right { text-align: right; flex-shrink: 0; }
+    .debt-amount { font-size: 14px; font-weight: 800; }
+    .debt-amount.lend { color: var(--green); }
+    .debt-amount.borrow { color: var(--red); }
+
+    .debt-status {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 99px;
+        margin-top: 4px;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .ds-paid { background: rgba(255,255,255,0.08); color: var(--muted); }
+    .ds-unpaid { background: rgba(0,196,140,0.15); color: var(--green); }
+
+    /* ===== INVESTMENTS TAB ===== */
+    .portfolio-header {
+        margin: 16px 16px 0;
+        background: linear-gradient(135deg, rgba(0,196,140,0.1), rgba(68,138,255,0.1));
+        border: 1px solid rgba(0,196,140,0.2);
+        border-radius: 20px;
+        padding: 18px;
+        text-align: center;
+    }
+
+    .ph-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .ph-value { font-size: 28px; font-weight: 800; color: var(--text); margin: 6px 0; }
+    .ph-pnl { font-size: 14px; font-weight: 700; }
+    .ph-pnl.positive { color: var(--green); }
+    .ph-pnl.negative { color: var(--red); }
+
+    .inv-item {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px;
+        margin: 10px 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .inv-symbol-badge {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px;
+        font-weight: 800;
+        flex-shrink: 0;
+        color: #fff;
+        letter-spacing: -0.5px;
+    }
+    .inv-crypto { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .inv-stock  { background: linear-gradient(135deg, #448aff, #2979ff); }
+
+    .inv-info { flex: 1; min-width: 0; }
+    .inv-name { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
+    .inv-type-tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; }
+    .inv-qty { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    .inv-right { text-align: right; flex-shrink: 0; }
+    .inv-value { font-size: 14px; font-weight: 800; color: var(--text); }
+    .inv-pnl-pct { font-size: 12px; font-weight: 700; margin-top: 2px; }
+    .inv-pnl-pct.pos { color: var(--green); }
+    .inv-pnl-pct.neg { color: var(--red); }
+
+    /* ===== TOAST ===== */
+    .toast {
+        position: fixed;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        z-index: 999;
+        white-space: nowrap;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: rgba(0,196,140,0.3); color: var(--green); }
+    .toast.error { border-color: rgba(255,82,82,0.3); color: var(--red); }
+
+    /* ===== LOADING ===== */
+    .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(13,17,23,0.7);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .spinner {
+        width: 36px; height: 36px;
+        border: 3px solid rgba(0,196,140,0.2);
+        border-top-color: var(--green);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Account type colors for wallet cards */
+    .wc-color-0 { background: linear-gradient(135deg, #00c48c, #00a876); }
+    .wc-color-1 { background: linear-gradient(135deg, #448aff, #2979ff); }
+    .wc-color-2 { background: linear-gradient(135deg, #7c4dff, #651fff); }
+    .wc-color-3 { background: linear-gradient(135deg, #ff9100, #ff6d00); }
+    .wc-color-4 { background: linear-gradient(135deg, #1de9b6, #00bfa5); }
+    .wc-color-5 { background: linear-gradient(135deg, #f06292, #e91e63); }
+
+    .bottom-spacer { height: 20px; }
     </style>
 </head>
-<body class="flex justify-center min-h-screen">
+<body>
 
-    <!-- Mobile Screen Wrapper (Centered with max-width to look like a real mobile app on desktop) -->
-    <div x-data="financeApp()" 
-         x-init="init()"
-         class="w-full max-w-md bg-darkBg min-h-screen flex flex-col relative shadow-2xl border-x border-gray-800/40 pb-20 select-none">
-        
-        <!-- Header -->
-        <header class="glass-card sticky top-0 z-30 px-5 py-4 flex items-center justify-between shadow-lg">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-darkBg font-bold text-lg shadow-lg shadow-amber-500/20">
-                    <i class="fa-solid fa-coins"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold tracking-wide bg-gradient-to-r from-amber-400 to-yellow-200 bg-clip-text text-transparent">FinanceTracker</h1>
-                    <span class="text-xs text-gray-400 font-medium">Hải Yến • PWA Mobile</span>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-2">
-                <!-- Status Offline / Online -->
-                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
-                     :class="isOnline ? 'bg-emeraldAccent/10 text-emeraldAccent border border-emeraldAccent/20' : 'bg-roseAccent/10 text-roseAccent border border-roseAccent/20'">
-                    <span class="w-1.5 h-1.5 rounded-full" :class="isOnline ? 'bg-emeraldAccent animate-pulse' : 'bg-roseAccent'"></span>
-                    <span x-text="isOnline ? 'ONLINE' : 'OFFLINE'"></span>
-                </div>
-                
-                <!-- Logout Button -->
-                <form action="{{ route('logout') }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="w-8 h-8 rounded-lg bg-gray-800/60 hover:bg-gray-700/60 border border-gray-700/40 flex items-center justify-center text-gray-300 hover:text-roseAccent transition">
-                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
-                    </button>
-                </form>
-            </div>
-        </header>
+<div id="app" x-data="financeApp()" x-init="init()">
 
-        <!-- Main Content Area -->
-        <main class="flex-1 px-4 py-5 overflow-y-auto">
-
-            <!-- Dynamic Loader -->
-            <div x-show="loading" class="fixed inset-0 bg-darkBg/60 backdrop-blur-sm z-50 flex items-center justify-center">
-                <div class="flex flex-col items-center gap-3 glass-card p-6 rounded-2xl">
-                    <svg class="animate-spin h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span class="text-xs text-amber-500 font-bold tracking-wider">ĐANG XỬ LÝ...</span>
-                </div>
-            </div>
-
-            <!-- Tab 1: Tổng quan -->
-            <div x-show="activeTab === 'overview'" x-transition:enter="transition ease-out duration-200" class="space-y-5">
-                
-                <!-- Net Worth Card -->
-                <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900 via-slate-900 to-zinc-900 border border-gray-800 shadow-2xl p-6">
-                    <div class="absolute -right-16 -top-16 w-36 h-36 bg-amber-500/10 rounded-full blur-3xl"></div>
-                    <div class="absolute -left-16 -bottom-16 w-36 h-36 bg-indigo-500/10 rounded-full blur-3xl"></div>
-                    
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs text-gray-400 font-semibold tracking-wider uppercase">TỔNG TÀI SẢN RÒNG</span>
-                        <i class="fa-solid fa-shield-halved text-amber-500/50 text-sm"></i>
-                    </div>
-                    
-                    <div class="text-3xl font-extrabold text-amber-400 tracking-tight" x-text="formatVnd(overview.net_worth)"></div>
-                    
-                    <div class="mt-4 pt-4 border-t border-gray-800 flex justify-between items-center text-xs text-gray-400">
-                        <div>
-                            <span class="block text-[10px] text-gray-500 font-bold">VỐN KHẢ DỤNG</span>
-                            <span class="text-gray-200 font-semibold" x-text="formatVnd(overview.total_cash)"></span>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-[10px] text-gray-500 font-bold">LỢI NHUẬN ĐẦU TƯ</span>
-                            <span class="font-bold flex items-center gap-1 justify-end" :class="overview.investment_pnl >= 0 ? 'text-emeraldAccent' : 'text-roseAccent'">
-                                <i class="fa-solid" :class="overview.investment_pnl >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
-                                <span x-text="(overview.investment_pnl >= 0 ? '+' : '') + formatVnd(overview.investment_pnl)"></span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Action Grid -->
-                <div class="grid grid-cols-2 gap-3">
-                    <button @click="openAddTransactionModal('expense')" class="glass-card py-3 px-4 rounded-2xl flex items-center gap-3 active:scale-95 transition">
-                        <div class="w-10 h-10 rounded-xl bg-roseAccent/10 text-roseAccent flex items-center justify-center shadow">
-                            <i class="fa-solid fa-arrow-up-from-bracket"></i>
-                        </div>
-                        <div class="text-left">
-                            <span class="block text-[10px] text-gray-400 font-bold uppercase">CHI PHÍ</span>
-                            <span class="text-xs font-bold text-roseAccent">Ghi chi tiêu</span>
-                        </div>
-                    </button>
-                    <button @click="openAddTransactionModal('income')" class="glass-card py-3 px-4 rounded-2xl flex items-center gap-3 active:scale-95 transition">
-                        <div class="w-10 h-10 rounded-xl bg-emeraldAccent/10 text-emeraldAccent flex items-center justify-center shadow">
-                            <i class="fa-solid fa-arrow-down-to-bracket"></i>
-                        </div>
-                        <div class="text-left">
-                            <span class="block text-[10px] text-gray-400 font-bold uppercase">THU NHẬP</span>
-                            <span class="text-xs font-bold text-emeraldAccent">Ghi thu nhập</span>
-                        </div>
-                    </button>
-                </div>
-
-                <!-- Asset Allocation Chart Card -->
-                <div class="glass-card rounded-3xl p-5 space-y-4">
-                    <h3 class="text-sm font-bold text-amber-500 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie"></i> Cơ Cấu Tài Sản
-                    </h3>
-                    <div class="relative flex justify-center py-2">
-                        <canvas id="allocationChart" style="max-height: 160px; max-width: 160px;"></canvas>
-                        <div x-show="accounts.length === 0 && investments.length === 0" class="absolute inset-0 flex items-center justify-center text-xs text-gray-500">
-                            Chưa có dữ liệu phân tích
-                        </div>
-                    </div>
-                    
-                    <!-- Chart breakdown legends -->
-                    <div class="grid grid-cols-3 gap-2 text-center text-[10px] font-bold mt-2">
-                        <div class="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300">
-                            <span>TIỀN MẶT / BANK</span>
-                            <span class="block text-xs font-extrabold mt-0.5 text-gray-100" x-text="formatVnd(overview.total_cash)"></span>
-                        </div>
-                        <div class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300">
-                            <span>TÍCH SẢN ĐẦU TƯ</span>
-                            <span class="block text-xs font-extrabold mt-0.5 text-gray-100" x-text="formatVnd(overview.total_investment)"></span>
-                        </div>
-                        <div class="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                            <span>CHO VAY (NỢ THU)</span>
-                            <span class="block text-xs font-extrabold mt-0.5 text-gray-100" x-text="formatVnd(overview.total_lend)"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Accounts Breakdown -->
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xs text-gray-400 font-bold uppercase tracking-wider">TÀI KHOẢN & VÍ</h3>
-                        <button @click="showAddAccountModal = true" class="text-xs text-amber-500 hover:text-amber-400 font-bold flex items-center gap-1">
-                            <i class="fa-solid fa-plus-circle"></i> Thêm ví
-                        </button>
-                    </div>
-
-                    <div class="space-y-2">
-                        <template x-for="acc in accounts" :key="acc.id">
-                            <div class="glass-card p-4 rounded-2xl flex justify-between items-center border border-gray-800/40 relative group">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-                                         :class="{
-                                             'bg-blue-500/10 text-blue-400': acc.type === 'bank',
-                                             'bg-amber-500/10 text-amber-400': acc.type === 'cash',
-                                             'bg-pink-500/10 text-pink-400': acc.type === 'e-wallet',
-                                             'bg-purple-500/10 text-purple-400': acc.type === 'other'
-                                         }">
-                                        <i class="fa-solid" :class="{
-                                            'fa-building-columns': acc.type === 'bank',
-                                            'fa-wallet': acc.type === 'cash',
-                                            'fa-mobile-screen-button': acc.type === 'e-wallet',
-                                            'fa-ellipsis': acc.type === 'other'
-                                        }"></i>
-                                    </div>
-                                    <div>
-                                        <span class="block text-xs font-bold text-gray-100" x-text="acc.name"></span>
-                                        <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wider" x-text="acc.type === 'bank' ? 'Ngân hàng' : (acc.type === 'e-wallet' ? 'Ví điện tử' : 'Tiền mặt')"></span>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-center gap-3">
-                                    <span class="text-sm font-extrabold text-amber-400" x-text="formatVnd(acc.balance)"></span>
-                                    <!-- Delete account -->
-                                    <button @click="deleteAccount(acc.id)" class="text-gray-500 hover:text-roseAccent text-xs transition p-1">
-                                        <i class="fa-regular fa-trash-can"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </template>
-                        <template x-if="accounts.length === 0">
-                            <div class="text-center py-6 text-xs text-gray-500 glass-card rounded-2xl">
-                                Chưa có ví tài khoản nào. Hãy tạo ví ngay!
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Tab 2: Giao dịch -->
-            <div x-show="activeTab === 'transactions'" x-transition:enter="transition ease-out duration-200" class="space-y-4">
-                
-                <div class="flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-amber-500 uppercase tracking-wider">
-                        <i class="fa-solid fa-list-check"></i> Nhật ký Giao dịch
-                    </h3>
-                    <button @click="openAddTransactionModal('expense')" class="bg-gradient-to-r from-amber-500 to-yellow-500 text-darkBg text-xs font-extrabold px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-lg shadow-amber-500/10 active:scale-95 transition">
-                        <i class="fa-solid fa-circle-plus"></i> Ghi chép mới
-                    </button>
-                </div>
-
-                <!-- Transaction List -->
-                <div class="space-y-2">
-                    <template x-for="tx in transactions" :key="tx.id">
-                        <div class="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-gray-800/40 hover:border-gray-700/40 transition">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm"
-                                     :class="{
-                                         'bg-emeraldAccent/10 text-emeraldAccent': tx.type === 'income',
-                                         'bg-roseAccent/10 text-roseAccent': tx.type === 'expense',
-                                         'bg-blue-500/10 text-blue-400': tx.type === 'transfer'
-                                     }">
-                                    <i class="fa-solid" :class="{
-                                        'fa-arrow-down-long': tx.type === 'income',
-                                        'fa-arrow-up-long': tx.type === 'expense',
-                                        'fa-right-left': tx.type === 'transfer'
-                                    }"></i>
-                                </div>
-                                <div class="max-w-[180px]">
-                                    <span class="block text-xs font-bold text-gray-100 truncate" x-text="tx.category"></span>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-[9px] text-gray-400 font-bold uppercase" x-text="tx.account ? tx.account.name : 'N/A'"></span>
-                                        <template x-if="tx.type === 'transfer' && tx.to_account">
-                                            <span class="text-[9px] text-gray-500 font-bold flex items-center gap-1">
-                                                <i class="fa-solid fa-angles-right text-[8px]"></i>
-                                                <span x-text="tx.to_account.name"></span>
-                                            </span>
-                                        </template>
-                                    </div>
-                                    <span class="block text-[10px] text-gray-400 italic truncate" x-text="tx.note || 'Không có ghi chú'"></span>
-                                </div>
-                            </div>
-                            
-                            <div class="text-right flex items-center gap-3">
-                                <div>
-                                    <span class="block text-xs font-extrabold"
-                                          :class="{
-                                              'text-emeraldAccent': tx.type === 'income',
-                                              'text-roseAccent': tx.type === 'expense',
-                                              'text-blue-400': tx.type === 'transfer'
-                                          }"
-                                          x-text="(tx.type === 'income' ? '+' : (tx.type === 'expense' ? '-' : '⇄ ')) + formatVnd(tx.amount)">
-                                    </span>
-                                    <span class="block text-[9px] text-gray-500 font-medium" x-text="formatDate(tx.transaction_date)"></span>
-                                </div>
-                                
-                                <button @click="deleteTransaction(tx.id)" class="text-gray-500 hover:text-roseAccent text-xs transition p-1">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </template>
-                    <template x-if="transactions.length === 0">
-                        <div class="text-center py-10 text-xs text-gray-500 glass-card rounded-2xl">
-                            Không có giao dịch nào gần đây. Hãy tạo một giao dịch mới!
-                        </div>
-                    </template>
-                </div>
-
-            </div>
-
-            <!-- Tab 3: Ghi nợ -->
-            <div x-show="activeTab === 'debts'" x-transition:enter="transition ease-out duration-200" class="space-y-4">
-                
-                <div class="flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-amber-500 uppercase tracking-wider">
-                        <i class="fa-solid fa-handshake"></i> Quản Lý Nợ
-                    </h3>
-                    <button @click="showAddDebtModal = true" class="bg-gradient-to-r from-amber-500 to-yellow-500 text-darkBg text-xs font-extrabold px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-lg shadow-amber-500/10 active:scale-95 transition">
-                        <i class="fa-solid fa-plus-circle"></i> Thêm nợ mới
-                    </button>
-                </div>
-
-                <!-- Debts totals summary -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="glass-card p-4 rounded-2xl border-l-4 border-emeraldAccent">
-                        <span class="block text-[10px] text-gray-400 font-bold uppercase">BẠN CHO VAY (ĐANG NỢ)</span>
-                        <span class="text-sm font-extrabold text-emeraldAccent mt-1 block" x-text="formatVnd(overview.total_lend)"></span>
-                    </div>
-                    <div class="glass-card p-4 rounded-2xl border-l-4 border-roseAccent">
-                        <span class="block text-[10px] text-gray-400 font-bold uppercase">BẠN ĐI VAY (PHẢI TRẢ)</span>
-                        <span class="text-sm font-extrabold text-roseAccent mt-1 block" x-text="formatVnd(overview.total_borrow)"></span>
-                    </div>
-                </div>
-
-                <!-- Debts list -->
-                <div class="space-y-2">
-                    <template x-for="d in debts" :key="d.id">
-                        <div class="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-gray-800/40 relative hover:border-gray-700/40 transition">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm"
-                                     :class="d.type === 'lend' ? 'bg-emeraldAccent/10 text-emeraldAccent' : 'bg-roseAccent/10 text-roseAccent'">
-                                    <i class="fa-solid" :class="d.type === 'lend' ? 'fa-hand-holding-dollar' : 'fa-handshake-angle'"></i>
-                                </div>
-                                <div class="max-w-[180px]">
-                                    <span class="block text-xs font-bold text-gray-100" x-text="d.partner_name"></span>
-                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5 uppercase"
-                                          :class="d.type === 'lend' ? 'bg-emeraldAccent/10 text-emeraldAccent' : 'bg-roseAccent/10 text-roseAccent'"
-                                          x-text="d.type === 'lend' ? 'Cho vay' : 'Đi vay'"></span>
-                                    <span class="block text-[10px] text-gray-400 italic mt-0.5 truncate" x-text="d.note || 'Không có ghi chú'"></span>
-                                    <template x-if="d.due_date">
-                                        <span class="block text-[9px] text-gray-500 font-bold mt-0.5">
-                                            Hạn trả: <span x-text="formatDate(d.due_date)"></span>
-                                        </span>
-                                    </template>
-                                </div>
-                            </div>
-                            
-                            <div class="text-right flex items-center gap-3">
-                                <div>
-                                    <span class="block text-xs font-extrabold" :class="d.type === 'lend' ? 'text-emeraldAccent' : 'text-roseAccent'" x-text="formatVnd(d.amount)"></span>
-                                    <button @click="toggleDebt(d.id)" 
-                                            class="mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full inline-block transition active:scale-95"
-                                            :class="d.status === 'paid' ? 'bg-gray-800 text-gray-400 border border-gray-700/50' : 'bg-amber-500 text-darkBg'"
-                                            x-text="d.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'">
-                                    </button>
-                                </div>
-                                
-                                <button @click="deleteDebt(d.id)" class="text-gray-500 hover:text-roseAccent text-xs transition p-1">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </template>
-                    <template x-if="debts.length === 0">
-                        <div class="text-center py-10 text-xs text-gray-500 glass-card rounded-2xl">
-                            Không có hồ sơ nợ vay nào.
-                        </div>
-                    </template>
-                </div>
-
-            </div>
-
-            <!-- Tab 4: Tích sản / Đầu tư -->
-            <div x-show="activeTab === 'investments'" x-transition:enter="transition ease-out duration-200" class="space-y-4">
-                
-                <div class="flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-amber-500 uppercase tracking-wider">
-                        <i class="fa-solid fa-chart-line"></i> Đầu Tư Tích Sản
-                    </h3>
-                    <div class="flex items-center gap-2">
-                        <button @click="updateRates()" class="bg-gray-800/80 border border-gray-700/40 hover:bg-gray-700/80 text-amber-500 w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition">
-                            <i class="fa-solid fa-arrows-rotate"></i>
-                        </button>
-                        <button @click="showAddInvestmentModal = true" class="bg-gradient-to-r from-amber-500 to-yellow-500 text-darkBg text-xs font-extrabold px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-lg shadow-amber-500/10 active:scale-95 transition">
-                            <i class="fa-solid fa-plus-circle"></i> Thêm tài sản
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Live Ticker Indicator -->
-                <div class="bg-amber-500/5 border border-amber-500/10 p-3 rounded-2xl flex items-center justify-between text-xs">
-                    <span class="text-gray-400 font-medium">Lợi nhuận đầu tư ước tính</span>
-                    <span class="font-extrabold flex items-center gap-1" :class="overview.investment_pnl >= 0 ? 'text-emeraldAccent' : 'text-roseAccent'">
-                        <i class="fa-solid" :class="overview.investment_pnl >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
-                        <span x-text="(overview.investment_pnl >= 0 ? '+' : '') + formatVnd(overview.investment_pnl) + ' (' + overview.investment_pnl_percent.toFixed(2) + '%)'"></span>
-                    </span>
-                </div>
-
-                <!-- Investments List -->
-                <div class="space-y-2">
-                    <template x-for="inv in investments" :key="inv.id">
-                        <div class="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-gray-800/40 relative hover:border-gray-700/40 transition">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shadow-inner"
-                                     :class="inv.type === 'crypto' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-indigo-500/10 text-indigo-400'">
-                                    <span x-text="inv.symbol"></span>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-xs font-bold text-gray-100" x-text="inv.symbol"></span>
-                                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 font-bold uppercase tracking-wider" x-text="inv.type === 'crypto' ? 'Crypto' : 'Cổ phiếu'"></span>
-                                    </div>
-                                    <span class="block text-[10px] text-gray-400 mt-0.5">
-                                        Số lượng: <span class="font-bold text-gray-200" x-text="inv.quantity"></span>
-                                    </span>
-                                    <span class="block text-[9px] text-gray-500">
-                                        Mua: <span x-text="formatVnd(inv.buy_price)"></span> | Hiện tại: <span x-text="formatVnd(inv.current_price)"></span>
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <div class="text-right flex items-center gap-3">
-                                <div>
-                                    <span class="block text-xs font-extrabold text-amber-400" x-text="formatVnd(inv.quantity * inv.current_price)"></span>
-                                    <!-- Investment Profit margin -->
-                                    <span class="text-[9px] font-extrabold block mt-0.5" 
-                                          :class="(inv.current_price - inv.buy_price) >= 0 ? 'text-emeraldAccent' : 'text-roseAccent'"
-                                          x-text="((inv.current_price - inv.buy_price) >= 0 ? '+' : '') + (((inv.current_price - inv.buy_price) / inv.buy_price) * 100).toFixed(1) + '%'">
-                                    </span>
-                                </div>
-                                
-                                <div class="flex flex-col gap-1">
-                                    <!-- Delete investment -->
-                                    <button @click="deleteInvestment(inv.id)" class="text-gray-500 hover:text-roseAccent text-xs transition p-1">
-                                        <i class="fa-regular fa-trash-can"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                    <template x-if="investments.length === 0">
-                        <div class="text-center py-10 text-xs text-gray-500 glass-card rounded-2xl">
-                            Không có danh mục đầu tư nào.
-                        </div>
-                    </template>
-                </div>
-
-            </div>
-
-        </main>
-
-        <!-- Toast Notifications -->
-        <div x-show="notification.show" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:leave="transition ease-in duration-200"
-             class="fixed top-20 left-1/2 -translate-x-1/2 w-[85%] max-w-[340px] z-50 rounded-2xl p-4 shadow-2xl glass-card flex items-center gap-3 border"
-             :class="notification.type === 'success' ? 'border-emeraldAccent/30 bg-emeraldAccent/5' : 'border-roseAccent/30 bg-roseAccent/5'"
-             style="display: none;">
-            <div class="w-7 h-7 rounded-xl flex items-center justify-center text-xs shadow"
-                 :class="notification.type === 'success' ? 'bg-emeraldAccent/20 text-emeraldAccent' : 'bg-roseAccent/20 text-roseAccent'">
-                <i class="fa-solid" :class="notification.type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'"></i>
-            </div>
-            <span class="text-xs font-bold text-gray-200" x-text="notification.message"></span>
-        </div>
-
-        <!-- -------------------- MODALS & SLIDE-UP BOTTOM SHEETS -------------------- -->
-
-        <!-- Bottom Sheet Modal: Ghi chép Giao dịch (Income / Expense) -->
-        <div x-show="showAddTransactionModal" class="fixed inset-0 z-40 bg-darkBg/60 backdrop-blur-sm flex items-end justify-center" style="display: none;">
-            <div @click.away="showAddTransactionModal = false" class="w-full max-w-md bg-slate-900 border-t border-gray-800 rounded-t-[30px] p-6 space-y-4 animate-slide-up shadow-2xl">
-                <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                    <h3 class="text-sm font-bold text-amber-500 uppercase tracking-wider">Ghi chép tài chính mới</h3>
-                    <button @click="showAddTransactionModal = false" class="text-gray-400 hover:text-gray-200 text-sm">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitTransaction" class="space-y-4 text-xs">
-                    <!-- Type Selector Tabs -->
-                    <div class="grid grid-cols-3 gap-2 bg-gray-950 p-1 rounded-xl">
-                        <button type="button" @click="transactionForm.type = 'expense'" class="py-2 rounded-lg font-bold transition text-center uppercase" :class="transactionForm.type === 'expense' ? 'bg-roseAccent text-darkBg' : 'text-gray-400'">
-                            Chi phí
-                        </button>
-                        <button type="button" @click="transactionForm.type = 'income'" class="py-2 rounded-lg font-bold transition text-center uppercase" :class="transactionForm.type === 'income' ? 'bg-emeraldAccent text-darkBg' : 'text-gray-400'">
-                            Thu nhập
-                        </button>
-                        <button type="button" @click="transactionForm.type = 'transfer'" class="py-2 rounded-lg font-bold transition text-center uppercase" :class="transactionForm.type === 'transfer' ? 'bg-blue-500 text-darkBg' : 'text-gray-400'">
-                            Chuyển ví
-                        </button>
-                    </div>
-
-                    <!-- Source Account -->
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Từ tài khoản / Ví</label>
-                        <select x-model="transactionForm.account_id" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                            <option value="">-- Chọn tài khoản --</option>
-                            <template x-for="acc in accounts" :key="acc.id">
-                                <option :value="acc.id" x-text="acc.name + ' (' + formatVnd(acc.balance) + ')'"></option>
-                            </template>
-                        </select>
-                    </div>
-
-                    <!-- Target Account (Only for transfers) -->
-                    <div x-show="transactionForm.type === 'transfer'">
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Đến tài khoản / Ví</label>
-                        <select x-model="transactionForm.to_account_id" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                            <option value="">-- Chọn tài khoản đích --</option>
-                            <template x-for="acc in accounts" :key="acc.id">
-                                <option :value="acc.id" x-text="acc.name + ' (' + formatVnd(acc.balance) + ')'"></option>
-                            </template>
-                        </select>
-                    </div>
-
-                    <!-- Amount -->
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Số tiền (VND)</label>
-                        <input type="number" step="any" x-model="transactionForm.amount" required placeholder="Nhập số tiền..." class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none text-sm font-extrabold text-amber-400">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <!-- Category -->
-                        <div>
-                            <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Danh mục</label>
-                            <input type="text" x-model="transactionForm.category" required placeholder="Lương, Ăn uống, vv." class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                        </div>
-                        <!-- Transaction Date -->
-                        <div>
-                            <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Ngày giao dịch</label>
-                            <input type="date" x-model="transactionForm.transaction_date" required class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                        </div>
-                    </div>
-
-                    <!-- Note -->
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Ghi chú chi tiết</label>
-                        <input type="text" x-model="transactionForm.note" placeholder="Mua sắm ăn trưa..." class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                    </div>
-
-                    <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-darkBg font-extrabold py-3.5 rounded-xl shadow-lg shadow-amber-500/10 active:scale-95 transition tracking-wider uppercase text-xs">
-                        Xác nhận ghi chép
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Bottom Sheet Modal: Thêm Tài khoản/Ví -->
-        <div x-show="showAddAccountModal" class="fixed inset-0 z-40 bg-darkBg/60 backdrop-blur-sm flex items-end justify-center" style="display: none;">
-            <div @click.away="showAddAccountModal = false" class="w-full max-w-md bg-slate-900 border-t border-gray-800 rounded-t-[30px] p-6 space-y-4 animate-slide-up shadow-2xl">
-                <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                    <h3 class="text-sm font-bold text-amber-500 uppercase tracking-wider">Tạo tài khoản / ví mới</h3>
-                    <button @click="showAddAccountModal = false" class="text-gray-400 hover:text-gray-200 text-sm">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitAccount" class="space-y-4 text-xs">
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Tên ví / Ngân hàng</label>
-                        <input type="text" x-model="accountForm.name" required placeholder="Ví dụ: Techcombank, Tiền mặt..." class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Loại tài khoản</label>
-                        <select x-model="accountForm.type" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                            <option value="cash">Tiền mặt</option>
-                            <option value="bank">Ngân hàng</option>
-                            <option value="e-wallet">Ví điện tử</option>
-                            <option value="other">Loại khác</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Số dư ban đầu (VND)</label>
-                        <input type="number" step="any" x-model="accountForm.balance" required placeholder="0" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none font-bold text-amber-400">
-                    </div>
-
-                    <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-darkBg font-extrabold py-3.5 rounded-xl shadow-lg shadow-amber-500/10 active:scale-95 transition tracking-wider uppercase text-xs">
-                        Tạo ví tài khoản
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Bottom Sheet Modal: Thêm Khoản Nợ -->
-        <div x-show="showAddDebtModal" class="fixed inset-0 z-40 bg-darkBg/60 backdrop-blur-sm flex items-end justify-center" style="display: none;">
-            <div @click.away="showAddDebtModal = false" class="w-full max-w-md bg-slate-900 border-t border-gray-800 rounded-t-[30px] p-6 space-y-4 animate-slide-up shadow-2xl">
-                <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                    <h3 class="text-sm font-bold text-amber-500 uppercase tracking-wider">Thêm hồ sơ nợ vay mới</h3>
-                    <button @click="showAddDebtModal = false" class="text-gray-400 hover:text-gray-200 text-sm">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitDebt" class="space-y-4 text-xs">
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Đối tác liên quan</label>
-                        <input type="text" x-model="debtForm.partner_name" required placeholder="Tên đối tác hoặc chủ nợ..." class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Loại hình</label>
-                        <select x-model="debtForm.type" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                            <option value="lend">Tôi cho vay (Tài sản của tôi)</option>
-                            <option value="borrow">Tôi đi vay (Khoản phải trả)</option>
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Số tiền (VND)</label>
-                            <input type="number" step="any" x-model="debtForm.amount" required placeholder="0" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none font-bold text-amber-400">
-                        </div>
-                        <div>
-                            <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Hạn thanh toán</label>
-                            <input type="date" x-model="debtForm.due_date" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Ghi chú chi tiết</label>
-                        <input type="text" x-model="debtForm.note" placeholder="Chi tiết lý do mượn..." class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                    </div>
-
-                    <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-darkBg font-extrabold py-3.5 rounded-xl shadow-lg shadow-amber-500/10 active:scale-95 transition tracking-wider uppercase text-xs">
-                        Ghi nhận hồ sơ nợ
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Bottom Sheet Modal: Thêm Tài sản đầu tư -->
-        <div x-show="showAddInvestmentModal" class="fixed inset-0 z-40 bg-darkBg/60 backdrop-blur-sm flex items-end justify-center" style="display: none;">
-            <div @click.away="showAddInvestmentModal = false" class="w-full max-w-md bg-slate-900 border-t border-gray-800 rounded-t-[30px] p-6 space-y-4 animate-slide-up shadow-2xl">
-                <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                    <h3 class="text-sm font-bold text-amber-500 uppercase tracking-wider">Thêm tài sản đầu tư mới</h3>
-                    <button @click="showAddInvestmentModal = false" class="text-gray-400 hover:text-gray-200 text-sm">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitInvestment" class="space-y-4 text-xs">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Mã tài sản (Symbol)</label>
-                            <input type="text" x-model="investmentForm.symbol" required placeholder="BTC, ETH, FPT, HPG..." class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none font-bold uppercase">
-                        </div>
-                        <div>
-                            <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Phân loại</label>
-                            <select x-model="investmentForm.type" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none">
-                                <option value="stock">Cổ phiếu</option>
-                                <option value="crypto">Tiền điện tử (Crypto)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Số lượng nắm giữ</label>
-                        <input type="number" step="any" x-model="investmentForm.quantity" required placeholder="Ví dụ: 0.05 hoặc 500" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none font-bold text-amber-400">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Giá mua trung bình (VND)</label>
-                            <input type="number" step="any" x-model="investmentForm.buy_price" required placeholder="0" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none font-bold text-gray-100">
-                        </div>
-                        <div>
-                            <label class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Giá thị trường hiện tại</label>
-                            <input type="number" step="any" x-model="investmentForm.current_price" placeholder="Để trống nếu = giá mua" class="w-full bg-gray-950 border border-gray-800/80 rounded-xl p-3 text-gray-200 focus:border-amber-500/80 outline-none font-bold text-emeraldAccent">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-darkBg font-extrabold py-3.5 rounded-xl shadow-lg shadow-amber-500/10 active:scale-95 transition tracking-wider uppercase text-xs">
-                        Ghi nhận đầu tư
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Fixed Bottom Navigation Bar -->
-        <nav class="glass-card fixed bottom-0 z-30 w-full max-w-md h-16 border-t border-gray-800/60 shadow-2xl flex items-center justify-around px-2 text-gray-400">
-            <button @click="activeTab = 'overview'" class="flex flex-col items-center justify-center flex-1 h-full active:scale-90 transition" :class="activeTab === 'overview' ? 'bottom-nav-active' : ''">
-                <i class="fa-solid fa-house-chimney text-base"></i>
-                <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Tổng quan</span>
-            </button>
-            <button @click="activeTab = 'transactions'" class="flex flex-col items-center justify-center flex-1 h-full active:scale-90 transition" :class="activeTab === 'transactions' ? 'bottom-nav-active' : ''">
-                <i class="fa-solid fa-list-check text-base"></i>
-                <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Giao dịch</span>
-            </button>
-            <button @click="activeTab = 'debts'" class="flex flex-col items-center justify-center flex-1 h-full active:scale-90 transition" :class="activeTab === 'debts' ? 'bottom-nav-active' : ''">
-                <i class="fa-solid fa-handshake text-base"></i>
-                <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Ghi nợ</span>
-            </button>
-            <button @click="activeTab = 'investments'" class="flex flex-col items-center justify-center flex-1 h-full active:scale-90 transition" :class="activeTab === 'investments' ? 'bottom-nav-active' : ''">
-                <i class="fa-solid fa-chart-line text-base"></i>
-                <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Tích sản</span>
-            </button>
-        </nav>
-
+    <!-- LOADING -->
+    <div class="loading-overlay" x-show="loading" x-transition style="display:none">
+        <div class="spinner"></div>
     </div>
 
-    <script>
-        function financeApp() {
-            return {
-                // Application states preloaded from controller
-                activeTab: 'overview',
-                accounts: @json($accounts),
-                transactions: @json($transactions),
-                debts: @json($debts),
-                investments: @json($investments),
-                overview: @json($overview),
-                
-                loading: false,
-                isOnline: navigator.onLine,
-                chart: null,
-                
-                notification: {
-                    show: false,
-                    message: '',
-                    type: 'success'
+    <!-- TOAST -->
+    <div class="toast" :class="[toast.show ? 'show' : '', toast.type]" x-text="toast.message"></div>
+
+    <!-- ============ APP HEADER ============ -->
+    <header class="app-header">
+        <div class="header-month">
+            <button class="month-nav-btn" @click="changeMonth(-1)">‹</button>
+            <span class="month-label" x-text="monthLabel"></span>
+            <button class="month-nav-btn" @click="changeMonth(1)">›</button>
+        </div>
+        <div class="header-right">
+            <div class="online-dot" x-show="isOnline"></div>
+            <form action="{{ route('logout') }}" method="POST" style="margin:0">
+                @csrf
+                <button type="submit" class="header-icon-btn" title="Đăng xuất">🚪</button>
+            </form>
+        </div>
+    </header>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <div class="app-content">
+
+        <!-- ====== TAB: HOME ====== -->
+        <div x-show="activeTab === 'home'" x-transition:enter="transition ease-out duration-150">
+
+            <!-- Wallet Swiper -->
+            <div class="wallet-section">
+                <div class="wallet-swiper" id="walletSwiper">
+                    <template x-for="(acc, idx) in accounts" :key="acc.id">
+                        <div class="wallet-card" :class="'wc-color-' + (idx % 6)">
+                            <div class="wc-type">
+                                <span x-text="acc.type === 'bank' ? '🏦' : (acc.type === 'e-wallet' ? '📱' : '👛')"></span>
+                                <span x-text="acc.type === 'bank' ? 'Ngân hàng' : (acc.type === 'e-wallet' ? 'Ví điện tử' : 'Tiền mặt')"></span>
+                            </div>
+                            <div class="wc-name" x-text="acc.name"></div>
+                            <div class="wc-balance" x-text="formatShort(acc.balance)"></div>
+                            <div class="wc-currency">VNĐ</div>
+                        </div>
+                    </template>
+                    <div class="wallet-add-card" @click="showAddAccountSheet = true">
+                        <span class="add-icon">＋</span>
+                        <span>Thêm ví</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Month Summary -->
+            <div class="month-summary">
+                <div class="summary-card sc-income">
+                    <div class="sc-label">↓ Thu nhập</div>
+                    <div class="sc-value" x-text="formatShort(monthStats.income)"></div>
+                </div>
+                <div class="summary-card sc-expense">
+                    <div class="sc-label">↑ Chi phí</div>
+                    <div class="sc-value" x-text="formatShort(monthStats.expense)"></div>
+                </div>
+            </div>
+
+            <!-- Weekly Bar Chart -->
+            <div class="chart-card">
+                <div class="chart-legend">
+                    <div class="chart-legend-item">
+                        <div class="legend-dot" style="background: var(--green)"></div>
+                        Thu nhập
+                    </div>
+                    <div class="chart-legend-item">
+                        <div class="legend-dot" style="background: var(--red)"></div>
+                        Chi phí
+                    </div>
+                </div>
+                <canvas id="weekChart" height="120"></canvas>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="section-title">
+                Giao dịch gần đây
+                <a class="section-more" @click.prevent="activeTab = 'transactions'">Xem tất cả</a>
+            </div>
+
+            <!-- Grouped Transactions -->
+            <template x-for="group in groupedTransactions.slice(0,3)" :key="group.date">
+                <div class="tx-group">
+                    <div class="tx-group-header">
+                        <span class="tx-group-date"
+                              :class="group.label === 'Hôm nay' ? 'today' : (group.label === 'Hôm qua' ? 'yesterday' : '')"
+                              x-text="group.label"></span>
+                        <span class="tx-group-total" x-text="formatVnd(group.netAmount)"></span>
+                    </div>
+                    <template x-for="tx in group.items.slice(0,4)" :key="tx.id">
+                        <div class="tx-item">
+                            <div class="tx-cat-icon" :style="'background:' + getCatColor(tx.category) + '22'">
+                                <span x-text="getCatEmoji(tx.category)"></span>
+                            </div>
+                            <div class="tx-info">
+                                <div class="tx-cat-name" x-text="tx.category"></div>
+                                <div class="tx-note" x-text="tx.note || 'Không có ghi chú'"></div>
+                                <div class="tx-account-tag" x-text="tx.account ? tx.account.name : ''"></div>
+                            </div>
+                            <div>
+                                <div class="tx-amount" :class="tx.type" x-text="(tx.type === 'income' ? '+' : (tx.type === 'expense' ? '-' : '⇄ ')) + formatShort(tx.amount)"></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <template x-if="transactions.length === 0">
+                <div class="empty-state">
+                    <div class="es-icon">💸</div>
+                    <div class="es-title">Chưa có giao dịch</div>
+                    <div class="es-desc">Nhấn nút + để ghi chép giao dịch đầu tiên</div>
+                </div>
+            </template>
+
+            <div class="bottom-spacer"></div>
+        </div>
+
+        <!-- ====== TAB: TRANSACTIONS ====== -->
+        <div x-show="activeTab === 'transactions'" x-transition:enter="transition ease-out duration-150">
+            <div style="padding: 14px 16px 10px; display:flex; justify-content:flex-end;">
+                <button @click="openAddTxScreen('expense')"
+                    style="background: linear-gradient(135deg, var(--green), var(--green2)); color:#fff; border:none; border-radius:12px; padding: 8px 16px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; box-shadow: 0 4px 14px rgba(0,196,140,0.3)">
+                    ＋ Thêm giao dịch
+                </button>
+            </div>
+
+            <!-- Month filter bar -->
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0 16px 12px; gap:8px;">
+                <div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:6px 12px; font-size:12px; font-weight:700; color:var(--green)" x-text="'Thu: ' + formatShort(monthStats.income)"></div>
+                <div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:6px 12px; font-size:12px; font-weight:700; color:var(--red)" x-text="'Chi: ' + formatShort(monthStats.expense)"></div>
+                <div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:6px 12px; font-size:12px; font-weight:700; color:var(--text)" x-text="'Còn: ' + formatShort(monthStats.income - monthStats.expense)"></div>
+            </div>
+
+            <template x-if="groupedTransactions.length === 0">
+                <div class="empty-state">
+                    <div class="es-icon">📋</div>
+                    <div class="es-title">Tháng này chưa có giao dịch</div>
+                    <div class="es-desc">Nhấn nút ＋ để thêm</div>
+                </div>
+            </template>
+
+            <template x-for="group in groupedTransactions" :key="group.date">
+                <div class="tx-group">
+                    <div class="tx-group-header">
+                        <span class="tx-group-date"
+                              :class="group.label === 'Hôm nay' ? 'today' : (group.label === 'Hôm qua' ? 'yesterday' : '')"
+                              x-text="group.label"></span>
+                        <span class="tx-group-total" x-text="formatVnd(group.netAmount)"></span>
+                    </div>
+                    <template x-for="tx in group.items" :key="tx.id">
+                        <div class="tx-item" @click="confirmDeleteTx(tx)">
+                            <div class="tx-cat-icon" :style="'background:' + getCatColor(tx.category) + '22'">
+                                <span x-text="getCatEmoji(tx.category)"></span>
+                            </div>
+                            <div class="tx-info">
+                                <div class="tx-cat-name" x-text="tx.category"></div>
+                                <div class="tx-note" x-text="tx.note || 'Không có ghi chú'"></div>
+                                <div class="tx-account-tag" x-text="tx.account ? tx.account.name : ''"></div>
+                            </div>
+                            <div>
+                                <div class="tx-amount" :class="tx.type" x-text="(tx.type === 'income' ? '+' : (tx.type === 'expense' ? '-' : '⇄ ')) + formatVnd(tx.amount)"></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <div class="bottom-spacer"></div>
+        </div>
+
+        <!-- ====== TAB: DEBTS ====== -->
+        <div x-show="activeTab === 'debts'" x-transition:enter="transition ease-out duration-150">
+            <div class="debt-summary">
+                <div class="debt-summary-card dsc-lend">
+                    <div class="dsc-label">📤 Cho vay</div>
+                    <div class="dsc-value" x-text="formatShort(overview.total_lend)"></div>
+                    <div class="dsc-count" x-text="debts.filter(d=>d.type==='lend').length + ' khoản'"></div>
+                </div>
+                <div class="debt-summary-card dsc-borrow">
+                    <div class="dsc-label">📥 Đi vay</div>
+                    <div class="dsc-value" x-text="formatShort(overview.total_borrow)"></div>
+                    <div class="dsc-count" x-text="debts.filter(d=>d.type==='borrow').length + ' khoản'"></div>
+                </div>
+            </div>
+
+            <div style="padding: 14px 16px 6px; display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em">Danh sách nợ vay</span>
+                <button @click="showAddDebtSheet = true"
+                    style="background: linear-gradient(135deg, var(--green), var(--green2)); color:#fff; border:none; border-radius:10px; padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit">
+                    ＋ Thêm nợ
+                </button>
+            </div>
+
+            <template x-if="debts.length === 0">
+                <div class="empty-state">
+                    <div class="es-icon">🤝</div>
+                    <div class="es-title">Không có khoản nợ nào</div>
+                    <div class="es-desc">Nhấn ＋ Thêm nợ để ghi nhận</div>
+                </div>
+            </template>
+
+            <template x-for="d in debts" :key="d.id">
+                <div class="debt-item">
+                    <div class="debt-avatar" :class="d.type === 'lend' ? 'debt-lend-av' : 'debt-borrow-av'"
+                         x-text="d.partner_name ? d.partner_name.charAt(0).toUpperCase() : '?'"></div>
+                    <div class="debt-info">
+                        <div class="debt-name" x-text="d.partner_name"></div>
+                        <div class="debt-meta">
+                            <span x-text="d.type === 'lend' ? '📤 Cho vay' : '📥 Đi vay'"></span>
+                            <template x-if="d.due_date">
+                                <span x-text="' · Hạn: ' + formatDate(d.due_date)"></span>
+                            </template>
+                        </div>
+                        <div class="debt-meta" x-text="d.note" style="font-style:italic; margin-top:2px"></div>
+                    </div>
+                    <div class="debt-right">
+                        <div class="debt-amount" :class="d.type" x-text="formatShort(d.amount)"></div>
+                        <div>
+                            <span class="debt-status" :class="d.status === 'paid' ? 'ds-paid' : 'ds-unpaid'"
+                                  @click="toggleDebt(d.id)"
+                                  x-text="d.status === 'paid' ? '✓ Đã trả' : '⏳ Chưa trả'"></span>
+                        </div>
+                        <button @click="deleteDebt(d.id)" style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:13px;margin-top:3px;padding:2px">🗑</button>
+                    </div>
+                </div>
+            </template>
+            <div class="bottom-spacer"></div>
+        </div>
+
+        <!-- ====== TAB: INVESTMENTS ====== -->
+        <div x-show="activeTab === 'investments'" x-transition:enter="transition ease-out duration-150">
+            <!-- Portfolio Header -->
+            <div class="portfolio-header">
+                <div class="ph-label">Tổng danh mục đầu tư</div>
+                <div class="ph-value" x-text="formatShort(overview.total_investment)"></div>
+                <div class="ph-pnl" :class="overview.investment_pnl >= 0 ? 'positive' : 'negative'"
+                     x-text="(overview.investment_pnl >= 0 ? '▲ +' : '▼ ') + formatShort(overview.investment_pnl) + ' (' + overview.investment_pnl_percent.toFixed(2) + '%)'"></div>
+            </div>
+
+            <div style="padding: 14px 16px 6px; display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em">Danh mục</span>
+                <div style="display:flex; gap:8px">
+                    <button @click="updateRates()"
+                        style="background:var(--bg2); border:1px solid var(--border); color:var(--green); border-radius:10px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit">
+                        🔄 Cập nhật tỷ giá
+                    </button>
+                    <button @click="showAddInvestmentSheet = true"
+                        style="background: linear-gradient(135deg, var(--green), var(--green2)); color:#fff; border:none; border-radius:10px; padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit">
+                        ＋ Thêm
+                    </button>
+                </div>
+            </div>
+
+            <template x-if="investments.length === 0">
+                <div class="empty-state">
+                    <div class="es-icon">📈</div>
+                    <div class="es-title">Chưa có danh mục đầu tư</div>
+                    <div class="es-desc">Nhấn ＋ để thêm Crypto hoặc Cổ phiếu</div>
+                </div>
+            </template>
+
+            <template x-for="inv in investments" :key="inv.id">
+                <div class="inv-item">
+                    <div class="inv-symbol-badge" :class="inv.type === 'crypto' ? 'inv-crypto' : 'inv-stock'"
+                         x-text="inv.symbol"></div>
+                    <div class="inv-info">
+                        <div class="inv-name">
+                            <span x-text="inv.symbol"></span>
+                            <span class="inv-type-tag" x-text="inv.type === 'crypto' ? 'Crypto' : 'Cổ phiếu'"></span>
+                        </div>
+                        <div class="inv-qty">
+                            SL: <span x-text="inv.quantity"></span> ×
+                            Mua: <span x-text="formatShort(inv.buy_price)"></span>
+                        </div>
+                        <div class="inv-qty" style="color:var(--muted2)">
+                            Giá hiện tại: <span x-text="formatShort(inv.current_price)"></span>
+                        </div>
+                    </div>
+                    <div class="inv-right">
+                        <div class="inv-value" x-text="formatShort(inv.quantity * inv.current_price)"></div>
+                        <div class="inv-pnl-pct"
+                             :class="(inv.current_price - inv.buy_price) >= 0 ? 'pos' : 'neg'"
+                             x-text="((inv.current_price - inv.buy_price) >= 0 ? '▲ +' : '▼ ') + (((inv.current_price - inv.buy_price) / inv.buy_price) * 100).toFixed(1) + '%'"></div>
+                        <button @click="deleteInvestment(inv.id)" style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:13px;margin-top:4px;padding:2px">🗑</button>
+                    </div>
+                </div>
+            </template>
+            <div class="bottom-spacer"></div>
+        </div>
+
+    </div><!-- /app-content -->
+
+    <!-- ============ BOTTOM NAVIGATION ============ -->
+    <nav class="bottom-nav">
+        <button class="nav-item" :class="activeTab === 'home' ? 'active' : ''" @click="activeTab = 'home'">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Tổng quan</span>
+        </button>
+        <button class="nav-item" :class="activeTab === 'transactions' ? 'active' : ''" @click="activeTab = 'transactions'">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">Giao dịch</span>
+        </button>
+        <div class="fab-container">
+            <button class="fab" @click="openAddTxScreen('expense')" title="Thêm giao dịch">＋</button>
+        </div>
+        <button class="nav-item" :class="activeTab === 'debts' ? 'active' : ''" @click="activeTab = 'debts'">
+            <span class="nav-icon">🤝</span>
+            <span class="nav-label">Nợ vay</span>
+        </button>
+        <button class="nav-item" :class="activeTab === 'investments' ? 'active' : ''" @click="activeTab = 'investments'">
+            <span class="nav-icon">📈</span>
+            <span class="nav-label">Đầu tư</span>
+        </button>
+    </nav>
+
+    <!-- ============ ADD TRANSACTION FULL-SCREEN ============ -->
+    <div class="screen add-tx-screen" :class="showAddTxScreen ? 'open' : ''">
+        <!-- Header -->
+        <div class="add-tx-header">
+            <div class="add-tx-close" @click="showAddTxScreen = false">✕</div>
+            <div class="add-tx-type-tabs">
+                <button class="type-tab" :class="txForm.type === 'expense' ? 'active-expense' : ''"
+                        @click="txForm.type = 'expense'">Chi phí</button>
+                <button class="type-tab" :class="txForm.type === 'income' ? 'active-income' : ''"
+                        @click="txForm.type = 'income'">Thu nhập</button>
+                <button class="type-tab" :class="txForm.type === 'transfer' ? 'active-transfer' : ''"
+                        @click="txForm.type = 'transfer'">Chuyển ví</button>
+            </div>
+            <div style="width:32px"></div>
+        </div>
+
+        <!-- Amount Display -->
+        <div class="amount-display">
+            <div class="amount-label">Số tiền (₫)</div>
+            <div class="amount-value"
+                 :class="txForm.type === 'expense' ? 'expense-color' : (txForm.type === 'income' ? 'income-color' : 'transfer-color')"
+                 x-text="numpadDisplay || '0'"></div>
+        </div>
+
+        <!-- Category Picker -->
+        <div class="cat-picker-scroll">
+            <template x-if="txForm.type !== 'transfer'">
+                <div>
+                    <div class="cat-section-label" x-text="txForm.type === 'expense' ? 'Chọn danh mục chi phí' : 'Chọn danh mục thu nhập'"></div>
+                    <div class="cat-grid">
+                        <template x-for="cat in currentCategories" :key="cat.name">
+                            <div class="cat-btn"
+                                 :class="txForm.category === cat.name ? (txForm.type === 'expense' ? 'selected-expense' : 'selected') : ''"
+                                 @click="txForm.category = cat.name">
+                                <span class="cat-emoji" x-text="cat.emoji"></span>
+                                <span class="cat-label" x-text="cat.name"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Transaction Details -->
+        <div class="add-tx-details">
+            <div class="detail-row">
+                <div class="detail-icon">💳</div>
+                <select class="detail-select" x-model="txForm.account_id">
+                    <option value="">Chọn ví...</option>
+                    <template x-for="acc in accounts" :key="acc.id">
+                        <option :value="acc.id" x-text="acc.name + ' (' + formatShort(acc.balance) + ')'"></option>
+                    </template>
+                </select>
+            </div>
+            <template x-if="txForm.type === 'transfer'">
+                <div class="detail-row">
+                    <div class="detail-icon">➡️</div>
+                    <select class="detail-select" x-model="txForm.to_account_id">
+                        <option value="">Ví đích...</option>
+                        <template x-for="acc in accounts" :key="acc.id">
+                            <option :value="acc.id" x-text="acc.name"></option>
+                        </template>
+                    </select>
+                </div>
+            </template>
+            <div class="detail-row">
+                <div class="detail-icon">📅</div>
+                <input type="date" class="detail-input" x-model="txForm.transaction_date">
+            </div>
+            <div class="detail-row">
+                <div class="detail-icon">📝</div>
+                <input type="text" class="detail-input" placeholder="Ghi chú..." x-model="txForm.note">
+            </div>
+        </div>
+
+        <!-- Custom Numpad -->
+        <div class="numpad">
+            <template x-for="k in ['7','8','9','🔙','4','5','6','00','1','2','3','OK','.',  '0', 'C', '']" :key="k">
+                <button class="numpad-key"
+                        :class="k === 'OK' ? 'key-ok' : (k === '🔙' ? 'key-del' : (k === '00' ? 'key-00' : ''))"
+                        :style="k === '' ? 'display:none' : ''"
+                        @click="numpadPress(k)"
+                        x-text="k === 'OK' ? 'LƯU' : k">
+                </button>
+            </template>
+        </div>
+    </div>
+
+    <!-- ============ BOTTOM SHEETS (Modals) ============ -->
+
+    <!-- Add Account Sheet -->
+    <div class="bottom-sheet-overlay" x-show="showAddAccountSheet" @click.self="showAddAccountSheet = false" style="display:none" x-transition>
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">➕ Thêm ví / Tài khoản</div>
+
+            <div class="form-label">Tên ví</div>
+            <input type="text" class="form-input" placeholder="Ví dụ: Techcombank, Tiền mặt..." x-model="accountForm.name">
+
+            <div class="form-label">Loại tài khoản</div>
+            <select class="form-select" x-model="accountForm.type">
+                <option value="cash">👛 Tiền mặt</option>
+                <option value="bank">🏦 Ngân hàng</option>
+                <option value="e-wallet">📱 Ví điện tử</option>
+                <option value="other">📦 Khác</option>
+            </select>
+
+            <div class="form-label">Số dư ban đầu (VNĐ)</div>
+            <input type="number" class="form-input" placeholder="0" x-model="accountForm.balance" style="color:var(--green); font-weight:700; font-size:18px">
+
+            <button class="btn-submit" @click="submitAccount()">Tạo ví ngay</button>
+        </div>
+    </div>
+
+    <!-- Add Debt Sheet -->
+    <div class="bottom-sheet-overlay" x-show="showAddDebtSheet" @click.self="showAddDebtSheet = false" style="display:none" x-transition>
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">📝 Thêm khoản nợ</div>
+
+            <div class="form-label">Tên người liên quan</div>
+            <input type="text" class="form-input" placeholder="Tên người vay / cho vay..." x-model="debtForm.partner_name">
+
+            <div class="form-label">Loại</div>
+            <select class="form-select" x-model="debtForm.type">
+                <option value="lend">📤 Tôi cho vay (Họ nợ tôi)</option>
+                <option value="borrow">📥 Tôi đi vay (Tôi nợ họ)</option>
+            </select>
+
+            <div class="form-label">Số tiền (VNĐ)</div>
+            <input type="number" class="form-input" placeholder="0" x-model="debtForm.amount" style="color:var(--green); font-weight:700; font-size:18px">
+
+            <div class="form-label">Hạn thanh toán (không bắt buộc)</div>
+            <input type="date" class="form-input" x-model="debtForm.due_date">
+
+            <div class="form-label">Ghi chú</div>
+            <input type="text" class="form-input" placeholder="Lý do vay mượn..." x-model="debtForm.note">
+
+            <button class="btn-submit" @click="submitDebt()">Ghi nhận khoản nợ</button>
+        </div>
+    </div>
+
+    <!-- Add Investment Sheet -->
+    <div class="bottom-sheet-overlay" x-show="showAddInvestmentSheet" @click.self="showAddInvestmentSheet = false" style="display:none" x-transition>
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">📈 Thêm tài sản đầu tư</div>
+
+            <div class="form-label">Loại tài sản</div>
+            <select class="form-select" x-model="investForm.type">
+                <option value="crypto">🪙 Crypto (Bitcoin, ETH...)</option>
+                <option value="stock">📊 Cổ phiếu</option>
+            </select>
+
+            <div class="form-label">Mã tài sản (Symbol)</div>
+            <input type="text" class="form-input" placeholder="VD: BTC, ETH, VNM..." x-model="investForm.symbol" style="text-transform:uppercase">
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                <div>
+                    <div class="form-label">Số lượng</div>
+                    <input type="number" class="form-input" placeholder="0" x-model="investForm.quantity" step="any">
+                </div>
+                <div>
+                    <div class="form-label">Giá mua (VNĐ)</div>
+                    <input type="number" class="form-input" placeholder="0" x-model="investForm.buy_price">
+                </div>
+            </div>
+
+            <button class="btn-submit" @click="submitInvestment()">Thêm vào danh mục</button>
+        </div>
+    </div>
+
+</div><!-- /#app -->
+
+<script>
+const CSRF = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1]
+    ? decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)[1])
+    : '{{ csrf_token() }}';
+
+// ===== CATEGORY DATA =====
+const EXPENSE_CATS = [
+    { name: 'Ăn uống',     emoji: '🍜', color: '#FF6B6B' },
+    { name: 'Mua sắm',     emoji: '🛒', color: '#FF9F43' },
+    { name: 'Di chuyển',   emoji: '🚗', color: '#54A0FF' },
+    { name: 'Nhà ở',       emoji: '🏠', color: '#5F27CD' },
+    { name: 'Sức khoẻ',    emoji: '💊', color: '#00D2D3' },
+    { name: 'Giải trí',    emoji: '🎮', color: '#C8D6E5' },
+    { name: 'Giáo dục',    emoji: '📚', color: '#786FA6' },
+    { name: 'Làm đẹp',     emoji: '💄', color: '#FF9FF3' },
+    { name: 'Cà phê',      emoji: '☕', color: '#A29BFE' },
+    { name: 'Điện thoại',  emoji: '📱', color: '#6C5CE7' },
+    { name: 'Du lịch',     emoji: '✈️', color: '#00CEC9' },
+    { name: 'Quà tặng',    emoji: '🎁', color: '#FDCB6E' },
+    { name: 'Tiện ích',    emoji: '💡', color: '#FFEAA7' },
+    { name: 'Sửa chữa',    emoji: '🔧', color: '#B2BEC3' },
+    { name: 'Thú cưng',    emoji: '🐾', color: '#E17055' },
+    { name: 'Khác',        emoji: '📦', color: '#636E72' },
+];
+
+const INCOME_CATS = [
+    { name: 'Lương',       emoji: '💰', color: '#00C48C' },
+    { name: 'Kinh doanh',  emoji: '💼', color: '#54A0FF' },
+    { name: 'Đầu tư',      emoji: '📈', color: '#00E5A0' },
+    { name: 'Thưởng',      emoji: '🎯', color: '#FDCB6E' },
+    { name: 'Quà',         emoji: '💝', color: '#FF9FF3' },
+    { name: 'Hoàn tiền',   emoji: '🔄', color: '#A29BFE' },
+    { name: 'Lãi suất',    emoji: '🏦', color: '#1DE9B6' },
+    { name: 'Khác',        emoji: '📦', color: '#636E72' },
+];
+
+const ALL_CATS = [...EXPENSE_CATS, ...INCOME_CATS];
+
+function getCatData(name) {
+    return ALL_CATS.find(c => c.name === name) || { emoji: '💸', color: '#636E72' };
+}
+
+function financeApp() {
+    return {
+        // State
+        loading: false,
+        isOnline: navigator.onLine,
+        activeTab: 'home',
+        currentYear: new Date().getFullYear(),
+        currentMonth: new Date().getMonth() + 1,
+
+        // Data
+        accounts: [],
+        transactions: [],
+        debts: [],
+        investments: [],
+        overview: { net_worth: 0, total_cash: 0, total_investment: 0, total_lend: 0, total_borrow: 0, investment_pnl: 0, investment_pnl_percent: 0 },
+
+        // UI state
+        showAddTxScreen: false,
+        showAddAccountSheet: false,
+        showAddDebtSheet: false,
+        showAddInvestmentSheet: false,
+
+        // Forms
+        numpadDisplay: '',
+        txForm: { type: 'expense', account_id: '', to_account_id: '', amount: '', category: '', transaction_date: new Date().toISOString().split('T')[0], note: '' },
+        accountForm: { name: '', type: 'cash', balance: '' },
+        debtForm: { partner_name: '', type: 'lend', amount: '', due_date: '', note: '' },
+        investForm: { symbol: '', type: 'crypto', quantity: '', buy_price: '' },
+
+        // Charts
+        weekChartInstance: null,
+
+        // Toast
+        toast: { show: false, message: '', type: 'success' },
+
+        // Computed
+        get monthLabel() {
+            return `Tháng ${this.currentMonth}/${this.currentYear}`;
+        },
+
+        get currentCategories() {
+            return this.txForm.type === 'income' ? INCOME_CATS : EXPENSE_CATS;
+        },
+
+        get monthStats() {
+            const filtered = this.transactions.filter(tx => {
+                const d = new Date(tx.transaction_date);
+                return d.getMonth() + 1 === this.currentMonth && d.getFullYear() === this.currentYear;
+            });
+            const income  = filtered.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
+            const expense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0);
+            return { income, expense };
+        },
+
+        get filteredTransactions() {
+            return this.transactions.filter(tx => {
+                const d = new Date(tx.transaction_date);
+                return d.getMonth() + 1 === this.currentMonth && d.getFullYear() === this.currentYear;
+            });
+        },
+
+        get groupedTransactions() {
+            const groups = {};
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+            this.filteredTransactions.forEach(tx => {
+                const date = tx.transaction_date.split('T')[0];
+                if (!groups[date]) groups[date] = [];
+                groups[date].push(tx);
+            });
+
+            return Object.entries(groups)
+                .sort(([a], [b]) => b.localeCompare(a))
+                .map(([date, items]) => {
+                    const net = items.reduce((s, t) => {
+                        if (t.type === 'income')  return s + parseFloat(t.amount);
+                        if (t.type === 'expense') return s - parseFloat(t.amount);
+                        return s;
+                    }, 0);
+                    const d = new Date(date + 'T00:00:00');
+                    const label = date === today ? 'Hôm nay' : date === yesterday ? 'Hôm qua'
+                        : d.toLocaleDateString('vi-VN', { weekday: 'short', day: 'numeric', month: 'numeric' });
+                    return { date, label, items, netAmount: net };
+                });
+        },
+
+        // ===== INIT =====
+        async init() {
+            window.addEventListener('online',  () => this.isOnline = true);
+            window.addEventListener('offline', () => this.isOnline = false);
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            }
+            await this.loadData();
+        },
+
+        // ===== DATA LOADING =====
+        async loadData() {
+            this.loading = true;
+            try {
+                const [accs, txs, dbs, invs, ov] = await Promise.all([
+                    fetch('/api/finance/accounts').then(r => r.json()),
+                    fetch('/api/finance/transactions').then(r => r.json()),
+                    fetch('/api/finance/debts').then(r => r.json()),
+                    fetch('/api/finance/investments').then(r => r.json()),
+                    fetch('/api/finance/overview').then(r => r.json()),
+                ]);
+                this.accounts    = accs.accounts    || accs || [];
+                this.transactions= txs.transactions || txs || [];
+                this.debts       = dbs.debts        || dbs || [];
+                this.investments = invs.investments  || invs || [];
+                this.overview    = ov;
+
+                this.$nextTick(() => this.renderWeekChart());
+            } catch (e) {
+                this.showToast('Lỗi tải dữ liệu: ' + e.message, 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        // ===== MONTH NAV =====
+        changeMonth(dir) {
+            this.currentMonth += dir;
+            if (this.currentMonth > 12) { this.currentMonth = 1; this.currentYear++; }
+            if (this.currentMonth < 1)  { this.currentMonth = 12; this.currentYear--; }
+            this.$nextTick(() => this.renderWeekChart());
+        },
+
+        // ===== CHART =====
+        renderWeekChart() {
+            const canvas = document.getElementById('weekChart');
+            if (!canvas) return;
+            if (this.weekChartInstance) { this.weekChartInstance.destroy(); }
+
+            // Build last 7 days data
+            const days = [];
+            const incomeData = [];
+            const expenseData = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(Date.now() - i * 86400000);
+                const key = d.toISOString().split('T')[0];
+                const dayTxs = this.transactions.filter(t => t.transaction_date && t.transaction_date.startsWith(key));
+                days.push(d.toLocaleDateString('vi-VN', { weekday: 'short' }));
+                incomeData.push(dayTxs.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0) / 1e6);
+                expenseData.push(dayTxs.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0) / 1e6);
+            }
+
+            this.weekChartInstance = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: days,
+                    datasets: [
+                        { label: 'Thu (M)', data: incomeData, backgroundColor: 'rgba(0,196,140,0.7)', borderRadius: 6, borderSkipped: false },
+                        { label: 'Chi (M)', data: expenseData, backgroundColor: 'rgba(255,82,82,0.7)', borderRadius: 6, borderSkipped: false },
+                    ]
                 },
-
-                // Modals trigger states
-                showAddTransactionModal: false,
-                showAddAccountModal: false,
-                showAddDebtModal: false,
-                showAddInvestmentModal: false,
-
-                // Forms models states
-                transactionForm: {
-                    account_id: '',
-                    type: 'expense',
-                    amount: '',
-                    category: 'Ăn uống',
-                    transaction_date: new Date().toISOString().substring(0, 10),
-                    note: '',
-                    to_account_id: ''
-                },
-                accountForm: {
-                    name: '',
-                    type: 'cash',
-                    balance: ''
-                },
-                debtForm: {
-                    partner_name: '',
-                    type: 'lend',
-                    amount: '',
-                    due_date: new Date().toISOString().substring(0, 10),
-                    note: ''
-                },
-                investmentForm: {
-                    symbol: '',
-                    type: 'stock',
-                    quantity: '',
-                    buy_price: '',
-                    current_price: ''
-                },
-
-                init() {
-                    // Sync network status
-                    window.addEventListener('online', () => this.isOnline = true);
-                    window.addEventListener('offline', () => this.isOnline = false);
-
-                    // Initialize allocation graph
-                    this.$nextTick(() => {
-                        this.initCharts();
-                    });
-
-                    // Watch activeTab to update charts when entering home
-                    this.$watch('activeTab', (val) => {
-                        if (val === 'overview') {
-                            this.$nextTick(() => this.initCharts());
-                        }
-                    });
-                },
-
-                showToast(msg, type = 'success') {
-                    this.notification.message = msg;
-                    this.notification.type = type;
-                    this.notification.show = true;
-                    setTimeout(() => {
-                        this.notification.show = false;
-                    }, 3500);
-                },
-
-                formatVnd(value) {
-                    return new Intl.NumberFormat('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND'
-                    }).format(value || 0);
-                },
-
-                formatDate(dateStr) {
-                    if (!dateStr) return '';
-                    const d = new Date(dateStr);
-                    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-                },
-
-                // Core Chart.js Setup
-                initCharts() {
-                    const ctx = document.getElementById('allocationChart');
-                    if (!ctx) return;
-                    
-                    if (this.chart) {
-                        this.chart.destroy();
-                    }
-
-                    const cash = parseFloat(this.overview.total_cash) || 0;
-                    const investment = parseFloat(this.overview.total_investment) || 0;
-                    const lend = parseFloat(this.overview.total_lend) || 0;
-
-                    if (cash === 0 && investment === 0 && lend === 0) return;
-
-                    this.chart = new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Tiền mặt', 'Tích sản', 'Cho vay'],
-                            datasets: [{
-                                data: [cash, investment, lend],
-                                backgroundColor: ['#6366f1', '#f59e0b', '#10b981'],
-                                borderColor: '#0b0f19',
-                                borderWidth: 2,
-                                hoverOffset: 4
-                            }]
-                        },
-                        options: {
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        label: (context) => {
-                                            return ` ${context.label}: ${this.formatVnd(context.raw)}`;
-                                        }
-                                    }
-                                }
-                            },
-                            cutout: '70%',
-                            responsive: true
-                        }
-                    });
-                },
-
-                // Refresh rates from CoinGecko API or local simulations
-                async updateRates() {
-                    this.loading = true;
-                    try {
-                        const response = await fetch('/api/finance/rates/update', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                        const res = await response.json();
-                        
-                        if (res.status === 'success') {
-                            this.investments = res.data;
-                            this.showToast(res.message);
-                            this.refreshData(); // Refresh summary values
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Không kết nối được server tỷ giá', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                // Helper to sync Overview variables reactively after local data changes
-                async refreshData() {
-                    try {
-                        const response = await fetch('/api/finance/overview');
-                        const res = await response.json();
-                        if (res.status === 'success') {
-                            this.overview = res.data.overview;
-                            this.accounts = res.data.accounts;
-                            this.transactions = res.data.transactions;
-                            this.debts = res.data.debts;
-                            this.investments = res.data.investments;
-                            this.initCharts();
-                        }
-                    } catch (e) {
-                        console.error('Failed refreshing data from API:', e);
-                    }
-                },
-
-                // Transaction Form Action
-                openAddTransactionModal(type) {
-                    this.transactionForm.type = type;
-                    this.transactionForm.amount = '';
-                    this.transactionForm.note = '';
-                    if (this.accounts.length > 0) {
-                        this.transactionForm.account_id = this.accounts[0].id;
-                    }
-                    this.showAddTransactionModal = true;
-                },
-
-                async submitTransaction() {
-                    this.loading = true;
-                    try {
-                        const response = await fetch('/api/finance/transactions', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.transactionForm)
-                        });
-                        const res = await response.json();
-
-                        if (res.status === 'success') {
-                            this.showToast(res.message);
-                            this.showAddTransactionModal = false;
-                            await this.refreshData();
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Ghi nhận giao dịch thất bại!', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                async deleteTransaction(id) {
-                    if (!confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) return;
-                    this.loading = true;
-                    try {
-                        const response = await fetch(`/api/finance/transactions/${id}`, {
-                            method: 'DELETE'
-                        });
-                        const res = await response.json();
-
-                        if (res.status === 'success') {
-                            this.showToast(res.message);
-                            await this.refreshData();
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Xóa giao dịch thất bại!', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                // Account Form Actions
-                async submitAccount() {
-                    this.loading = true;
-                    try {
-                        const response = await fetch('/api/finance/accounts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.accountForm)
-                        });
-                        const res = await response.json();
-
-                        if (res.status === 'success') {
-                            this.showToast(res.message);
-                            this.showAddAccountModal = false;
-                            this.accountForm = { name: '', type: 'cash', balance: '' };
-                            await this.refreshData();
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Không tạo được tài khoản mới', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                async deleteAccount(id) {
-                    if (!confirm('Xóa tài khoản sẽ xóa toàn bộ lịch sử giao dịch liên quan. Tiếp tục?')) return;
-                    this.loading = true;
-                    try {
-                        const response = await fetch(`/api/finance/accounts/${id}`, {
-                            method: 'DELETE'
-                        });
-                        const res = await response.json();
-
-                        if (res.status === 'success') {
-                            this.showToast(res.message);
-                            await this.refreshData();
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Xóa ví thất bại!', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                // Debts Form Actions
-                async submitDebt() {
-                    this.loading = true;
-                    try {
-                        const response = await fetch('/api/finance/debts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.debtForm)
-                        });
-                        const res = await response.json();
-
-                        if (res.status === 'success') {
-                            this.showToast(res.message);
-                            this.showAddDebtModal = false;
-                            this.debtForm = { partner_name: '', type: 'lend', amount: '', due_date: new Date().toISOString().substring(0, 10), note: '' };
-                            await this.refreshData();
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Tạo khoản nợ thất bại!', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                async toggleDebt(id) {
-                    this.loading = true;
-                    try {
-                        const response = await fetch(`/api/finance/debts/${id}/toggle`, {
-                            method: 'POST'
-                        });
-                        const res = await response.json();
-
-                        if (res.status === 'success') {
-                            this.showToast(res.message);
-                            await this.refreshData();
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Cập nhật trạng thái thất bại!', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                async deleteDebt(id) {
-                    if (!confirm('Bạn có muốn xóa hồ sơ nợ này không?')) return;
-                    this.loading = true;
-                    try {
-                        const response = await fetch(`/api/finance/debts/${id}`, {
-                            method: 'DELETE'
-                        });
-                        const res = await response.json();
-
-                        if (res.status === 'success') {
-                            this.showToast(res.message);
-                            await this.refreshData();
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Xóa hồ sơ nợ thất bại!', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                // Investments Form Actions
-                async submitInvestment() {
-                    this.loading = true;
-                    try {
-                        const response = await fetch('/api/finance/investments', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.investmentForm)
-                        });
-                        const res = await response.json();
-
-                        if (res.status === 'success') {
-                            this.showToast(res.message);
-                            this.showAddInvestmentModal = false;
-                            this.investmentForm = { symbol: '', type: 'stock', quantity: '', buy_price: '', current_price: '' };
-                            await this.refreshData();
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Thêm danh mục tích sản thất bại!', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                async deleteInvestment(id) {
-                    if (!confirm('Bạn muốn xóa tài sản đầu tư này?')) return;
-                    this.loading = true;
-                    try {
-                        const response = await fetch(`/api/finance/investments/${id}`, {
-                            method: 'DELETE'
-                        });
-                        const res = await response.json();
-
-                        if (res.status === 'success') {
-                            this.showToast(res.message);
-                            await this.refreshData();
-                        } else {
-                            this.showToast(res.message, 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Xóa tài sản thất bại!', 'error');
-                    } finally {
-                        this.loading = false;
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6e7681', font: { size: 10, family: 'Outfit' } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6e7681', font: { size: 10, family: 'Outfit' }, callback: v => v + 'M' } },
                     }
                 }
-            }
-        }
-
-        // PWA Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then((reg) => console.log('FinanceTracker Service Worker registered successfully!', reg.scope))
-                    .catch((err) => console.warn('Service Worker registration failed:', err));
             });
-        }
-    </script>
+        },
+
+        // ===== NUMPAD =====
+        openAddTxScreen(type) {
+            this.txForm = { type, account_id: this.accounts[0]?.id || '', to_account_id: '', amount: '', category: '', transaction_date: new Date().toISOString().split('T')[0], note: '' };
+            this.numpadDisplay = '';
+            this.showAddTxScreen = true;
+        },
+
+        numpadPress(key) {
+            if (key === '🔙') {
+                this.numpadDisplay = this.numpadDisplay.slice(0, -1);
+            } else if (key === 'C') {
+                this.numpadDisplay = '';
+            } else if (key === 'OK') {
+                this.submitTransaction();
+            } else if (key === '.') {
+                if (!this.numpadDisplay.includes('.')) this.numpadDisplay += '.';
+            } else if (key === '00') {
+                if (this.numpadDisplay) this.numpadDisplay += '00';
+            } else {
+                if (this.numpadDisplay.length < 13) this.numpadDisplay += key;
+            }
+            this.txForm.amount = this.numpadDisplay;
+        },
+
+        // ===== FORMATTERS =====
+        formatVnd(v) {
+            const n = parseFloat(v) || 0;
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(n);
+        },
+
+        formatShort(v) {
+            const n = parseFloat(v) || 0;
+            const abs = Math.abs(n);
+            const sign = n < 0 ? '-' : '';
+            if (abs >= 1e9) return sign + (abs / 1e9).toFixed(1).replace(/\.0$/, '') + ' tỷ';
+            if (abs >= 1e6) return sign + (abs / 1e6).toFixed(1).replace(/\.0$/, '') + ' tr';
+            if (abs >= 1e3) return sign + (abs / 1e3).toFixed(0) + 'K';
+            return sign + abs.toFixed(0) + '₫';
+        },
+
+        formatDate(d) {
+            if (!d) return '';
+            return new Date(d + 'T00:00:00').toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        },
+
+        getCatEmoji(name) { return getCatData(name).emoji; },
+        getCatColor(name) { return getCatData(name).color; },
+
+        // ===== TOAST =====
+        showToast(message, type = 'success') {
+            this.toast = { show: true, message, type };
+            setTimeout(() => this.toast.show = false, 2800);
+        },
+
+        // ===== CRUD: TRANSACTIONS =====
+        async submitTransaction() {
+            const amount = parseFloat(this.txForm.amount);
+            if (!amount || amount <= 0) { this.showToast('Vui lòng nhập số tiền', 'error'); return; }
+            if (!this.txForm.account_id) { this.showToast('Vui lòng chọn ví', 'error'); return; }
+            if (!this.txForm.category && this.txForm.type !== 'transfer') { this.showToast('Vui lòng chọn danh mục', 'error'); return; }
+
+            this.loading = true;
+            const payload = { ...this.txForm, amount };
+            if (this.txForm.type === 'transfer') payload.category = 'Chuyển ví';
+
+            try {
+                const r = await fetch('/api/finance/transactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': CSRF },
+                    body: JSON.stringify(payload)
+                });
+                const data = await r.json();
+                if (data.success) {
+                    this.showAddTxScreen = false;
+                    this.showToast('✅ Đã ghi chép thành công!');
+                    await this.loadData();
+                } else {
+                    this.showToast(data.message || 'Lỗi!', 'error');
+                }
+            } catch (e) {
+                this.showToast('Lỗi kết nối', 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async confirmDeleteTx(tx) {
+            if (!confirm(`Xoá giao dịch "${tx.category}" — ${this.formatVnd(tx.amount)}?`)) return;
+            await this.deleteTransaction(tx.id);
+        },
+
+        async deleteTransaction(id) {
+            this.loading = true;
+            try {
+                const r = await fetch('/api/finance/transactions/' + id, {
+                    method: 'DELETE',
+                    headers: { 'X-XSRF-TOKEN': CSRF }
+                });
+                const data = await r.json();
+                if (data.success) { this.showToast('🗑 Đã xoá giao dịch'); await this.loadData(); }
+                else this.showToast(data.message || 'Lỗi!', 'error');
+            } catch { this.showToast('Lỗi kết nối', 'error'); }
+            finally { this.loading = false; }
+        },
+
+        // ===== CRUD: ACCOUNTS =====
+        async submitAccount() {
+            if (!this.accountForm.name) { this.showToast('Vui lòng nhập tên ví', 'error'); return; }
+            this.loading = true;
+            try {
+                const r = await fetch('/api/finance/accounts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': CSRF },
+                    body: JSON.stringify({ ...this.accountForm, balance: parseFloat(this.accountForm.balance) || 0 })
+                });
+                const data = await r.json();
+                if (data.success) {
+                    this.showAddAccountSheet = false;
+                    this.accountForm = { name: '', type: 'cash', balance: '' };
+                    this.showToast('✅ Tạo ví thành công!');
+                    await this.loadData();
+                } else this.showToast(data.message || 'Lỗi!', 'error');
+            } catch { this.showToast('Lỗi kết nối', 'error'); }
+            finally { this.loading = false; }
+        },
+
+        // ===== CRUD: DEBTS =====
+        async submitDebt() {
+            if (!this.debtForm.partner_name || !this.debtForm.amount) { this.showToast('Điền đầy đủ thông tin', 'error'); return; }
+            this.loading = true;
+            try {
+                const r = await fetch('/api/finance/debts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': CSRF },
+                    body: JSON.stringify({ ...this.debtForm, amount: parseFloat(this.debtForm.amount) })
+                });
+                const data = await r.json();
+                if (data.success) {
+                    this.showAddDebtSheet = false;
+                    this.debtForm = { partner_name: '', type: 'lend', amount: '', due_date: '', note: '' };
+                    this.showToast('✅ Đã ghi nhận khoản nợ!');
+                    await this.loadData();
+                } else this.showToast(data.message || 'Lỗi!', 'error');
+            } catch { this.showToast('Lỗi kết nối', 'error'); }
+            finally { this.loading = false; }
+        },
+
+        async toggleDebt(id) {
+            try {
+                const r = await fetch('/api/finance/debts/' + id + '/toggle', {
+                    method: 'PATCH',
+                    headers: { 'X-XSRF-TOKEN': CSRF }
+                });
+                const data = await r.json();
+                if (data.success) { this.showToast('✅ Cập nhật trạng thái'); await this.loadData(); }
+            } catch { this.showToast('Lỗi kết nối', 'error'); }
+        },
+
+        async deleteDebt(id) {
+            if (!confirm('Xoá khoản nợ này?')) return;
+            this.loading = true;
+            try {
+                const r = await fetch('/api/finance/debts/' + id, { method: 'DELETE', headers: { 'X-XSRF-TOKEN': CSRF } });
+                const data = await r.json();
+                if (data.success) { this.showToast('🗑 Đã xoá khoản nợ'); await this.loadData(); }
+            } catch { this.showToast('Lỗi kết nối', 'error'); }
+            finally { this.loading = false; }
+        },
+
+        // ===== CRUD: INVESTMENTS =====
+        async submitInvestment() {
+            if (!this.investForm.symbol || !this.investForm.quantity || !this.investForm.buy_price) {
+                this.showToast('Điền đầy đủ thông tin', 'error'); return;
+            }
+            this.loading = true;
+            try {
+                const r = await fetch('/api/finance/investments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': CSRF },
+                    body: JSON.stringify({
+                        ...this.investForm,
+                        symbol: this.investForm.symbol.toUpperCase(),
+                        quantity: parseFloat(this.investForm.quantity),
+                        buy_price: parseFloat(this.investForm.buy_price)
+                    })
+                });
+                const data = await r.json();
+                if (data.success) {
+                    this.showAddInvestmentSheet = false;
+                    this.investForm = { symbol: '', type: 'crypto', quantity: '', buy_price: '' };
+                    this.showToast('✅ Thêm tài sản thành công!');
+                    await this.loadData();
+                } else this.showToast(data.message || 'Lỗi!', 'error');
+            } catch { this.showToast('Lỗi kết nối', 'error'); }
+            finally { this.loading = false; }
+        },
+
+        async deleteInvestment(id) {
+            if (!confirm('Xoá tài sản đầu tư này?')) return;
+            this.loading = true;
+            try {
+                const r = await fetch('/api/finance/investments/' + id, { method: 'DELETE', headers: { 'X-XSRF-TOKEN': CSRF } });
+                const data = await r.json();
+                if (data.success) { this.showToast('🗑 Đã xoá'); await this.loadData(); }
+            } catch { this.showToast('Lỗi kết nối', 'error'); }
+            finally { this.loading = false; }
+        },
+
+        async updateRates() {
+            this.loading = true;
+            try {
+                const r = await fetch('/api/finance/rates/update', { method: 'POST', headers: { 'X-XSRF-TOKEN': CSRF } });
+                const data = await r.json();
+                this.showToast(data.message || '✅ Đã cập nhật tỷ giá!');
+                await this.loadData();
+            } catch { this.showToast('Lỗi cập nhật tỷ giá', 'error'); }
+            finally { this.loading = false; }
+        },
+    };
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
 </body>
 </html>
