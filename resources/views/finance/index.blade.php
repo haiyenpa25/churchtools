@@ -1413,8 +1413,18 @@ const DEF_CATS_I=[
     {name:'Học Bổng NT',emoji:'🎓'},
   ]},
 ];
-function getCats(t){return JSON.parse(localStorage.getItem('mt_cats_'+t)||'null')||(t==='expense'?DEF_CATS_E:DEF_CATS_I)}
-function saveCats(t,a){localStorage.setItem('mt_cats_'+t,JSON.stringify(a))}
+const CAT_VERSION=6; // bump this to force-reset all users to new categories
+function getCats(t){
+  const ver=parseInt(localStorage.getItem('mt_cat_ver')||'0');
+  // Auto-migrate: if version is old, clear old cats so new defaults load
+  if(ver<CAT_VERSION){
+    localStorage.removeItem('mt_cats_expense');
+    localStorage.removeItem('mt_cats_income');
+    localStorage.setItem('mt_cat_ver',CAT_VERSION);
+  }
+  return JSON.parse(localStorage.getItem('mt_cats_'+t)||'null')||(t==='expense'?DEF_CATS_E:DEF_CATS_I)
+}
+function saveCats(t,a){localStorage.setItem('mt_cats_'+t,JSON.stringify(a));localStorage.setItem('mt_cat_ver',CAT_VERSION)}
 function catOf(n){const all=[...getCats('expense'),...getCats('income')];for(const p of all){if(p.name===n)return p;for(const c of(p.children||[])){if(c.name===n)return{...c,color:p.color}}}return{emoji:'💸',color:'#636e72'}}
 
 function app(){return{
@@ -1440,7 +1450,7 @@ function app(){return{
   newSubCat:{parent:'',type:'expense',name:'',emoji:''},
   catMgrType:'expense',openCatGroups:[],
   goalIcons:['🚗','🏠','✈️','💍','📱','💻','🎓','🏖️','🎯','💰','🏋️','🌏'],
-  budgetCats:['Ăn uống','Mua sắm','Di chuyển','Giải trí','Nhà ở','Sức khoẻ','Giáo dục'],
+  budgetCats:['Nhà Thờ','Gia Đình','Xã Hội','Bản Thân','Ăn Uống','Mua Sắm','Di Chuyển'],
   emojiList:['🍜','🛒','🚗','🏠','💊','🎮','📚','💡','🎁','🐾','📈','💰','💼','🎓','✈️','☕','🍕','🍱','🛵','⛽','🔑','💻','📱','👕','🏋️','🎬','🛍️','💝','🏦','🔄','💵','🌐','⚽','🌸','🎪','🍺','📦','⭐','🔥','💎','🚀','🌿','🔧'],
   colorList:['#00c48c','#ff4d6d','#4c9aff','#7b5cfa','#ff9f43','#ffd32a','#1de9b6','#00d2d3','#ff9ff3','#a29bfe','#fdcb6e','#e17055','#786fa6','#54a0ff','#636e72','#5f27cd'],
   charts:{week:null,trend:null,donut:null},
